@@ -8,15 +8,15 @@ from point_mass_formation import AgentFormation
 
 
 def main():
-    N_episodes = 1000
+    N_episodes = 5000000
     update_interval = 1
     start_step = 0
-    eval_interval = 5
-    model_dir = './models'
+    eval_interval = 1000
+    model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/models'
     best_reward = 0
 
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    visualization = True
+    visualization = False
 
     # Create environments.
     env = AgentFormation(visualization=visualization)
@@ -28,7 +28,7 @@ def main():
 
         action = dqn.choose_action(agent_obs) # output is between 0 and 7
         n_agents = action + 2 # number of allowable agents is 2 to 9
-        episode_reward, done, agent_next_obs = env.step(n_agents) # next observation haritanin son durumunu gostersin
+        episode_reward, done, agent_next_obs = env.step(n_agents)
 
         dqn.memory.append(agent_obs, action, episode_reward, agent_next_obs, done)
 
