@@ -6,22 +6,7 @@ import numpy as np
 import gym
 from sac_discrete.memory import LazyMultiStepMemory, LazyPrioritizedMultiStepMemory
 
-# Hyper Parameters
-BATCH_SIZE = 128
-LR = 0.01                   # learning rate
-EPSILON = 0.9               # greedy policy
-GAMMA = 0.9                 # reward discount
-TARGET_REPLACE_ITER = 20    # target update frequency
-N_ACTIONS = 8
-N_STATES = 216
-memory_size = 100000
-gamma = 0.99
-multi_step = 1
-n_agents = 2
-N_frame = 5
-out_shape = 21
-agent_obs_shape = (1, out_shape, out_shape)
-device = "cpu"
+
 
 def initialize_weights_he(m):
     if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
@@ -34,7 +19,7 @@ class Flatten(nn.Module):
         return x.view(x.size(0), -1)
 
 class Net(nn.Module):
-    def __init__(self, ):
+    def __init__(self, args):
         super(Net, self).__init__()
         self.net = nn.Sequential(
             nn.Conv2d(1, 3, 3, 2),        
@@ -46,9 +31,9 @@ class Net(nn.Module):
             Flatten()
         ).apply(initialize_weights_he)
 
-        self.fc1 = nn.Linear(N_STATES, 100)
+        self.fc1 = nn.Linear(args.n_states, args.hid_size)
         self.fc1.weight.data.normal_(0, 0.1)   # initialization
-        self.out = nn.Linear(100, N_ACTIONS)
+        self.out = nn.Linear(args.hid_size, args.n_actions)
         self.out.weight.data.normal_(0, 0.1)   # initialization
 
     def forward(self, x):
@@ -60,43 +45,44 @@ class Net(nn.Module):
 
 
 class DQN(object):
-    def __init__(self):
-        self.eval_net, self.target_net = Net(), Net()
+    def __init__(self, args):
+        self.args = args
+        self.eval_net, self.target_net = Net(args), Net(args)
 
         self.learn_step_counter = 0                                     # for target updating
         self.memory_counter = 0                                         # for storing memory
         self.memory = LazyMultiStepMemory(
-                                        capacity=memory_size,
-                                        state_shape=agent_obs_shape,
-                                        device=device, gamma=gamma, multi_step=multi_step)
+                                        capacity=args.memory_size,
+                                        state_shape=(1, args.out_shape, args.out_shape),
+                                        device=args.device, gamma=args.gamma, multi_step=args.multi_step)
 
-        self.optimizer = torch.optim.Adam(self.eval_net.parameters(), lr=LR)
+        self.optimizer = torch.optim.Adam(self.eval_net.parameters(), lr=args.lr)
         self.loss_func = nn.MSELoss()
 
     def choose_action(self, x):
         x = torch.unsqueeze(torch.FloatTensor(x), 0)
         # input only one sample
-        if np.random.uniform() < EPSILON:   # greedy
+        if np.random.uniform() < self.args.epsilon:   # greedy
             actions_value = self.eval_net.forward(x)
             action = torch.max(actions_value, 1)[1].data.numpy()[0]
         else:   # random
-            action = np.random.randint(0, N_ACTIONS)
+            action = np.random.randint(0, self.args.n_actions)
         return action
 
     def learn(self):
         # target parameter update
-        if self.learn_step_counter % TARGET_REPLACE_ITER == 0:
+        if self.learn_step_counter % self.args.target_update == 0:
             self.target_net.load_state_dict(self.eval_net.state_dict())
         self.learn_step_counter += 1
 
-        batch = self.memory.sample(BATCH_SIZE)
+        batch = self.memory.sample(self.args.batch_size)
         states, actions, rewards, next_states, dones = batch
 
         # q_eval w.r.t the action in experience
         
         q_eval = self.eval_net(states).gather(1, actions.long())  # shape (batch, 1)
         q_next = self.target_net(next_states).detach()     # detach from graph, don't backpropagate
-        q_target = rewards + GAMMA * q_next.max(1)[0].view(BATCH_SIZE, 1)   # shape (batch, 1)
+        q_target = rewards + self.args.gamma * q_next.max(1)[0].view(self.args.batch_size, 1)   # shape (batch, 1)
         loss = self.loss_func(q_eval, q_target)
 
         self.optimizer.zero_grad()
@@ -104,6 +90,12 @@ class DQN(object):
         self.optimizer.step()
 
         # print ("Learn function is called!")
+
+    def load_models(self, load_dir, episode_number):
+        self.eval_net.load_state_dict(torch.load(os.path.join(load_dir, 'policy_' + str(episode_number) + '.pth')))
+        self.eval_net.eval()
+        self.target_net.load_state_dict(torch.load(os.path.join(load_dir, 'target_net_' + str(episode_number) + '.pth')))
+        self.target_net.eval()
 
     def save_models(self, save_dir, episode_number):
         if not os.path.exists(save_dir):
