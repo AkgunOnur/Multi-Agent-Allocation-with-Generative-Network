@@ -2,5 +2,5 @@ sac_discrete/__pycache__/
 sac_discrete/agent/__pycache__/
 sac_discrete/memory/__pycache__/
 __pycache__/
-.ipynb_checkpoints/
+.ipynb_checkpoints/*.ipynb
 *.pyc
