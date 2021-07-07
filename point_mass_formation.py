@@ -114,7 +114,7 @@ class AgentFormation(gym.Env):
 
         # print ("\n")
 
-        for iter in range(N_iteration):
+        for iter in range(1, N_iteration + 1):
             for agent_ind in range(self.n_agents):
                 
                 if self.agent_status[agent_ind] == 0:
@@ -128,7 +128,7 @@ class AgentFormation(gym.Env):
                 current_action = (self.agents_action_list[agent_ind][0])
                 del(self.agents_action_list[agent_ind][0])
 
-                total_reward -= 0.25
+                total_reward -= 1.0
                 prev_pos, current_pos = self.get_agent_desired_grid(agent_ind, current_action)
                 current_grid = self.get_closest_grid(current_pos)
                 selected_indices = np.setdiff1d(range(self.n_agents), agent_ind)
@@ -153,6 +153,7 @@ class AgentFormation(gym.Env):
 
                     if np.sum(self.prize_exists) == 0:
                         done = True
+                        total_reward = total_reward + np.abs(total_reward) * (1 - iter / N_iteration) 
                         return total_reward, done, self.get_observation()
                     
                     # print ("self.assigned_agents_to_prizes: ", self.assigned_agents_to_prizes)
@@ -168,8 +169,8 @@ class AgentFormation(gym.Env):
                 if self.visualization:
                     self.visualize()
 
-                # time.sleep(0.25)
 
+        total_reward = total_reward - np.sum(self.prize_exists) * 10.0
 
         return total_reward, done, self.get_observation()
 
@@ -205,7 +206,7 @@ class AgentFormation(gym.Env):
 
 
 
-    def reset(self):
+    def reset(self, seed_number):
         self.agents = []
         self.prize_map = np.zeros(self.map_grids.shape[0])
         self.grid_points = []
@@ -248,11 +249,11 @@ class AgentFormation(gym.Env):
 
         
         #Initialization points of prizes
-        self.N_prize = np.random.randint(2,10)
+        np.random.seed(seed_number)
+        self.N_prize = np.random.randint(1,10)
         self.prize_grids = np.random.choice(self.open_indices, (self.N_prize,), replace=False)
         self.prize_exists = np.ones(self.N_prize, dtype=bool)
         self.prize_locations = np.zeros((self.N_prize,2))
-
         
 
         return self.get_observation()

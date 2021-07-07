@@ -7,4 +7,4 @@
 
 source activate swarm
 
-python /okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/main.py --test
+python /okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/main.py

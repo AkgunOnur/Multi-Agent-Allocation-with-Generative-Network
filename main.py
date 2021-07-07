@@ -12,12 +12,12 @@ from point_mass_formation import AgentFormation
 
 
 def main():
-    model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/saved_models'
-    load_model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/models'
-    # model_dir = './saved_models'
-    # load_model_dir = './models'
-    best_reward = 0
-    final_reward = 0
+    # model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/saved_models'
+    # load_model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/models'
+    model_dir = './saved_models'
+    load_model_dir = './models'
+    best_reward = -1e3
+    final_reward = -1e3
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     device = "cpu"
@@ -31,13 +31,13 @@ def main():
     # test
     parser.add_argument('--test', default=False, action='store_true', help='number of training episodes')
     parser.add_argument('--load_model', default=load_model_dir, help='number of training episodes')
-    parser.add_argument('--test_iteration', default=50, type=int, help='number of test iterations')
-    parser.add_argument('--seed', default=15, type=int, help='seed number for test')
-    parser.add_argument('--single_model', default=False, action='store_true', help='single model to evaluate')
+    parser.add_argument('--test_iteration', default=20, type=int, help='number of test iterations')
+    parser.add_argument('--seed', default=7, type=int, help='seed number for test')
+    parser.add_argument('--test_model_no', default=-1, help='single model to evaluate')
     # training
     parser.add_argument('--num_episodes', default=5000000, type=int, help='number of training episodes')
     parser.add_argument('--update_interval', type=int, default=1, help='number of steps to update the policy')
-    parser.add_argument('--eval_interval', type=int, default=1000, help='number of steps to eval the policy')
+    parser.add_argument('--eval_interval', type=int, default=500, help='number of steps to eval the policy')
     parser.add_argument('--start_step', type=int, default=0, help='After how many steps to start training')
     # model
     parser.add_argument('--model_dir', default=model_dir, help='folder to save models')
@@ -67,22 +67,24 @@ def main():
         np.random.seed(args.seed)
         mean_reward = 0
 
-        if args.single_model:
-            dqn.load_models(os.path.join(args.load_model, 'best'), 1)
+        if int(args.test_model_no) > 0:
+            dqn.load_models(args.load_model, args.test_model_no)
 
             for i_iter in range(args.test_iteration):
-                agent_obs = env.reset()
+                seed_number = i_iter % 20
+                agent_obs = env.reset(seed_number)
                 episode_reward = 0
 
                 action = dqn.choose_action(agent_obs) # output is between 0 and 7
                 n_agents = action + 2 # number of allowable agents is 2 to 9
                 episode_reward, done, agent_next_obs = env.step(n_agents)
 
-                print('Episode: ', i_iter, '| Episode_reward: ', round(episode_reward, 2))
+                print('Episode: ', i_iter + 1, '| Episode Reward: ', round(episode_reward, 2))
 
                 mean_reward += episode_reward
 
             mean_reward = mean_reward / args.test_iteration
+            print('Model: {0} / Mean Reward: {1:.3} \n'.format(args.test_model_no, mean_reward))
         
         else:
             for name in glob.glob(os.path.join(args.load_model, '*.pth')):
@@ -92,14 +94,15 @@ def main():
                     dqn.load_models(args.load_model, model_no)
 
                     for i_iter in range(args.test_iteration):
-                        agent_obs = env.reset()
+                        seed_number = i_iter % 20
+                        agent_obs = env.reset(seed_number)
                         episode_reward = 0
 
                         action = dqn.choose_action(agent_obs) # output is between 0 and 7
                         n_agents = action + 2 # number of allowable agents is 2 to 9
                         episode_reward, done, agent_next_obs = env.step(n_agents)
 
-                        print('Episode: ', i_iter, '| Episode_reward: ', round(episode_reward, 2))
+                        print('Episode: ', i_iter, '| Episode Reward: ', round(episode_reward, 2))
 
                         mean_reward += episode_reward
 
@@ -112,11 +115,12 @@ def main():
             
     else:
         for i_episode in range(args.num_episodes):
-            agent_obs = env.reset()
+            seed_number = i_episode % 20
+            agent_obs = env.reset(seed_number)
             episode_reward = 0
 
             action = dqn.choose_action(agent_obs) # output is between 0 and 7
-            n_agents = action + 2 # number of allowable agents is 2 to 9
+            n_agents = action + 1 # number of allowable agents is 1 to 8
             episode_reward, done, agent_next_obs = env.step(n_agents)
 
             dqn.memory.append(agent_obs, action, episode_reward, agent_next_obs, done)
@@ -131,7 +135,8 @@ def main():
             if i_episode % args.eval_interval == 0 and i_episode > args.start_step:
                 mean_reward = 0
                 for i_iter in range(args.test_iteration):
-                    agent_obs = env.reset()
+                    seed_number = i_iter % 20
+                    agent_obs = env.reset(seed_number)
                     episode_reward = 0
 
                     action = dqn.choose_action(agent_obs) # output is between 0 and 7
