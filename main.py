@@ -12,10 +12,10 @@ from point_mass_formation import AgentFormation
 
 
 def main():
-    # model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/saved_models'
-    # load_model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/models'
-    model_dir = './saved_models'
-    load_model_dir = './models'
+    model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/saved_models'
+    load_model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/models'
+    # model_dir = './saved_models'
+    # load_model_dir = './models'
     best_reward = -1e3
     final_reward = -1e3
 
