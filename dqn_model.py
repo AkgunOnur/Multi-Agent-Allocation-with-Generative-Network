@@ -91,14 +91,14 @@ class DQN(object):
 
         # print ("Learn function is called!")
 
-    def load_models(self, load_dir, episode_number):
-        self.eval_net.load_state_dict(torch.load(os.path.join(load_dir, 'policy_' + str(episode_number) + '.pth')))
+    def load_models(self, load_dir, level, episode_number):
+        self.eval_net.load_state_dict(torch.load(os.path.join(load_dir, level + '_policy_' + str(episode_number) + '.pth')))
         self.eval_net.eval()
-        self.target_net.load_state_dict(torch.load(os.path.join(load_dir, 'target_net_' + str(episode_number) + '.pth')))
+        self.target_net.load_state_dict(torch.load(os.path.join(load_dir, level + '_target_net_' + str(episode_number) + '.pth')))
         self.target_net.eval()
 
-    def save_models(self, save_dir, episode_number):
+    def save_models(self, save_dir, level, episode_number):
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-        torch.save(self.eval_net.state_dict(), os.path.join(save_dir, 'policy_' + str(episode_number) + '.pth'))
-        torch.save(self.target_net.state_dict(), os.path.join(save_dir, 'target_net_' + str(episode_number) + '.pth'))
+        torch.save(self.eval_net.state_dict(), os.path.join(save_dir, level + '_policy_' + str(episode_number) + '.pth'))
+        torch.save(self.target_net.state_dict(), os.path.join(save_dir, level + '_target_net_' + str(episode_number) + '.pth'))
