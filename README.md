@@ -1,6 +1,6 @@
 # Multi Agent Allocation with Generative Network
 
-![Teaser](assets/example.jpg) 
+![Teaser](images/hard3.png) 
 
 ## Recommended system
 Recommended system (tested):
