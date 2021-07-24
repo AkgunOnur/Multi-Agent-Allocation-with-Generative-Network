@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -p defq
+#SBATCH -p longq
 #SBATCH -o %j.out
 #SBATCH -e %j.err
 #SBATCH -n 1
