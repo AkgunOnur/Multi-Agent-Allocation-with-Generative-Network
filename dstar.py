@@ -61,6 +61,8 @@ class Map:
                     continue
                 if state.y + j < 0 or state.y + j >= self.col:
                     continue
+                # if self.map[state.x + i][state.y + j].state == "#":
+                #     continue
                 state_list.append(self.map[state.x + i][state.y + j])
 
         return state_list
@@ -168,6 +170,7 @@ class Dstar:
         rx = []
         ry = []
         iteration = 0
+        feasible = True
 
         self.open_list.add(end)
 
@@ -182,7 +185,7 @@ class Dstar:
         s.set_state("e")
         tmp = start
 
-        while tmp != end and iteration < 2500:
+        while tmp != end and iteration < 100:
             iteration += 1
             tmp.set_state("*")
             rx.append(tmp.x)
@@ -197,18 +200,20 @@ class Dstar:
             tmp = tmp.parent
             
         if tmp == end:
+            # print ("iter: ", iteration)
             tmp.set_state("e")            
             pos_list.append([end.x,end.y])
             pos_list = np.array(pos_list)
-
             for ind in range(len(pos_list) - 1):
                 diff = pos_list[ind + 1] - pos_list[ind]
                 action_list.append(self.action_dict[tuple(diff)])
         else:
-            print ("Unfeasible path planning!")
-            action_list = [-1]
+            # print ("Infeasible path planning!")
+            feasible = False
         
-        return pos_list, action_list
+        return feasible, pos_list, action_list
+
+    
 
     def modify(self, state):
         self.modify_cost(state)

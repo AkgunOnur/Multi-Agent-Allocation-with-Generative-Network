@@ -92,10 +92,15 @@ class DQN(object):
         # print ("Learn function is called!")
 
     def load_models(self, load_dir, level, episode_number):
-        self.eval_net.load_state_dict(torch.load(os.path.join(load_dir, level + '_policy_' + str(episode_number) + '.pth')))
+        model_path = os.path.join(load_dir, level + '_policy_' + str(episode_number) + '.pth')
+        model_name = os.path.join(level + '_policy_' + str(episode_number))
+        print ("Model ", model_path, " is loaded!")
+        self.eval_net.load_state_dict(torch.load(model_path))
         self.eval_net.eval()
         self.target_net.load_state_dict(torch.load(os.path.join(load_dir, level + '_target_net_' + str(episode_number) + '.pth')))
         self.target_net.eval()
+
+        return model_name
 
     def save_models(self, save_dir, level, episode_number):
         if not os.path.exists(save_dir):

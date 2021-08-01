@@ -6,6 +6,7 @@ import glob
 import re
 import pickle
 import numpy as np
+import csv
 
 from dqn_model import *
 
@@ -34,7 +35,7 @@ def main():
     parser.add_argument('--load_model', default=load_model_dir, help='number of training episodes')
     parser.add_argument('--test_iteration', default=50, type=int, help='number of test iterations')
     parser.add_argument('--seed', default=7, type=int, help='seed number for test')
-    parser.add_argument('--test_model_no', default=-1, help='single model to evaluate')
+    parser.add_argument('--test_model_no', default=0, help='single model to evaluate')
     # training
     parser.add_argument('--num_episodes', default=7000000, type=int, help='number of training episodes')
     parser.add_argument('--update_interval', type=int, default=10, help='number of steps to update the policy')
@@ -63,52 +64,78 @@ def main():
 
     model_reward_list = {}
 
-
+    level_list = ["easy", "medium", "hard"]
+    level_rewards = {"easy":0, "medium":0, "hard":0}
+    fields = ["Model", "Level", "Mean Reward", "Total Episodes"]
+    filename = "test_results.txt"
+    test_info = []
     if args.test:
-        np.random.seed(args.seed)
-        mean_reward = 0
-        level = "hard"
-        index = 0
+        print ("Test Mode!")
+        # time.sleep(0.5)
+        # np.random.seed(args.seed)
+
         if int(args.test_model_no) > 0:
-            dqn.load_models(args.load_model, args.test_model_no)
+            model_path = dqn.load_models(args.load_model, "easy", args.test_model_no)
 
-            for i_iter in range(args.test_iteration*1, args.test_iteration*5):
-                if level == "medium":
-                    index = np.random.choice(6)
-                elif level == "hard":
-                    index = np.random.choice(3)
+        elif int(args.test_model_no) == 0:
+            print ("Random policy")
+            model_path = "Random"
+        else:
+            print ("Wrong input!")
+            return 
 
-                agent_obs = env.reset(level, index)
+        for level in level_list:
+            mean_reward = 0
+
+            for i_iter in range(1, args.test_iteration + 1):
+
+                # if level == "medium":
+                #     index = np.random.choice(6)
+                # elif level == "hard":
+                #     index = np.random.choice(3)
+                
+                agent_obs = env.reset(level)
                 episode_reward = 0
                 action = dqn.choose_action(agent_obs) # output is between 0 and 7
                 n_agents = action + 1 # number of allowable agents is 1 to 8
                 episode_reward, done, agent_next_obs = env.step(n_agents)
 
-                print('Episode: ', i_iter + 1, '| Episode Reward: ', round(episode_reward, 2))
+                print('Test - ', level,' | Episode: ', i_iter, '| Episode reward: ', round(episode_reward, 2))
+
+                if visualization:
+                    env.close()
 
                 mean_reward += episode_reward
 
             mean_reward = mean_reward / args.test_iteration
-            print('Model: {0} / Mean Reward: {1:.3} \n'.format(args.test_model_no, mean_reward))
-        
-        else:
-            print ("Wrong input!")
+            level_rewards[level] = mean_reward
+            print('Test - ', level, ' | Model: ', model_path, ' | Mean reward: ', round(mean_reward, 2))
+            test_info.append([model_path, level, round(mean_reward, 2), args.test_iteration])
+
+        mean_levels = np.array(list(level_rewards.values())).mean()
+        test_info.append([model_path, "Mean", round(mean_levels, 2), args.test_iteration])
+        with open(filename, 'a', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter='|')
+            # csvwriter.writerow(fields) 
+            csvwriter.writerows(test_info)
             
     else:
         print ("Train Mode!")
-        time.sleep(0.5)
+        # time.sleep(0.5)
         for i_episode in range(1, args.num_episodes + 1):
-            if i_episode <= 1e6:
-                level = "easy"
-                index = 0
-            elif i_episode > 1e6 and i_episode <= 3e6:
-                level = "medium"
-                index = np.random.choice(6)
-            else:
-                level = "hard"
-                index = np.random.choice(3)
-
-            agent_obs = env.reset(level, index)
+            # manual curriculum 
+            # if i_episode <= 1e6:
+            #     level = "easy"
+            #     index = 0
+            # elif i_episode > 1e6 and i_episode <= 3e6:
+            #     level = "medium"
+            #     index = np.random.choice(6)
+            # else:
+            #     level = "hard"
+            #     index = np.random.choice(3)
+            level_index = np.random.randint(3)
+            level = level_list[level_index]
+            agent_obs = env.reset(level)
             episode_reward = 0
 
             action = dqn.choose_action(agent_obs) # output is between 0 and 7
@@ -125,7 +152,7 @@ def main():
 
             if episode_reward > train_reward:
                 train_reward = episode_reward
-                dqn.save_models(os.path.join(args.model_dir, 'train'), level, 1)
+                dqn.save_models(os.path.join(args.model_dir, 'train'), "model", 1)
             
             if i_episode % 100 == 0:
                 print('Train - ', level,' | Episode: ', i_episode, '| Episode reward: ', round(episode_reward, 2))
@@ -133,13 +160,14 @@ def main():
             if i_episode % args.eval_interval == 0 and i_episode > args.start_step:
                 mean_reward = 0
                 for i_iter in range(args.test_iteration):
-                    index = 0
-                    if level == "medium":
-                        index = np.random.choice(6)
-                    elif level == "hard":
-                        index = np.random.choice(3)
+                    # manual curriculum
+                    # index = 0
+                    # if level == "medium":
+                    #     index = np.random.choice(6)
+                    # elif level == "hard":
+                    #     index = np.random.choice(3)
 
-                    agent_obs = env.reset(level, index)
+                    agent_obs = env.reset(level)
                     episode_reward = 0
 
                     action = dqn.choose_action(agent_obs) # output is between 0 and 7
@@ -152,19 +180,13 @@ def main():
                     mean_reward += episode_reward
 
                 mean_reward = mean_reward / args.test_iteration
-                print('Eval - ', level ,' | Episode: ', i_episode, '| Evaluation reward: ', round(mean_reward, 2), '\n')
+                print('Eval | Episode: ', i_episode, '| Evaluation reward: ', round(mean_reward, 2), '\n')
                 if mean_reward > eval_reward:
                     eval_reward = mean_reward
-                    dqn.save_models(os.path.join(args.model_dir, 'eval'), level, i_episode)
+                    dqn.save_models(os.path.join(args.model_dir, 'eval'), "model", i_episode)
 
-            
-
-    
     if visualization:
         env.close()
-
-
-
 
 if __name__ == '__main__':
     main()

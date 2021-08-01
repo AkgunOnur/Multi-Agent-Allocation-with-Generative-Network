@@ -72,15 +72,17 @@ class AgentFormation(gym.Env):
                                     [10,11,13,16], [10,11,17,19],
                                     [2,7,15,16], [13,18,15,16]],
                                   [[0,9,6,7],[10,20,6,7],
-                                    [6,7,0,3],[6,7,4,9], [6,7,10,16],
-                                    [13,14,0,4], [13,14,5,8], [13,14,9,16],
-                                    [0,3,12,13], [4,16,12,13], [17,20,12,13],
-                                    [6,7,17,20], [13,14,17,20]],
+                                    [6,7,0,3],[6,7,4,9], [6,7,10,16], [6,7,17,20],
+                                    [13,14,0,4], [13,14,5,8], [13,14,9,16], [13,14,17,20],
+                                    [0,3,12,13], [4,16,12,13], [17,20,12,13]],
                                   [[0,3,6,7],[4,9,6,7],[10,16,6,7], [17,20,6,7],
                                     [6,7,0,3],[6,7,4,12],
                                     [13,14,0,12],
                                     [0,10,12,13], [11,16,12,13], [17,20,12,13],
                                     [10,11,13,16], [10,11,17,20]]]
+
+        self.random_obstacles_list = [[[10,11,0,20]], 
+                                        [[5,6,0,20],[0,20,5,6]]]
             
         self.map_lengths = {"easy":0, "medium":len(self.medium_obstacle_list), "hard": len(self.hard_obstacle_list)}
 
@@ -105,18 +107,33 @@ class AgentFormation(gym.Env):
                 self.agents.append(Agent(self.init_list[ind]))
                 agent_ind += 1
 
+        if self.visualization:
+            self.visualize()
+
         # Initialization of trajectories
         self.agents_action_list = [[]*i for i in range(self.n_agents)]
         for agent_ind in range(self.n_agents):
-            self.agents_action_list[agent_ind], pos_list = self.create_trajectory(agent_ind)
+            feasible = False
+            while (feasible == False and np.sum(self.infeasible_prizes) < self.N_prize): # check if there are still accessible prizes
+                self.agents_action_list[agent_ind], pos_list, feasible = self.create_trajectory(agent_ind)
+            if np.sum(self.infeasible_prizes) == self.N_prize:
+                total_reward = total_reward - np.sum(self.prize_exists) * 10.0
+                return total_reward, done, self.get_observation()
 
+        
+        
 
 
         for iteration in range(1, N_iteration + 1):
             for agent_ind in range(self.n_agents):
 
                 if len(self.agents_action_list[agent_ind]) == 0:
-                    self.agents_action_list[agent_ind], pos_list = self.create_trajectory(agent_ind)
+                    feasible = False
+                    while (feasible == False and np.sum(self.infeasible_prizes) < self.N_prize): # check if there are still accessible prizes
+                        self.agents_action_list[agent_ind], pos_list, feasible = self.create_trajectory(agent_ind)
+                    if np.sum(self.infeasible_prizes) == self.N_prize:
+                        total_reward = total_reward - np.sum(self.prize_exists) * 10.0
+                        return total_reward, done, self.get_observation()
 
                 current_action = (self.agents_action_list[agent_ind][0])
 
@@ -132,6 +149,7 @@ class AgentFormation(gym.Env):
 
                 if self.check_collision(current_pos):
                     print ("Agent {} has collided with the obstacle!".format(agent_ind))
+                    # self.ds_map.get_map(self.prize_locations, self.agents_locations)
                     self.agents[agent_ind].state = np.copy(prev_pos)
                     continue
 
@@ -141,6 +159,7 @@ class AgentFormation(gym.Env):
 
                 if taken_prize_ind >= 0:
                     self.prize_exists[taken_prize_ind] = False
+                    self.infeasible_prizes[taken_prize_ind] = True
                     total_reward += 10.0
 
                     if np.sum(self.prize_exists) == 0:
@@ -151,12 +170,18 @@ class AgentFormation(gym.Env):
                     agents_for_prize = np.copy(self.assigned_agents_to_prizes[taken_prize_ind])
                     self.assigned_agents_to_prizes[taken_prize_ind] = []
                     for ind in agents_for_prize:
-                        self.agents_action_list[ind], pos_list = self.create_trajectory(ind)
+                        feasible = False
+                        while (feasible == False and np.sum(self.infeasible_prizes) < self.N_prize): # check if there are still accessible prizes
+                            self.agents_action_list[agent_ind], pos_list, feasible = self.create_trajectory(agent_ind)
+                        if np.sum(self.infeasible_prizes) == self.N_prize:
+                            total_reward = total_reward - np.sum(self.prize_exists) * 10.0
+                            return total_reward, done, self.get_observation()
 
 
                 if self.visualization:
                     self.visualize()
                 
+                # self.ds_map.get_map(self.prize_locations, self.agents_locations)                
                 
 
         total_reward = total_reward - np.sum(self.prize_exists) * 10.0
@@ -192,15 +217,33 @@ class AgentFormation(gym.Env):
         
         return self.prize_map
 
-    def reset(self, level, index):
-        self.level = level
-        self.curriculum_index = index #0 #np.random.choice(self.map_lengths[self.level])
-        self.ds_map, self.obstacle_locations = self.get_obstacle_locations()
+    def reset(self, level, index = None):
+        # Manual curriculum
+        # self.curriculum_index = index #0 #np.random.choice(self.map_lengths[self.level])
         
+        self.level = level
         self.agents = []
         self.prize_map = np.zeros(self.map_grids.shape[0])
+        self.generated_obstacles = [[]]
+        
         self.grid_points = []
 
+        if self.level == "easy":
+            N_obs = 12
+        elif self.level == "medium":
+            N_obs = 25
+        elif self.level == "hard":
+            N_obs = 50
+
+        obs_lims = [5, 18]        
+        for n in range(N_obs):
+            xy_start = np.array([0,0])
+            while (np.all(xy_start < obs_lims[0])): # obstacles should be off the init points of agents
+                xy_start = np.random.randint(0, obs_lims[1], (2,))
+            epsilon = np.random.randint(1,3,(2,))
+            xy_end = np.clip(xy_start + epsilon, 0, self.map_lim - 1)
+            obs = [xy_start[0], xy_end[0], xy_start[1], xy_end[1]]
+            self.generated_obstacles[0].append(obs)
 
         # Points of grids to be drawn
         x_list = np.arange(0, self.map_lim, self.grid_res)
@@ -229,19 +272,22 @@ class AgentFormation(gym.Env):
         self.N_prize = np.random.randint(1, 10)
         self.N_prize = 10
         self.prize_exists = np.ones(self.N_prize, dtype=bool)
+        self.infeasible_prizes = np.zeros(self.N_prize, dtype=bool)
         self.prize_locations = []
 
+
+        self.ds_map, self.obstacle_locations = self.get_obstacle_locations()
         prize_ind = 0
         while (prize_ind != self.N_prize):
             loc = list(np.random.choice(range(1, self.map_lim - 1), (2,)))
             if loc not in self.obstacle_locations and loc not in self.prize_locations and loc not in self.init_list:
                 self.prize_locations.append(loc)
                 prize_ind += 1
-        
 
         return self.get_observation()
 
     def create_trajectory(self, agent_ind):
+        action_list, pos_list = [], []
         self.ds_map, self.obstacle_locations = self.get_obstacle_locations()
         self.dstar = Dstar(self.ds_map)
         # probabilistic way
@@ -261,15 +307,29 @@ class AgentFormation(gym.Env):
         euclidean_dist = np.sum((self.agents[agent_ind].state - self.prize_locations)**2, axis=1) 
         target_cnt = np.array([len(self.assigned_agents_to_prizes[element]) for element in self.assigned_agents_to_prizes]) + 1
         euclidean_dist = euclidean_dist * target_cnt * 10
-        euclidean_dist[~self.prize_exists] = 1e9
+        # euclidean_dist[~self.prize_exists] = 1e9
+        euclidean_dist[self.infeasible_prizes] = 1e9
         target_prize = np.argmin(euclidean_dist)
         self.assigned_agents_to_prizes[target_prize].append(agent_ind)
 
         start = self.ds_map.map[int(self.agents_locations[agent_ind][0])][int(self.agents_locations[agent_ind][1])]
         end = self.ds_map.map[int(self.prize_locations[target_prize][0])][int(self.prize_locations[target_prize][1])]
-        pos_list, action_list = self.dstar.run(start, end)
+        feasible, pos_list, action_list = self.dstar.run(start, end)
+        if feasible == True:
+            feasible = self.check_feasibility(pos_list)
+            if feasible == False:
+                self.infeasible_prizes[target_prize] = True # prize is not accessible
 
-        return action_list, pos_list
+        elif feasible == False:
+            self.infeasible_prizes[target_prize] = True # prize is not accessible
+
+        return action_list, pos_list, feasible
+
+    def check_feasibility(self, pos_list):
+        for pos in pos_list:
+            if list(pos) in self.obstacle_locations:
+                return False
+        return True
 
     def check_collision(self, agent_pos):
         if list(agent_pos) in self.obstacle_locations:
@@ -328,14 +388,17 @@ class AgentFormation(gym.Env):
         self.obstacle_list = np.array([])
         ds_map = Map(self.map_lim, self.map_lim)
 
-        if self.level == "easy":
-            self.obstacle_list = np.array([])
-        elif self.level == "medium":
-            self.obstacle_list = np.array(self.medium_obstacle_list[self.curriculum_index])
-        elif self.level == "hard":
-            self.obstacle_list = np.array(self.hard_obstacle_list[self.curriculum_index])
+        # Manual curriculum
+        # if self.level == "easy":
+        #     self.obstacle_list = np.array([])
+        # elif self.level == "medium":
+        #     self.obstacle_list = np.array(self.medium_obstacle_list[self.curriculum_index])
+        # elif self.level == "hard":
+        #     self.obstacle_list = np.array(self.hard_obstacle_list[self.curriculum_index])
+        # elif self.level == "random":
+        #     self.obstacle_list = np.array(self.random_obstacles_list[0])
 
-        
+        self.obstacle_list = np.copy(self.generated_obstacles[0])
         
         self.wall_list = np.array([[0, 20, 0, 1], [0, 20, 19, 20], [19, 20, 0, 20], [0, 1, 0, 20]])
 
