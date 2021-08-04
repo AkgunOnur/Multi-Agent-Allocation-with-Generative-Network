@@ -1,193 +1,80 @@
-import os
+# Code inspired by https://github.com/tamarott/SinGAN
+from generate_samples import generate_samples
+from train import train
+
+from environment.tokens import REPLACE_TOKENS as REPLACE_TOKENS
+
+from environment.level_image_gen import LevelImageGen as LevelGen
+from environment.special_downsampling import special_downsampling
+from environment.level_utils import read_level, read_level_from_file
+
+from config import get_arguments, post_config
+from loguru import logger
+import wandb
+import sys
 import torch
-import time
-import argparse
-import glob
-import re
-import pickle
-import numpy as np
-import csv
 
-from dqn_model import *
 
-from point_mass_formation import AgentFormation
+def get_tags(opt):
+    """ Get Tags for logging from input name. Helpful for wandb. """
+    return [opt.input_name.split(".")[0]]
 
 
 def main():
-    model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/saved_models'
-    load_model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/models'
-    # model_dir = './saved_models'
-    # load_model_dir = './models'
-    train_reward = -1e3
-    eval_reward = -1e3
+    """ Main Training funtion. Parses inputs, inits logger, trains, and then generates some samples. """
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    device = "cpu"
-    visualization = False
+    # torch.autograd.set_detect_anomaly(True)
 
-    # Create environments.
-    env = AgentFormation(visualization=visualization)
-    
+    # Logger init
+    logger.remove()
+    logger.add(sys.stdout, colorize=True,
+               format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+                      + "<level>{level}</level> | "
+                      + "<light-black>{file.path}:{line}</light-black> | "
+                      + "{message}")
 
-    parser = argparse.ArgumentParser(description='RL trainer')
-    # test
-    parser.add_argument('--test', default=False, action='store_true', help='number of training episodes')
-    parser.add_argument('--load_model', default=load_model_dir, help='number of training episodes')
-    parser.add_argument('--test_iteration', default=50, type=int, help='number of test iterations')
-    parser.add_argument('--seed', default=7, type=int, help='seed number for test')
-    parser.add_argument('--test_model_no', default=0, help='single model to evaluate')
-    # training
-    parser.add_argument('--num_episodes', default=7000000, type=int, help='number of training episodes')
-    parser.add_argument('--update_interval', type=int, default=10, help='number of steps to update the policy')
-    parser.add_argument('--eval_interval', type=int, default=500, help='number of steps to eval the policy')
-    parser.add_argument('--start_step', type=int, default=0, help='After how many steps to start training')
-    # model
-    parser.add_argument('--model_dir', default=model_dir, help='folder to save models')
-    parser.add_argument('--lr', type=float, default=0.01, help='Batch size to train')
-    parser.add_argument('--epsilon', default=0.9, type=float, help='greedy policy')
-    parser.add_argument('--gamma', default=0.99, type=float, help='reward discount')
-    parser.add_argument('--target_update', default=20, type=int, help='target update freq')
-    parser.add_argument('--n_actions', type=int, default=8, help='number of actions (agents to produce)')
-    parser.add_argument('--n_states', type=int, default=150, help='Number of states after convolution layer')
-    parser.add_argument('--batch_size', type=int, default=128, help='Batch size to train')
-    parser.add_argument('--memory_size', type=int, default=100000, help='Buffer memory size')
-    parser.add_argument('--multi_step', type=int, default=1, help='Multi step')
-    parser.add_argument('--out_shape', type=int, default=env.out_shape, help='Observation image shape')
-    parser.add_argument('--hid_size', type=int, default=100, help='Hidden size dimension')
-    parser.add_argument('--device', default=device, help='device')
+    # Parse arguments
+    opt = get_arguments().parse_args()
+    opt = post_config(opt)
 
+    # Init wandb
+    run = wandb.init(project="environment", tags=get_tags(opt),
+                     config=opt, dir=opt.out)
+    opt.out_ = run.dir
 
-    args = parser.parse_args()
-    
-
-    dqn = DQN(args)
-
-    model_reward_list = {}
-
-    level_list = ["easy", "medium", "hard"]
-    level_rewards = {"easy":0, "medium":0, "hard":0}
-    fields = ["Model", "Level", "Mean Reward", "Total Episodes"]
-    filename = "test_results.txt"
-    test_info = []
-    if args.test:
-        print ("Test Mode!")
-        # time.sleep(0.5)
-        # np.random.seed(args.seed)
-
-        if int(args.test_model_no) > 0:
-            model_path = dqn.load_models(args.load_model, "easy", args.test_model_no)
-
-        elif int(args.test_model_no) == 0:
-            print ("Random policy")
-            model_path = "Random"
-        else:
-            print ("Wrong input!")
-            return 
-
-        for level in level_list:
-            mean_reward = 0
-
-            for i_iter in range(1, args.test_iteration + 1):
-
-                # if level == "medium":
-                #     index = np.random.choice(6)
-                # elif level == "hard":
-                #     index = np.random.choice(3)
-                
-                agent_obs = env.reset(level)
-                episode_reward = 0
-                action = dqn.choose_action(agent_obs) # output is between 0 and 7
-                n_agents = action + 1 # number of allowable agents is 1 to 8
-                episode_reward, done, agent_next_obs = env.step(n_agents)
-
-                print('Test - ', level,' | Episode: ', i_iter, '| Episode reward: ', round(episode_reward, 2))
-
-                if visualization:
-                    env.close()
-
-                mean_reward += episode_reward
-
-            mean_reward = mean_reward / args.test_iteration
-            level_rewards[level] = mean_reward
-            print('Test - ', level, ' | Model: ', model_path, ' | Mean reward: ', round(mean_reward, 2))
-            test_info.append([model_path, level, round(mean_reward, 2), args.test_iteration])
-
-        mean_levels = np.array(list(level_rewards.values())).mean()
-        test_info.append([model_path, "Mean", round(mean_levels, 2), args.test_iteration])
-        with open(filename, 'a', newline='') as csvfile:
-            csvwriter = csv.writer(csvfile, delimiter='|')
-            # csvwriter.writerow(fields) 
-            csvwriter.writerows(test_info)
-            
+    # Init game specific inputs
+    replace_tokens = {}
+    sprite_path = opt.game + '/sprites'
+    if opt.game == 'environment':
+        opt.ImgGen = LevelGen(sprite_path)
+        replace_tokens = REPLACE_TOKENS
+        downsample = special_downsampling
     else:
-        print ("Train Mode!")
-        # time.sleep(0.5)
-        for i_episode in range(1, args.num_episodes + 1):
-            # manual curriculum 
-            # if i_episode <= 1e6:
-            #     level = "easy"
-            #     index = 0
-            # elif i_episode > 1e6 and i_episode <= 3e6:
-            #     level = "medium"
-            #     index = np.random.choice(6)
-            # else:
-            #     level = "hard"
-            #     index = np.random.choice(3)
-            level_index = np.random.randint(3)
-            level = level_list[level_index]
-            agent_obs = env.reset(level)
-            episode_reward = 0
+        NameError("name of --game not recognized. Supported: environment")
 
-            action = dqn.choose_action(agent_obs) # output is between 0 and 7
-            n_agents = action + 1 # number of allowable agents is 1 to 8
-            episode_reward, done, agent_next_obs = env.step(n_agents)
+    # Read level according to input arguments
+    real = read_level(opt, None, replace_tokens).to(opt.device)
 
-            if visualization:
-                env.close()
+    # Train!
+    generators, noise_maps, reals, noise_amplitudes = train(real, opt)
 
-            dqn.memory.append(agent_obs, action, episode_reward, agent_next_obs, done)
+    # Generate Samples of same size as level
+    logger.info("Finished training! Generating random samples...")
+    in_s = None
+    generate_samples(generators, noise_maps, reals,
+                     noise_amplitudes, opt, in_s=in_s)
 
-            if i_episode > args.start_step and i_episode % args.update_interval == 0:
-                dqn.learn()
+    # Generate samples of smaller size than level
+    logger.info("Generating arbitrary sized random samples...")
+    scale_v = 0.8  # Arbitrarily chosen scales
+    scale_h = 0.4
+    real_down = downsample(1, [[scale_v, scale_h]], real, opt.token_list)
+    real_down = real_down[0]
+    # necessary for correct input shape
+    in_s = torch.zeros(real_down.shape, device=opt.device)
+    generate_samples(generators, noise_maps, reals, noise_amplitudes, opt, in_s=in_s,
+                     scale_v=scale_v, scale_h=scale_h, save_dir="arbitrary_random_samples")
 
-            if episode_reward > train_reward:
-                train_reward = episode_reward
-                dqn.save_models(os.path.join(args.model_dir, 'train'), "model", 1)
-            
-            if i_episode % 100 == 0:
-                print('Train - ', level,' | Episode: ', i_episode, '| Episode reward: ', round(episode_reward, 2))
 
-            if i_episode % args.eval_interval == 0 and i_episode > args.start_step:
-                mean_reward = 0
-                for i_iter in range(args.test_iteration):
-                    # manual curriculum
-                    # index = 0
-                    # if level == "medium":
-                    #     index = np.random.choice(6)
-                    # elif level == "hard":
-                    #     index = np.random.choice(3)
-
-                    agent_obs = env.reset(level)
-                    episode_reward = 0
-
-                    action = dqn.choose_action(agent_obs) # output is between 0 and 7
-                    n_agents = action + 1 # number of allowable agents is 1 to 8
-                    episode_reward, done, agent_next_obs = env.step(n_agents)
-
-                    if visualization:
-                        env.close()
-
-                    mean_reward += episode_reward
-
-                mean_reward = mean_reward / args.test_iteration
-                print('Eval | Episode: ', i_episode, '| Evaluation reward: ', round(mean_reward, 2), '\n')
-                if mean_reward > eval_reward:
-                    eval_reward = mean_reward
-                    dqn.save_models(os.path.join(args.model_dir, 'eval'), "model", i_episode)
-
-    if visualization:
-        env.close()
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-
