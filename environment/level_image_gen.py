@@ -32,7 +32,7 @@ class LevelImageGen:
         sprite_dict['O'] = mapsheet.crop((1*16, 0, 2*16, 1*16))
 
         # Ground Img
-        sprite_dict['G'] = mapsheet.crop((2*16, 5*16, 3*16, 6*16))
+        sprite_dict['-'] = mapsheet.crop((2*16, 5*16, 3*16, 6*16))
 
         # enemy_names = ['r', 'k', 'g', 'y', 'wings', '*', 'plant']
         # for i, e in enumerate(enemy_names):

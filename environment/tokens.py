@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 GROUND_TOKENS = OrderedDict(
     {
-        "G": "Empty Ground"
+        "-": "Empty Ground"
     }
 )
 
@@ -50,5 +50,5 @@ TOKENS = OrderedDict(
 
 TOKEN_GROUPS = [GROUND_TOKENS, WALL_TOKENS, OBSTACLE_TOKENS, PRIZE_TOKENS, SPECIAL_TOKENS]
 
-REPLACE_TOKENS = {"D": "G"}  # We replace these tokens so the generator doesn't add random start or end points
+REPLACE_TOKENS = {"D": "-"}  # We replace these tokens so the generator doesn't add random start or end points
 

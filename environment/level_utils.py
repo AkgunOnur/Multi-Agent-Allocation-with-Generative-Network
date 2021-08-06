@@ -99,7 +99,7 @@ def place_a_drone_token(level):
     # First check if default spot is available
     for j in range(1, 4):
         for i in range(1,4):
-        if level[i][j] == 'G' and (level[i+1][j] and level[i][j+1] not in ['W', 'O']):
+        if level[i][j] == '-' and (level[i+1][j] and level[i][j+1] not in ['W', 'O']):
             tmp_slice = list(level[i])
             tmp_slice[j] = 'D'
             level[i] = "".join(tmp_slice)
@@ -108,7 +108,7 @@ def place_a_drone_token(level):
     # # If not, check for first possible location from left
     # for j in range(len(level[-1])):
     #     for i in range(1, len(level)):
-    #         if level[i - 1][j] == 'G' and level[i][j] in ['X', '#', 'S', '%', 't', '?', '@', '!', 'C', 'D', 'U', 'L']:
+    #         if level[i - 1][j] == '-' and level[i][j] in ['X', '#', 'S', '%', 't', '?', '@', '!', 'C', 'D', 'U', 'L']:
     #             tmp_slice = list(level[i - 1])
     #             tmp_slice[j] = 'D'
     #             level[i - 1] = "".join(tmp_slice)
@@ -121,7 +121,7 @@ def place_a_drone_token(level):
 #     level is expected to be ascii."""
 #     # First check if default spot is available
 #     for j in range(1, 4):
-#         if level[-3][j] == 'G' and level[-2][j] in ['X', '#', 'S', '%', 't', '?', '@', '!', 'C', 'D', 'U', 'L']:
+#         if level[-3][j] == '-' and level[-2][j] in ['X', '#', 'S', '%', 't', '?', '@', '!', 'C', 'D', 'U', 'L']:
 #             tmp_slice = list(level[-3])
 #             tmp_slice[j] = 'D'
 #             level[-3] = "".join(tmp_slice)
@@ -130,7 +130,7 @@ def place_a_drone_token(level):
 #     # If not, check for first possible location from left
 #     for j in range(len(level[-1])):
 #         for i in range(1, len(level)):
-#             if level[i - 1][j] == 'G' and level[i][j] in ['X', '#', 'S', '%', 't', '?', '@', '!', 'C', 'D', 'U', 'L']:
+#             if level[i - 1][j] == '-' and level[i][j] in ['X', '#', 'S', '%', 't', '?', '@', '!', 'C', 'D', 'U', 'L']:
 #                 tmp_slice = list(level[i - 1])
 #                 tmp_slice[j] = 'D'
 #                 level[i - 1] = "".join(tmp_slice)
