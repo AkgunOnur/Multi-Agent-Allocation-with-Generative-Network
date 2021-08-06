@@ -4,14 +4,13 @@ import numpy as np
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 
-from mario.level_snippet_dataset import LevelSnippetDataset
+from environment.level_snippet_dataset import LevelSnippetDataset
 
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 baseline_level_dirs = "input/umap_images/baselines"
 slice_width = 5
-token_list = ['!', '#', '%', '*', '-', '1', '2', '?', '@', 'B', 'C', 'E', 'K', 'L',
-              'Q', 'R', 'S', 'T', 'U', 'X', 'b', 'g', 'k', 'o', 'r', 't', 'y', '|']
+token_list = ['-', 'W', 'O', 'X'] #Drone token is not on this list
 
 uni_lens = []
 for i, baseline_level_dir in enumerate(sorted(os.listdir(baseline_level_dirs))):

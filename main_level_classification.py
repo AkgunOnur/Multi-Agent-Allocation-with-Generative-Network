@@ -15,10 +15,10 @@ from tqdm import tqdm
 from umap import UMAP as UsedMapper
 
 import wandb
-from mario.level_classification import LevelClassification
-from mario.level_image_gen import LevelImageGen
-from mario.level_snippet_dataset import LevelSnippetDataset
-from mario.level_utils import one_hot_to_ascii_level
+from environment.level_classification import LevelClassification
+from environment.level_image_gen import LevelImageGen
+from environment.level_snippet_dataset import LevelSnippetDataset
+from environment.level_utils import one_hot_to_ascii_level
 from utils import set_seed
 
 
@@ -30,7 +30,7 @@ class EmbeddingsCallback(pl.Callback):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--project", type=str, default="mario")
+    parser.add_argument("--project", type=str, default="environment")
     parser.add_argument("--tags", nargs="*", type=str, default=["similarity"])
     parser.add_argument("--baseline-level-dir", type=str,
                         metavar="DIR", default="input/umap_images/baselines")
@@ -136,7 +136,7 @@ def visualize_embeddings(dataset, model, name, hparams, mapper=None, baseline_da
 
 
 def plot_means(curr_embed, curr_mapped, curr_labels, curr_images, name, with_targets, token_list):
-    ImgGen = LevelImageGen("./mario/sprites")
+    ImgGen = LevelImageGen("./environment/sprites")
     means = []
     m_pts = []
     m_imgs = []

@@ -10,7 +10,7 @@ from utils import set_seed
 def get_arguments():
     parser = argparse.ArgumentParser()
     # Game Type - Supports: mario, mariokart
-    parser.add_argument("--game", default="mario", help="Which game is to be used?")
+    parser.add_argument("--game", default="environment", help="Which game is to be used?")
 
     # workspace:
     parser.add_argument("--not_cuda", action="store_true", help="disables cuda", default=0)
@@ -21,7 +21,7 @@ def get_arguments():
     parser.add_argument("--manualSeed", type=int, help="manual seed")
     parser.add_argument("--out", help="output folder", default="output")
     parser.add_argument("--input-dir", help="input image dir", default="input")
-    parser.add_argument("--input-name", help="input image name", default="lvl_1-1.txt")
+    parser.add_argument("--input-name", help="input image name", default="easy1.txt")
 
     # networks hyper parameters:
     parser.add_argument("--nfc", type=int, help="number of filters for conv layers", default=64)
@@ -74,7 +74,7 @@ def post_config(opt):
     opt.num_scales = len(opt.scales)  # number of scales is implicitly defined
     opt.noise_amp = 1.0  # noise amp for lowest scale always starts at 1
     opt.seed_road = None  # for mario kart seed roads after training
-    opt.token_list = ['!', '#', '-', '1', '@', 'C', 'S', 'U', 'X', 'g', 'k', 't']  # default list of 1-1
+    opt.token_list = ['-', 'W', 'O', 'X']  # default list of easy1.txt
     opt.ImgGen = []  # needs to be set to the correct image gen for each game
     opt.stop_scale = opt.num_scales  # which scale to stop on - usually always last scale defined
 

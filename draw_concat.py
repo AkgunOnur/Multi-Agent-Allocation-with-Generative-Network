@@ -2,7 +2,7 @@
 from torch.nn.functional import interpolate
 
 from generate_noise import generate_spatial_noise
-from mario.level_utils import group_to_token
+from environment.level_utils import group_to_token
 
 
 def format_and_use_generator(curr_img, G_z, count, mode, Z_opt, pad_noise, pad_image, noise_amp, G, opt):

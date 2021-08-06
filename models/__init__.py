@@ -2,7 +2,7 @@
 import os
 import torch
 
-from mario.tokens import TOKEN_GROUPS
+from environment.tokens import TOKEN_GROUPS
 
 from .generator import Level_GeneratorConcatSkip2CleanAdd
 from .discriminator import Level_WDiscriminator

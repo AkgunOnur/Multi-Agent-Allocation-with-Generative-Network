@@ -11,12 +11,12 @@ import matplotlib.pyplot as plt
 # sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))  # uncomment if opening form other dir
 
 from config import get_arguments, post_config
-from mario.level_utils import one_hot_to_ascii_level, group_to_token, token_to_group, read_level
-from mario.level_image_gen import LevelImageGen as MarioLevelGen
+from environment.level_utils import one_hot_to_ascii_level, group_to_token, token_to_group, read_level
+from environment.level_image_gen import LevelImageGen as LevelGen
 
-from mario.tokens import REPLACE_TOKENS as MARIO_REPLACE_TOKENS
-from mario.tokens import TOKEN_GROUPS as MARIO_TOKEN_GROUPS
-from mario.special_downsampling import special_downsampling
+from environment.tokens import REPLACE_TOKENS as REPLACE_TOKENS
+from environment.tokens import TOKEN_GROUPS as TOKEN_GROUPS
+from environment.special_downsampling import special_downsampling
 
 from generate_noise import generate_spatial_noise
 from models import load_trained_pyramid
@@ -40,11 +40,11 @@ def generate_samples(generators, noise_maps, reals, noise_amplitudes, opt, in_s=
     images_cur = []
 
     # Check which game we are using for token groups
-    if opt.game == 'mario':
-        token_groups = MARIO_TOKEN_GROUPS
+    if opt.game == 'environment':
+        token_groups = TOKEN_GROUPS
     else:
         token_groups = []
-        NameError("name of --game not recognized. Supported: mario, mariokart")
+        NameError("name of --game not recognized. Supported: environment")
 
     # Main sampling loop
     for G, Z_opt, noise_amp in zip(generators, noise_maps, noise_amplitudes):
@@ -185,17 +185,17 @@ def generate_samples(generators, noise_maps, reals, noise_amplitudes, opt, in_s=
     return I_curr.detach()  # return last generated image (usually unused)
 
 
-def generate_mario_samples(opt_m):
+def generate_environment_samples(opt_m):
 
-    # Generate many samples for all mario levels for large scale evaluation
+    # Generate many samples for all environment levels for large scale evaluation
     level_names = [f for f in os.listdir("./input") if f.endswith('.txt')]
     level_names.sort()
 
     # Directory with saved runs
-    run_dir_m = "/home/awiszus/Project/TOAD-GAN/wandb/"
+    run_dir_m = "/home/regen/Desktop/Multi-Agent-Allocation-with-Generative-Network/wandb/"
 
     for generator_level in range(0, len(level_names)):
-        # New "input" mario level
+        # New "input" environment level
         opt_m.input_name = level_names[generator_level]
 
         # New "output" folder
@@ -231,7 +231,7 @@ def generate_mario_samples(opt_m):
             opt_m.out_ = run_dir_m + "run-20200619_094438-lo7f1hqb"  # level 15 (8-1)
 
         # Read level according to input arguments
-        real_m = read_level(opt_m, None, MARIO_REPLACE_TOKENS).to(opt_m.device)
+        real_m = read_level(opt_m, None, REPLACE_TOKENS).to(opt_m.device)
 
         # Load TOAD-GAN for current level
         generators_m, noise_maps_m, reals_m, noise_amplitudes_m = load_trained_pyramid(opt_m)
@@ -279,25 +279,25 @@ if __name__ == '__main__':
     parse.add_argument("--scale_h", type=float, help="horizontal scale factor", default=1.0)
     parse.add_argument("--gen_start_scale", type=int, help="scale to start generating in", default=0)
     parse.add_argument("--num_samples", type=int, help="number of samples to be generated", default=10)
-    parse.add_argument("--make_mario_samples", action="store_true", help="make 1000 samples for each mario generator"
+    parse.add_argument("--make_environment_samples", action="store_true", help="make 1000 samples for each environment generator"
                                                                          "specified in the code.", default=False)
     parse.add_argument("--token_insert_experiment", action="store_true", help="make token insert experiment "
                                                                               "(experimental!)", default=False)
     opt = parse.parse_args()
 
-    if (not opt.out_) and (not opt.make_mario_samples):
-        parse.error('--out_ is required (--make_mario_samples experiment is the exception)')
+    if (not opt.out_) and (not opt.make_environment_samples):
+        parse.error('--out_ is required (--make_environment_samples experiment is the exception)')
 
     opt = post_config(opt)
 
-    if opt.make_mario_samples:
-        # Code to make a large body of mario samples for other experiments
-        opt.game = 'mario'
+    if opt.make_environment_samples:
+        # Code to make a large body of environment samples for other experiments
+        opt.game = 'environment'
         sprite_path = opt.game + '/sprites'
-        opt.ImgGen = MarioLevelGen(sprite_path)
+        opt.ImgGen = LevelGen(sprite_path)
         opt.gen_start_scale = 0  # Forced for this experiment
 
-        generate_mario_samples(opt)
+        generate_environment_samples(opt)
 
 
         for i, img_path in enumerate(seed_road_images):
@@ -334,18 +334,13 @@ if __name__ == '__main__':
         # Init game specific inputs
         replace_tokens = {}
         sprite_path = opt.game + '/sprites'
-        if opt.game == 'mario':
-            opt.ImgGen = MarioLevelGen(sprite_path)
-            replace_tokens = MARIO_REPLACE_TOKENS
+        if opt.game == 'environment':
+            opt.ImgGen = LevelGen(sprite_path)
+            replace_tokens = REPLACE_TOKENS
             downsample = special_downsampling
 
-        elif opt.game == 'mariokart':
-            opt.ImgGen = MariokartLevelGen(sprite_path)
-            replace_tokens = MARIOKART_REPLACE_TOKENS
-            downsample = special_mariokart_downsampling
-
         else:
-            NameError("name of --game not recognized. Supported: mario, mariokart")
+            NameError("name of --game not recognized. Supported: environment")
 
         # Load level
         real = read_level(opt, None, replace_tokens).to(opt.device)
@@ -359,7 +354,7 @@ if __name__ == '__main__':
 
             # Load "other level" used for insertion
             opt_fakes = Namespace()
-            opt_fakes.input_name = "lvl_1-1.txt"
+            opt_fakes.input_name = "easy1.txt"
             opt_fakes.input_dir = "./input"
             real_fakes = read_level(opt_fakes).to(opt.device)
 
@@ -367,8 +362,8 @@ if __name__ == '__main__':
             real_fakes_down = special_downsampling(1, [[opt.scales[-1], opt.scales[-1]]],
                                                          real_fakes, opt_fakes.token_list)
 
-            run_dir = "/home/awiszus/Project/TOAD-GAN/wandb/"
-            if seed_level == 0:  # Only done for mario levels 1 to 3 so far
+            run_dir = "/home/regen/Desktop/Multi-Agent-Allocation-with-Generative-Network/wandb/"
+            if seed_level == 0:  # Only done for environment levels 1 to 3 so far
                 real_fakes = torch.load(run_dir + 'run-20200311_113148-6fmy47ks/'
                                                   'arbitrary_random_samples_v1_h0.297029702970297_start0/torch/'
                                                   '1_sc0.pt',

@@ -5,9 +5,9 @@ import torch
 import wandb
 from tqdm import tqdm
 
-from mario.level_utils import one_hot_to_ascii_level, token_to_group
-from mario.tokens import TOKEN_GROUPS as MARIO_TOKEN_GROUPS
-from mario.special_downsampling import special_downsampling
+from environment.level_utils import one_hot_to_ascii_level, token_to_group
+from environment.tokens import TOKEN_GROUPS as TOKEN_GROUPS
+from environment.special_downsampling import special_downsampling
 from models import init_models, reset_grads, restore_weights
 from models.generator import Level_GeneratorConcatSkip2CleanAdd
 from train_single_scale import train_single_scale
@@ -19,18 +19,14 @@ def train(real, opt):
     noise_maps = []
     noise_amplitudes = []
 
-    if opt.game == 'mario':
-        token_group = MARIO_TOKEN_GROUPS
-    else:  # if opt.game == 'mariokart':
-        token_group = MARIOKART_TOKEN_GROUPS
+    if opt.game == 'environment':
+        token_group = TOKEN_GROUPS
 
     scales = [[x, x] for x in opt.scales]
     opt.num_scales = len(scales)
 
-    if opt.game == 'mario':
+    if opt.game == 'environment':
         scaled_list = special_downsampling(opt.num_scales, scales, real, opt.token_list)
-    else:  # if opt.game == 'mariokart':
-        scaled_list = special_mariokart_downsampling(opt.num_scales, scales, real, opt.token_list)
 
     reals = [*scaled_list, real]
 

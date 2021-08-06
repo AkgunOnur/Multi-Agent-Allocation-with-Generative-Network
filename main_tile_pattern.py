@@ -15,12 +15,12 @@ from sklearn.metrics import ConfusionMatrixDisplay
 from tqdm import tqdm
 
 import wandb
-from mario.level_snippet_dataset import LevelSnippetDataset
+from environment.level_snippet_dataset import LevelSnippetDataset
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--project", type=str, default="mario")
+    parser.add_argument("--project", type=str, default="environment")
     parser.add_argument("--tags", nargs="*", type=str, default=["similarity"])
     parser.add_argument("--job-type", type=str, default="eval")
     parser.add_argument("--level-dir", type=str,
