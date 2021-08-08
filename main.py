@@ -18,8 +18,6 @@ def main():
     load_model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/models'
     # model_dir = './saved_models'
     # load_model_dir = './models'
-    train_reward = -1e3
-    eval_reward = -1e3
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     device = "cpu"
@@ -33,13 +31,13 @@ def main():
     # test
     parser.add_argument('--test', default=False, action='store_true', help='number of training episodes')
     parser.add_argument('--load_model', default=load_model_dir, help='number of training episodes')
-    parser.add_argument('--test_iteration', default=50, type=int, help='number of test iterations')
+    parser.add_argument('--test_iteration', default=25, type=int, help='number of test iterations')
     parser.add_argument('--seed', default=7, type=int, help='seed number for test')
-    parser.add_argument('--test_model_no', default=0, help='single model to evaluate')
+    parser.add_argument('--test_model_no', default=1, help='single model to evaluate')
     # training
     parser.add_argument('--num_episodes', default=7000000, type=int, help='number of training episodes')
     parser.add_argument('--update_interval', type=int, default=10, help='number of steps to update the policy')
-    parser.add_argument('--eval_interval', type=int, default=500, help='number of steps to eval the policy')
+    parser.add_argument('--eval_interval', type=int, default=50, help='number of steps to eval the policy')
     parser.add_argument('--start_step', type=int, default=0, help='After how many steps to start training')
     # model
     parser.add_argument('--model_dir', default=model_dir, help='folder to save models')
@@ -50,7 +48,7 @@ def main():
     parser.add_argument('--n_actions', type=int, default=8, help='number of actions (agents to produce)')
     parser.add_argument('--n_states', type=int, default=150, help='Number of states after convolution layer')
     parser.add_argument('--batch_size', type=int, default=128, help='Batch size to train')
-    parser.add_argument('--memory_size', type=int, default=100000, help='Buffer memory size')
+    parser.add_argument('--memory_size', type=int, default=1000000, help='Buffer memory size')
     parser.add_argument('--multi_step', type=int, default=1, help='Multi step')
     parser.add_argument('--out_shape', type=int, default=env.out_shape, help='Observation image shape')
     parser.add_argument('--hid_size', type=int, default=100, help='Hidden size dimension')
@@ -65,7 +63,7 @@ def main():
     model_reward_list = {}
 
     level_list = ["easy", "medium", "hard"]
-    level_rewards = {"easy":0, "medium":0, "hard":0}
+    level_rewards = {"easy":-100, "medium":-100, "hard":-100}
     fields = ["Model", "Level", "Mean Reward", "Total Episodes"]
     filename = "test_results.txt"
     test_info = []
@@ -75,8 +73,7 @@ def main():
         # np.random.seed(args.seed)
 
         if int(args.test_model_no) > 0:
-            model_path = dqn.load_models(args.load_model, "easy", args.test_model_no)
-
+            model_path = dqn.load_models(args.load_model, "hard", args.test_model_no)
         elif int(args.test_model_no) == 0:
             print ("Random policy")
             model_path = "Random"
@@ -86,20 +83,20 @@ def main():
 
         for level in level_list:
             mean_reward = 0
+            index = 0
 
             for i_iter in range(1, args.test_iteration + 1):
 
-                # if level == "medium":
-                #     index = np.random.choice(6)
-                # elif level == "hard":
-                #     index = np.random.choice(3)
+                if level == "medium":
+                    index = np.random.choice(6)
+                elif level == "hard":
+                    index = np.random.choice(3)
                 
-                agent_obs = env.reset(level)
+                agent_obs = env.reset(level, index)
                 episode_reward = 0
                 action = dqn.choose_action(agent_obs) # output is between 0 and 7
                 n_agents = action + 1 # number of allowable agents is 1 to 8
                 episode_reward, done, agent_next_obs = env.step(n_agents)
-
                 print('Test - ', level,' | Episode: ', i_iter, '| Episode reward: ', round(episode_reward, 2))
 
                 if visualization:
@@ -121,20 +118,29 @@ def main():
             
     else:
         print ("Train Mode!")
+        level = "easy"
+        previous_mode = False
         # time.sleep(0.5)
         for i_episode in range(1, args.num_episodes + 1):
-            # manual curriculum 
-            # if i_episode <= 1e6:
-            #     level = "easy"
-            #     index = 0
-            # elif i_episode > 1e6 and i_episode <= 3e6:
-            #     level = "medium"
-            #     index = np.random.choice(6)
-            # else:
-            #     level = "hard"
-            #     index = np.random.choice(3)
-            level_index = np.random.randint(3)
-            level = level_list[level_index]
+            if i_episode % 5 == 0 and level != "easy":
+                previous_mode = True
+
+            if previous_mode == False:
+                if i_episode <= 1e6:
+                    level = "easy"
+                    # index = 0
+                elif i_episode > 1e6 and i_episode <= 3e6:
+                    level = "medium"
+                    # index = np.random.choice(6)
+                else:
+                    level = "hard"
+                    # index = np.random.choice(3)
+                level_actual = level
+            else:
+                ind = np.random.randint(level_list.index(level))
+                level = level_list[ind]
+                previous_mode = False
+
             agent_obs = env.reset(level)
             episode_reward = 0
 
@@ -150,14 +156,14 @@ def main():
             if i_episode > args.start_step and i_episode % args.update_interval == 0:
                 dqn.learn()
 
-            if episode_reward > train_reward:
-                train_reward = episode_reward
-                dqn.save_models(os.path.join(args.model_dir, 'train'), "model", 1)
+            # if episode_reward > level_rewards[level]:
+            #     train_reward = episode_reward
+            #     dqn.save_models(os.path.join(args.model_dir, 'train'), "model", 1)
             
             if i_episode % 100 == 0:
                 print('Train - ', level,' | Episode: ', i_episode, '| Episode reward: ', round(episode_reward, 2))
 
-            if i_episode % args.eval_interval == 0 and i_episode > args.start_step:
+            if i_episode % args.eval_interval == 0 and i_episode > args.start_step and previous_mode == False:
                 mean_reward = 0
                 for i_iter in range(args.test_iteration):
                     # manual curriculum
@@ -167,7 +173,7 @@ def main():
                     # elif level == "hard":
                     #     index = np.random.choice(3)
 
-                    agent_obs = env.reset(level)
+                    agent_obs = env.reset(level_actual)
                     episode_reward = 0
 
                     action = dqn.choose_action(agent_obs) # output is between 0 and 7
@@ -180,10 +186,10 @@ def main():
                     mean_reward += episode_reward
 
                 mean_reward = mean_reward / args.test_iteration
-                print('Eval | Episode: ', i_episode, '| Evaluation reward: ', round(mean_reward, 2), '\n')
-                if mean_reward > eval_reward:
-                    eval_reward = mean_reward
-                    dqn.save_models(os.path.join(args.model_dir, 'eval'), "model", i_episode)
+                print('Eval - ', level_actual,' | Episode: ', i_episode, '| Evaluation reward: ', round(mean_reward, 2), '\n')
+                if mean_reward > level_rewards[level_actual]:
+                    level_rewards[level_actual] = mean_reward
+                    dqn.save_models(os.path.join(args.model_dir, 'eval'), level_actual, i_episode)
 
     if visualization:
         env.close()

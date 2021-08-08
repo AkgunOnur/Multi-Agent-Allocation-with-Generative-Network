@@ -219,8 +219,7 @@ class AgentFormation(gym.Env):
 
     def reset(self, level, index = None):
         # Manual curriculum
-        # self.curriculum_index = index #0 #np.random.choice(self.map_lengths[self.level])
-        
+        self.curriculum_index = index #0 #np.random.choice(self.map_lengths[self.level])
         self.level = level
         self.agents = []
         self.prize_map = np.zeros(self.map_grids.shape[0])
@@ -389,17 +388,18 @@ class AgentFormation(gym.Env):
         ds_map = Map(self.map_lim, self.map_lim)
 
         # Manual curriculum
-        # if self.level == "easy":
-        #     self.obstacle_list = np.array([])
-        # elif self.level == "medium":
-        #     self.obstacle_list = np.array(self.medium_obstacle_list[self.curriculum_index])
-        # elif self.level == "hard":
-        #     self.obstacle_list = np.array(self.hard_obstacle_list[self.curriculum_index])
-        # elif self.level == "random":
-        #     self.obstacle_list = np.array(self.random_obstacles_list[0])
+        if self.curriculum_index == None:
+            self.obstacle_list = np.copy(self.generated_obstacles[0])
+        else:
+            if self.level == "easy":
+                self.obstacle_list = np.array([])
+            elif self.level == "medium":
+                self.obstacle_list = np.array(self.medium_obstacle_list[self.curriculum_index])
+            elif self.level == "hard":
+                self.obstacle_list = np.array(self.hard_obstacle_list[self.curriculum_index])
+            elif self.level == "random":
+                self.obstacle_list = np.array(self.random_obstacles_list[0])
 
-        self.obstacle_list = np.copy(self.generated_obstacles[0])
-        
         self.wall_list = np.array([[0, 20, 0, 1], [0, 20, 19, 20], [19, 20, 0, 20], [0, 1, 0, 20]])
 
         for obs in self.wall_list:
