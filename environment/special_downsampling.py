@@ -2,7 +2,7 @@ import torch
 from torch.nn.functional import interpolate
 from torch.nn import Softmax
 
-from .tokens import TOKEN_DOWNSAMPLING_HIERARCHY as HIERARCHY
+from environment.tokens import TOKEN_DOWNSAMPLING_HIERARCHY as HIERARCHY
 
 
 def special_downsampling(num_scales, scales, image, token_list):

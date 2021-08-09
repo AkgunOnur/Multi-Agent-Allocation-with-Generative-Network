@@ -21,7 +21,7 @@ def get_arguments():
     parser.add_argument("--manualSeed", type=int, help="manual seed")
     parser.add_argument("--out", help="output folder", default="output")
     parser.add_argument("--input-dir", help="input image dir", default="input")
-    parser.add_argument("--input-name", help="input image name", default="easy1.txt")
+    parser.add_argument("--input-name", help="input image name", default="hard1.txt")
 
     # networks hyper parameters:
     parser.add_argument("--nfc", type=int, help="number of filters for conv layers", default=64)

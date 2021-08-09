@@ -1,7 +1,7 @@
 import torch
 from loguru import logger
 
-from tokens import TOKEN_GROUPS, REPLACE_TOKENS
+from environment.tokens import TOKEN_GROUPS, REPLACE_TOKENS
 
 
 # Miscellaneous functions to deal with ascii-token-based levels.
@@ -104,36 +104,3 @@ def place_a_drone_token(level):
                 tmp_slice[j] = 'D'
                 level[i] = "".join(tmp_slice)
                 return level
-
-    # # If not, check for first possible location from left
-    # for j in range(len(level[-1])):
-    #     for i in range(1, len(level)):
-    #         if level[i - 1][j] == '-' and level[i][j] in ['X', '#', 'S', '%', 't', '?', '@', '!', 'C', 'D', 'U', 'L']:
-    #             tmp_slice = list(level[i - 1])
-    #             tmp_slice[j] = 'D'
-    #             level[i - 1] = "".join(tmp_slice)
-    #             return level
-
-    # return level  # Will only be reached if there is no place to put Drone
-
-# def place_a_drone_token(level):
-#     """ Finds the first plausible spot to place Drone on. Especially important for levels with floating platforms.
-#     level is expected to be ascii."""
-#     # First check if default spot is available
-#     for j in range(1, 4):
-#         if level[-3][j] == '-' and level[-2][j] in ['X', '#', 'S', '%', 't', '?', '@', '!', 'C', 'D', 'U', 'L']:
-#             tmp_slice = list(level[-3])
-#             tmp_slice[j] = 'D'
-#             level[-3] = "".join(tmp_slice)
-#             return level
-
-#     # If not, check for first possible location from left
-#     for j in range(len(level[-1])):
-#         for i in range(1, len(level)):
-#             if level[i - 1][j] == '-' and level[i][j] in ['X', '#', 'S', '%', 't', '?', '@', '!', 'C', 'D', 'U', 'L']:
-#                 tmp_slice = list(level[i - 1])
-#                 tmp_slice[j] = 'D'
-#                 level[i - 1] = "".join(tmp_slice)
-#                 return level
-
-#     return level  # Will only be reached if there is no place to put Drone
