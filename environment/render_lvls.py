@@ -1,7 +1,7 @@
 import os
 
-from .level_utils import load_level_from_text
-from .level_image_gen import LevelImageGen
+from level_utils import load_level_from_text
+from level_image_gen import LevelImageGen
 
 # Renders all level.txt files to png images inside a given folder. Expects ONLY .txt in that folder.
 
@@ -20,8 +20,8 @@ if __name__ == '__main__':
         directory_gen = directory + curr_gen
         names = os.listdir(directory_gen)
         names.sort()
-
-        target_dir = '/home/regen/Desktop/MAP_Generation_TOAD-GAN/output/level_images/' + curr_gen
+        
+        target_dir = '/home/regen/Desktop/Multi-Agent-Allocation-with-Generative-Network/output/level_images/' + curr_gen
         os.makedirs(target_dir, exist_ok=True)
 
         for i in range(min(10, len(names))):
