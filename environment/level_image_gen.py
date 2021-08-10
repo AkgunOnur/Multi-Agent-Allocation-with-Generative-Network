@@ -1,5 +1,5 @@
 import os
-
+import numpy as np
 from PIL import Image, ImageOps, ImageEnhance
 
 
@@ -69,4 +69,17 @@ class LevelImageGen:
                 curr_sprite = ascii_level[y][x]
                 sprite, box = self.prepare_sprite_and_box(ascii_level, curr_sprite, x, y)
                 dst.paste(sprite, box, mask=sprite)
+
+        # Fill with actual tiles
+        # pos = []
+        # nagents = 4
+        # while(len(pos)!= nagents):
+        #     rand1 = np.random.randint(1, 4)
+        #     rand2 = np.random.randint(1, 4)
+        #     if [rand1, rand2] not in pos:
+        #         pos.append([rand1, rand2])
+        #         dst.paste(self.sprite_dict['D'], (rand1*16, rand2*16, (rand1+1)*16, (rand2+1)*16))
+        #     else:
+        #         pass
+
         return dst

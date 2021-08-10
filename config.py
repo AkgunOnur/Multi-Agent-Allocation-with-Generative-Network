@@ -30,7 +30,7 @@ def get_arguments():
 
     # scaling parameters:
     parser.add_argument("--scales", nargs='+', type=float, help="Scales descending (< 1 and > 0)",
-                        default=[0.88, 0.75, 0.5])
+                        default=[0.8, 0.75, 0.5])
     parser.add_argument("--noise_update", type=float, help="additive noise weight", default=0.1)
     parser.add_argument("--pad_with_noise", type=bool, help="use reflection padding? (makes edges random)",
                         default=False)
@@ -67,7 +67,7 @@ def post_config(opt):
     set_seed(opt.manualSeed)
 
     # Defaults for other namespace values that will be overwritten during runtime
-    opt.nc_current = 12  # n tokens of level 1-1
+    opt.nc_current = 5  # n tokens of level 1-1
     if not hasattr(opt, "out_"):
         opt.out_ = "%s/%s/" % (opt.out, opt.input_name[:-4])
     opt.outf = "0"  # changes with each scale trained

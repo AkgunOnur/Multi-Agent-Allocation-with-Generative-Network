@@ -354,7 +354,7 @@ if __name__ == '__main__':
 
             # Load "other level" used for insertion
             opt_fakes = Namespace()
-            opt_fakes.input_name = "easy1.txt"
+            opt_fakes.input_name = "hard1.txt"
             opt_fakes.input_dir = "./input"
             real_fakes = read_level(opt_fakes).to(opt.device)
 
