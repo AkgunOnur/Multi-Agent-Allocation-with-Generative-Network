@@ -35,7 +35,7 @@ def main():
     parser.add_argument('--seed', default=7, type=int, help='seed number for test')
     parser.add_argument('--test_model_no', default=1, help='single model to evaluate')
     # training
-    parser.add_argument('--num_episodes', default=7000000, type=int, help='number of training episodes')
+    parser.add_argument('--num_episodes', default=1000000, type=int, help='number of training episodes')
     parser.add_argument('--update_interval', type=int, default=10, help='number of steps to update the policy')
     parser.add_argument('--eval_interval', type=int, default=50, help='number of steps to eval the policy')
     parser.add_argument('--start_step', type=int, default=0, help='After how many steps to start training')
@@ -48,7 +48,7 @@ def main():
     parser.add_argument('--n_actions', type=int, default=8, help='number of actions (agents to produce)')
     parser.add_argument('--n_states', type=int, default=150, help='Number of states after convolution layer')
     parser.add_argument('--batch_size', type=int, default=128, help='Batch size to train')
-    parser.add_argument('--memory_size', type=int, default=1000000, help='Buffer memory size')
+    parser.add_argument('--memory_size', type=int, default=100000, help='Buffer memory size')
     parser.add_argument('--multi_step', type=int, default=1, help='Multi step')
     parser.add_argument('--out_shape', type=int, default=env.out_shape, help='Observation image shape')
     parser.add_argument('--hid_size', type=int, default=100, help='Hidden size dimension')
@@ -63,7 +63,8 @@ def main():
     model_reward_list = {}
 
     level_list = ["easy", "medium", "hard"]
-    level_rewards = {"easy":-100, "medium":-100, "hard":-100}
+    train_rewards = {"easy":-100, "medium":-100, "hard":-100}
+    eval_rewards = {"easy":-100, "medium":-100, "hard":-100}
     fields = ["Model", "Level", "Mean Reward", "Total Episodes"]
     filename = "test_results.txt"
     test_info = []
@@ -105,11 +106,11 @@ def main():
                 mean_reward += episode_reward
 
             mean_reward = mean_reward / args.test_iteration
-            level_rewards[level] = mean_reward
+            eval_rewards[level] = mean_reward
             print('Test - ', level, ' | Model: ', model_path, ' | Mean reward: ', round(mean_reward, 2))
             test_info.append([model_path, level, round(mean_reward, 2), args.test_iteration])
 
-        mean_levels = np.array(list(level_rewards.values())).mean()
+        mean_levels = np.array(list(eval_rewards.values())).mean()
         test_info.append([model_path, "Mean", round(mean_levels, 2), args.test_iteration])
         with open(filename, 'a', newline='') as csvfile:
             csvwriter = csv.writer(csvfile, delimiter='|')
@@ -126,10 +127,10 @@ def main():
                 previous_mode = True
 
             if previous_mode == False:
-                if i_episode <= 1e6:
+                if i_episode <= 100000:
                     level = "easy"
                     # index = 0
-                elif i_episode > 1e6 and i_episode <= 3e6:
+                elif i_episode > 100000 and i_episode <= 300000:
                     level = "medium"
                     # index = np.random.choice(6)
                 else:
@@ -156,11 +157,11 @@ def main():
             if i_episode > args.start_step and i_episode % args.update_interval == 0:
                 dqn.learn()
 
-            # if episode_reward > level_rewards[level]:
-            #     train_reward = episode_reward
-            #     dqn.save_models(os.path.join(args.model_dir, 'train'), "model", 1)
+            if episode_reward > train_rewards[level] and previous_mode == False:
+                train_rewards[level] = episode_reward
+                dqn.save_models(os.path.join(args.model_dir, 'train'), level, 1)
             
-            if i_episode % 100 == 0:
+            if i_episode % 1 == 0:
                 print('Train - ', level,' | Episode: ', i_episode, '| Episode reward: ', round(episode_reward, 2))
 
             if i_episode % args.eval_interval == 0 and i_episode > args.start_step and previous_mode == False:
@@ -187,8 +188,8 @@ def main():
 
                 mean_reward = mean_reward / args.test_iteration
                 print('Eval - ', level_actual,' | Episode: ', i_episode, '| Evaluation reward: ', round(mean_reward, 2), '\n')
-                if mean_reward > level_rewards[level_actual]:
-                    level_rewards[level_actual] = mean_reward
+                if mean_reward > eval_rewards[level_actual]:
+                    eval_rewards[level_actual] = mean_reward
                     dqn.save_models(os.path.join(args.model_dir, 'eval'), level_actual, i_episode)
 
     if visualization:

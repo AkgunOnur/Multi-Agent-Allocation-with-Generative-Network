@@ -205,6 +205,8 @@ class AgentFormation(gym.Env):
         # final_obs = np.c_[self.battery_status, state_obs]
 
         self.prize_map = np.zeros((self.out_shape, self.out_shape))
+        self.obstacle_map = np.zeros((self.out_shape, self.out_shape))
+        self.observation = np.zeros((2,self.out_shape, self.out_shape))
 
         for i in range(self.N_prize):
             if self.prize_exists[i]:
@@ -213,9 +215,14 @@ class AgentFormation(gym.Env):
                     y = np.clip(self.prize_locations[i][1] + y_n, 0, self.map_lim - 1)
                     self.prize_map[x,y] = 1
 
-        self.prize_map = self.prize_map.reshape(1, self.out_shape, self.out_shape)
-        
-        return self.prize_map
+        for obs_point in self.obstacle_locations:
+            x,y = obs_point[0], obs_point[1]
+            self.obstacle_map[x][y] = 1
+
+
+        self.observation[0,:,:] = np.copy(self.prize_map)
+        self.observation[1,:,:] = np.copy(self.obstacle_map)
+        return self.observation
 
     def reset(self, level, index = None):
         # Manual curriculum
@@ -421,7 +428,6 @@ class AgentFormation(gym.Env):
 
                     if current_pos not in obstacle_locations:
                         obstacle_locations.append(current_pos)
-
 
         ds_map.set_obstacle([(i, j) for i, j in zip(obs_x_list, obs_y_list)])
         
