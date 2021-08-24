@@ -185,7 +185,7 @@ class Dstar:
         s.set_state("e")
         tmp = start
 
-        while tmp != end and iteration < 100:
+        while tmp != end and iteration < 200:
             iteration += 1
             tmp.set_state("*")
             rx.append(tmp.x)

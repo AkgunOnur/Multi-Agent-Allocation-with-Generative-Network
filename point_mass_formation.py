@@ -2,6 +2,7 @@ import gym
 from gym import spaces, error, utils
 from gym.utils import seeding
 # from gym.envs.classic_control import rendering
+# import rendering
 import numpy as np
 import configparser
 from os import path
@@ -13,6 +14,7 @@ from numpy.random import uniform
 from time import sleep
 from collections import deque
 import warnings
+from PIL import Image
 from dstar import *
 
 font = {'family': 'sans-serif',
@@ -38,9 +40,9 @@ class AgentFormation(gym.Env):
         self.action_space = spaces.Discrete(self.n_action)
 
         # intitialize grid information
-        self.map_lim = 20
+        self.map_lim = 80
         self.grid_res = 1.0  # resolution for grids
-        self.out_shape = 20  # width and height for uncertainty matrix
+        self.out_shape = self.map_lim  # width and height for uncertainty matrix
         self.grid_points = None
 
         # self.obstacles_new = np.array([[-1, 1, -20, -3], [-1,1, 3, 20]])
@@ -120,9 +122,7 @@ class AgentFormation(gym.Env):
                 total_reward = total_reward - np.sum(self.prize_exists) * 10.0
                 return total_reward, done, self.get_observation()
 
-        
-        
-
+            
 
         for iteration in range(1, N_iteration + 1):
             for agent_ind in range(self.n_agents):
@@ -137,13 +137,13 @@ class AgentFormation(gym.Env):
 
                 current_action = (self.agents_action_list[agent_ind][0])
 
-                total_reward -= 1.0
+                total_reward -= 0.25
                 prev_pos, current_pos = self.get_agent_desired_loc(agent_ind, current_action)
 
-                if list(current_pos) in self.agents_locations:
-                    # print ("Non available grid for agent {}!".format(agent_ind+1))
-                    self.agents[agent_ind].state = np.copy(prev_pos)
-                    continue
+                # if list(current_pos) in self.agents_locations:
+                #     # print ("Non available grid for agent {}!".format(agent_ind+1))
+                #     self.agents[agent_ind].state = np.copy(prev_pos)
+                #     continue
 
                 self.agents_locations[agent_ind] = list(current_pos)
 
@@ -222,7 +222,8 @@ class AgentFormation(gym.Env):
 
         self.observation[0,:,:] = np.copy(self.prize_map)
         self.observation[1,:,:] = np.copy(self.obstacle_map)
-        return self.observation
+        self.prize_map = self.prize_map.reshape(1, self.out_shape, self.out_shape)
+        return self.prize_map
 
     def reset(self, level, index = None):
         # Manual curriculum
@@ -235,18 +236,18 @@ class AgentFormation(gym.Env):
         self.grid_points = []
 
         if self.level == "easy":
-            N_obs = 12
-        elif self.level == "medium":
             N_obs = 25
-        elif self.level == "hard":
+        elif self.level == "medium":
             N_obs = 50
+        elif self.level == "hard":
+            N_obs = 150
 
-        obs_lims = [5, 18]        
+        obs_lims = [10, self.map_lim - 2]        
         for n in range(N_obs):
             xy_start = np.array([0,0])
             while (np.all(xy_start < obs_lims[0])): # obstacles should be off the init points of agents
                 xy_start = np.random.randint(0, obs_lims[1], (2,))
-            epsilon = np.random.randint(1,3,(2,))
+            epsilon = np.random.randint(1,8,(2,))
             xy_end = np.clip(xy_start + epsilon, 0, self.map_lim - 1)
             obs = [xy_start[0], xy_end[0], xy_start[1], xy_end[1]]
             self.generated_obstacles[0].append(obs)
@@ -254,7 +255,7 @@ class AgentFormation(gym.Env):
         # Points of grids to be drawn
         x_list = np.arange(0, self.map_lim, self.grid_res)
         y_list = np.arange(0, self.map_lim, self.grid_res)
-        eps = 0.1
+        eps = 0.15
         for x in x_list:
             grid = [x+0.5, x+0.5+eps, 0, self.map_lim]
             self.grid_points.append(grid)
@@ -264,8 +265,8 @@ class AgentFormation(gym.Env):
             self.grid_points.append(grid)
         
         # Initialization points of agents
-        x_list = np.arange(1, 5, self.grid_res)
-        y_list = np.arange(1, 5, self.grid_res)
+        x_list = np.arange(1, 10, self.grid_res)
+        y_list = np.arange(1, 10, self.grid_res)
         self.init_list = []
 
         for x in x_list:
@@ -394,6 +395,9 @@ class AgentFormation(gym.Env):
         self.obstacle_list = np.array([])
         ds_map = Map(self.map_lim, self.map_lim)
 
+        # self.generated_obstacles[0].append([0, self.map_lim, 10, 12])
+        # self.generated_obstacles[0].append([11, 12, 0, 12])
+
         # Manual curriculum
         if self.curriculum_index == None:
             self.obstacle_list = np.copy(self.generated_obstacles[0])
@@ -407,7 +411,9 @@ class AgentFormation(gym.Env):
             elif self.level == "random":
                 self.obstacle_list = np.array(self.random_obstacles_list[0])
 
-        self.wall_list = np.array([[0, 20, 0, 1], [0, 20, 19, 20], [19, 20, 0, 20], [0, 1, 0, 20]])
+        self.wall_list = np.array([[0, self.map_lim, 0, 1], [0, self.map_lim, self.map_lim-1, self.map_lim], 
+                                   [self.map_lim-1, self.map_lim, 0, self.map_lim], [0, 1, 0, self.map_lim]])
+
 
         for obs in self.wall_list:
             for x in range(obs[0], obs[1]):
@@ -438,10 +444,10 @@ class AgentFormation(gym.Env):
         station_transform = []
 
         if self.viewer is None:
-            self.viewer = rendering.Viewer(500, 500)
+            self.viewer = rendering.Viewer(1000, 1000)
             self.viewer.set_bounds(0, self.map_lim - 1, 0, self.map_lim - 1)
             fname = path.join(path.dirname(__file__), "assets/drone.png")
-            fname_prize = path.join(path.dirname(__file__), "assets/prize.png")
+            fname_prize = path.join(path.dirname(__file__), "assets/prize.jpg")
 
             background = rendering.make_polygon([(0, 0), (0, self.map_lim - 1),
                                                  (self.map_lim - 1, self.map_lim - 1), 

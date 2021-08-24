@@ -33,20 +33,22 @@ def main():
     parser.add_argument('--load_model', default=load_model_dir, help='number of training episodes')
     parser.add_argument('--test_iteration', default=25, type=int, help='number of test iterations')
     parser.add_argument('--seed', default=7, type=int, help='seed number for test')
-    parser.add_argument('--test_model_no', default=1, help='single model to evaluate')
+    parser.add_argument('--test_model_no', default=0, help='single model to evaluate')
+    parser.add_argument('--test_model_level', default="easy", help='single model level to evaluate')
     # training
     parser.add_argument('--num_episodes', default=1000000, type=int, help='number of training episodes')
     parser.add_argument('--update_interval', type=int, default=10, help='number of steps to update the policy')
     parser.add_argument('--eval_interval', type=int, default=50, help='number of steps to eval the policy')
     parser.add_argument('--start_step', type=int, default=0, help='After how many steps to start training')
     # model
+    parser.add_argument('--resume', default=False, action='store_true', help='to continue the training')
     parser.add_argument('--model_dir', default=model_dir, help='folder to save models')
     parser.add_argument('--lr', type=float, default=0.01, help='Batch size to train')
     parser.add_argument('--epsilon', default=0.9, type=float, help='greedy policy')
     parser.add_argument('--gamma', default=0.99, type=float, help='reward discount')
     parser.add_argument('--target_update', default=20, type=int, help='target update freq')
     parser.add_argument('--n_actions', type=int, default=8, help='number of actions (agents to produce)')
-    parser.add_argument('--n_states', type=int, default=150, help='Number of states after convolution layer')
+    parser.add_argument('--n_states', type=int, default=7350, help='Number of states after convolution layer')
     parser.add_argument('--batch_size', type=int, default=128, help='Batch size to train')
     parser.add_argument('--memory_size', type=int, default=100000, help='Buffer memory size')
     parser.add_argument('--multi_step', type=int, default=1, help='Multi step')
@@ -74,7 +76,7 @@ def main():
         # np.random.seed(args.seed)
 
         if int(args.test_model_no) > 0:
-            model_path = dqn.load_models(args.load_model, "hard", args.test_model_no)
+            model_path = dqn.load_models(load_model_dir, args.test_model_level, args.test_model_no)
         elif int(args.test_model_no) == 0:
             print ("Random policy")
             model_path = "Random"
@@ -122,15 +124,21 @@ def main():
         level = "easy"
         previous_mode = False
         # time.sleep(0.5)
-        for i_episode in range(1, args.num_episodes + 1):
+
+        if args.resume:
+            with open('variables.pickle', 'rb') as handle:
+                last_episode, level_actual, train_rewards, eval_rewards = pickle.load(handle)
+                model_path = dqn.load_models(model_dir + "/eval", level_actual, last_episode)
+                print ("Training is resumed on ", level_actual, " mode and ", last_episode, "th model.")
+        for i_episode in range(last_episode + 1, args.num_episodes + 1):
             if i_episode % 5 == 0 and level != "easy":
                 previous_mode = True
 
             if previous_mode == False:
-                if i_episode <= 100000:
+                if i_episode <= 50000:
                     level = "easy"
                     # index = 0
-                elif i_episode > 100000 and i_episode <= 300000:
+                elif i_episode > 50000 and i_episode <= 150000:
                     level = "medium"
                     # index = np.random.choice(6)
                 else:
@@ -191,6 +199,9 @@ def main():
                 if mean_reward > eval_rewards[level_actual]:
                     eval_rewards[level_actual] = mean_reward
                     dqn.save_models(os.path.join(args.model_dir, 'eval'), level_actual, i_episode)
+
+                    with open('variables.pickle', 'wb') as handle:
+                        pickle.dump([i_episode, level_actual, train_rewards, eval_rewards], handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     if visualization:
         env.close()

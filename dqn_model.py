@@ -22,7 +22,7 @@ class Net(nn.Module):
     def __init__(self, args):
         super(Net, self).__init__()
         self.net = nn.Sequential(
-            nn.Conv2d(2, 3, 3, 2),        
+            nn.Conv2d(1, 3, 3, 2),        
             nn.ReLU(),
             nn.Conv2d(3, 6, 3, 1),         
             nn.ReLU(),
@@ -53,7 +53,7 @@ class DQN(object):
         self.memory_counter = 0                                         # for storing memory
         self.memory = LazyMultiStepMemory(
                                         capacity=args.memory_size,
-                                        state_shape=(2, args.out_shape, args.out_shape),
+                                        state_shape=(1, args.out_shape, args.out_shape),
                                         device=args.device, gamma=args.gamma, multi_step=args.multi_step)
 
         self.optimizer = torch.optim.Adam(self.eval_net.parameters(), lr=args.lr)
