@@ -12,8 +12,6 @@ from config import get_arguments, post_config
 from loguru import logger
 import wandb
 import sys
-import torch
-
 
 def get_tags(opt):
     """ Get Tags for logging from input name. Helpful for wandb. """
@@ -48,18 +46,18 @@ def main():
     if opt.game == 'environment':
         opt.ImgGen = LevelGen(sprite_path)
         replace_tokens = REPLACE_TOKENS
-        downsample = special_downsampling
+        #downsample = special_downsampling
     else:
         NameError("name of --game not recognized. Supported: environment")
 
 
-    #for _ in range(3):
     # Read level according to input arguments
     real = read_level(opt, None, replace_tokens).to(opt.device)
 
     # Train!
     generators, noise_maps, reals, noise_amplitudes = train(real, opt)
 
+    
     # Generate Samples of same size as level
     logger.info("Finished training! Generating random samples...")
     in_s = None

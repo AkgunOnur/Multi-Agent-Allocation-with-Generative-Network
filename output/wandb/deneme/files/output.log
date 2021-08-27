@@ -1,0 +1,148 @@
+[32m2021-08-25 12:32:42.951[39m | [1mINFO[22m | [90m/home/regen/Desktop/Multi-Agent-Allocation-with-Generative-Network/environment/level_utils.py:75[39m | Tokens in level ['-', 'O', 'W', 'X']
+Level_GeneratorConcatSkip2CleanAdd(
+  (head): ConvBlock(
+    (conv): Conv2d(4, 64, kernel_size=(3, 3), stride=(1, 1))
+    (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+  )
+  (body): Sequential(
+    (block1): ConvBlock(
+      (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1))
+      (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+    )
+  )
+  (tail): Sequential(
+    (0): Conv2d(64, 4, kernel_size=(3, 3), stride=(1, 1))
+  )
+)
+Level_WDiscriminator(
+  (head): ConvBlock(
+    (conv): Conv2d(4, 64, kernel_size=(3, 3), stride=(1, 1))
+    (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+  )
+  (body): Sequential(
+    (block1): ConvBlock(
+      (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1))
+      (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+    )
+  )
+  (tail): Conv2d(64, 1, kernel_size=(3, 3), stride=(1, 1))
+)
+[32m2021-08-25 12:32:44.864[39m | [1mINFO[22m | [90m/home/regen/Desktop/Multi-Agent-Allocation-with-Generative-Network/train_single_scale.py:62[39m | Training at scale 0
+Level_GeneratorConcatSkip2CleanAdd(
+  (head): ConvBlock(
+    (conv): Conv2d(4, 64, kernel_size=(3, 3), stride=(1, 1))
+    (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+  )
+  (body): Sequential(
+    (block1): ConvBlock(
+      (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1))
+      (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+    )
+  )
+  (tail): Sequential(
+    (0): Conv2d(64, 4, kernel_size=(3, 3), stride=(1, 1))
+  )
+)
+Level_WDiscriminator(
+  (head): ConvBlock(
+    (conv): Conv2d(4, 64, kernel_size=(3, 3), stride=(1, 1))
+    (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+  )
+  (body): Sequential(
+    (block1): ConvBlock(
+      (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1))
+      (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+    )
+  )
+  (tail): Conv2d(64, 1, kernel_size=(3, 3), stride=(1, 1))
+)
+[32m2021-08-25 12:32:47.469[39m | [1mINFO[22m | [90m/home/regen/Desktop/Multi-Agent-Allocation-with-Generative-Network/train_single_scale.py:62[39m | Training at scale 1
+Level_GeneratorConcatSkip2CleanAdd(
+  (head): ConvBlock(
+    (conv): Conv2d(4, 64, kernel_size=(3, 3), stride=(1, 1))
+    (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+  )
+  (body): Sequential(
+    (block1): ConvBlock(
+      (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1))
+      (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+    )
+  )
+  (tail): Sequential(
+    (0): Conv2d(64, 4, kernel_size=(3, 3), stride=(1, 1))
+  )
+)
+Level_WDiscriminator(
+  (head): ConvBlock(
+    (conv): Conv2d(4, 64, kernel_size=(3, 3), stride=(1, 1))
+    (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+  )
+  (body): Sequential(
+    (block1): ConvBlock(
+      (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1))
+      (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+    )
+  )
+  (tail): Conv2d(64, 1, kernel_size=(3, 3), stride=(1, 1))
+)
+[32m2021-08-25 12:32:50.222[39m | [1mINFO[22m | [90m/home/regen/Desktop/Multi-Agent-Allocation-with-Generative-Network/train_single_scale.py:62[39m | Training at scale 2
+Level_GeneratorConcatSkip2CleanAdd(
+  (head): ConvBlock(
+    (conv): Conv2d(4, 64, kernel_size=(3, 3), stride=(1, 1))
+    (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+  )
+  (body): Sequential(
+    (block1): ConvBlock(
+      (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1))
+      (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+    )
+  )
+  (tail): Sequential(
+    (0): Conv2d(64, 4, kernel_size=(3, 3), stride=(1, 1))
+  )
+)
+Level_WDiscriminator(
+  (head): ConvBlock(
+    (conv): Conv2d(4, 64, kernel_size=(3, 3), stride=(1, 1))
+    (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+  )
+  (body): Sequential(
+    (block1): ConvBlock(
+      (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1))
+      (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (LeakyRelu): LeakyReLU(negative_slope=0.2, inplace=True)
+    )
+  )
+  (tail): Conv2d(64, 1, kernel_size=(3, 3), stride=(1, 1))
+)
+[32m2021-08-25 12:32:53.203[39m | [1mINFO[22m | [90m/home/regen/Desktop/Multi-Agent-Allocation-with-Generative-Network/train_single_scale.py:62[39m | Training at scale 3
+[32m2021-08-25 12:32:56.355[39m | [1mINFO[22m | [90mmain.py:64[39m | Finished training! Generating random samples...
+[32m2021-08-25 12:32:56.355[39m | [1mINFO[22m | [90m/home/regen/Desktop/Multi-Agent-Allocation-with-Generative-Network/generate_samples.py:55[39m | Generating samples at scale 0
+[32m2021-08-25 12:32:56.374[39m | [1mINFO[22m | [90m/home/regen/Desktop/Multi-Agent-Allocation-with-Generative-Network/generate_samples.py:55[39m | Generating samples at scale 1
+[32m2021-08-25 12:32:56.394[39m | [1mINFO[22m | [90m/home/regen/Desktop/Multi-Agent-Allocation-with-Generative-Network/generate_samples.py:55[39m | Generating samples at scale 2
+[32m2021-08-25 12:32:56.413[39m | [1mINFO[22m | [90m/home/regen/Desktop/Multi-Agent-Allocation-with-Generative-Network/generate_samples.py:55[39m | Generating samples at scale 3
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 100/100 [00:02<00:00, 38.68it/s]
+[34m[1mwandb[39m[22m: [33mWARNING[39m Symlinked 6 files into the W&B run directory, call wandb.save again to sync new files.
+[34m[1mwandb[39m[22m: [33mWARNING[39m Symlinked 1 file into the W&B run directory, call wandb.save again to sync new files.
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 100/100 [00:02<00:00, 36.53it/s]
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 100/100 [00:02<00:00, 33.71it/s]
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 100/100 [00:03<00:00, 31.85it/s]
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 50/50 [00:00<00:00, 2718.03it/s]
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 50/50 [00:00<00:00, 2713.39it/s]
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 50/50 [00:00<00:00, 2665.28it/s]
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 50/50 [00:00<00:00, 63.28it/s]

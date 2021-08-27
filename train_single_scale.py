@@ -16,6 +16,7 @@ from environment.level_utils import group_to_token, one_hot_to_ascii_level, toke
 from environment.tokens import TOKEN_GROUPS as TOKEN_GROUPS
 from models import calc_gradient_penalty, save_networks
 
+from rl_agent import rl
 
 def update_noise_amplitude(z_prev, real, opt):
     """ Update the amplitude of the noise for the current scale according to the previous noise map. """
@@ -59,7 +60,10 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
         z_opt = torch.zeros([1, opt.nc_current, nzx, nzy]).to(opt.device)
         z_opt = pad_noise(z_opt)
 
-    logger.info("Training at scale {}", current_scale)
+    logger.info("Training at scale {}", current_scale)\
+    
+    RL = rl(current_scale)
+
     for epoch in tqdm(range(opt.niter)):
         step = current_scale * opt.niter + epoch
         noise_ = generate_spatial_noise([1, opt.nc_current, nzx, nzy], device=opt.device)
@@ -75,6 +79,7 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
             output = D(real).to(opt.device)
 
             errD_real = -output.mean()
+            #print("errD_real: ", errD_real)
             errD_real.backward(retain_graph=True)
 
             # train with fake
@@ -128,9 +133,10 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
 
             # Backpropagation
             errD_fake.backward(retain_graph=False)
-
+            #print("errD_fake: ", errD_fake)
             # Gradient Penalty
             gradient_penalty = calc_gradient_penalty(D, real, fake, opt.lambda_grad, opt.device)
+            #print("gradient_penalty: ", gradient_penalty)
             gradient_penalty.backward(retain_graph=False)
 
             # Logging:
@@ -150,8 +156,23 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
             G.zero_grad()
             fake = G(noise.detach(), prev.detach(), temperature=1 if current_scale != opt.token_insert else 1)
             output = D(fake)
+            #================ Experimental================
+            #Calculate loss
+            if epoch <= int(opt.niter/2):
+                errG = -output.mean()
+            else:
+                #Generate fake map(s) and make it playable
+                coded_fake_map = one_hot_to_ascii_level(fake.detach(), opt.token_list)
 
-            errG = -output.mean()
+                #Deploy agent in map and get reward for couple of iterations
+                agent_mean_reward = RL.train(coded_fake_map, current_scale, epoch)
+
+                errG = -agent_mean_reward
+            
+            #print("errG: ", errG)
+            #print("errG: ", type(errG))
+            #================================
+
             errG.backward(retain_graph=False)
             if opt.alpha != 0:  # i. e. we are trying to find an exact recreation of our input in the lat space
                 Z_opt = opt.noise_amp * z_opt + z_prev

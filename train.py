@@ -12,6 +12,8 @@ from models import init_models, reset_grads, restore_weights
 from models.generator import Level_GeneratorConcatSkip2CleanAdd
 from train_single_scale import train_single_scale
 
+from dqn_model import *
+from point_mass_formation import AgentFormation
 
 def train(real, opt):
     """ Wrapper function for training. Calculates necessary scales then calls train_single_scale on each. """
@@ -46,6 +48,9 @@ def train(real, opt):
 
     # Training Loop
     for current_scale in range(0, stop_scale):
+        #Initalize rl environment
+        env = AgentFormation(visualization=False)
+        
         opt.outf = "%s/%d" % (opt.out_, current_scale)
         try:
             os.makedirs(opt.outf)
