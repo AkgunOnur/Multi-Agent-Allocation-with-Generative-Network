@@ -70,7 +70,7 @@ def train(real, opt):
         # Actually train the current scale
         z_opt, input_from_prev_scale, G = train_single_scale(D,  G, reals, generators, noise_maps,
                                                              input_from_prev_scale, noise_amplitudes, opt)
-
+        print("Single scale bitti")
         # Reset grads and save current scale
         G = reset_grads(G, False)
         G.eval()

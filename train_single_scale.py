@@ -158,17 +158,17 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
             output = D(fake)
             #================ Experimental================
             #Calculate loss
-            if epoch <= int(opt.niter/2):
-                errG = -output.mean()
-            else:
-                #Generate fake map(s) and make it playable
-                coded_fake_map = one_hot_to_ascii_level(fake.detach(), opt.token_list)
+            # if epoch <= int(opt.niter/2):
+            #     errG = -output.mean()
+            # else:
+            #Generate fake map(s) and make it playable
+            coded_fake_map = one_hot_to_ascii_level(fake.detach(), opt.token_list)
 
-                #Deploy agent in map and get reward for couple of iterations
-                agent_mean_reward = RL.train(coded_fake_map, current_scale, epoch)
+            #Deploy agent in map and get reward for couple of iterations
+            agent_mean_reward = RL.train(coded_fake_map, current_scale, epoch)
 
-                errG = -agent_mean_reward
-            
+            errG = torch.tensor(agent_mean_reward, requires_grad=True)
+            print("errG: ", errG)
             #print("errG: ", errG)
             #print("errG: ", type(errG))
             #================================
@@ -185,6 +185,7 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
                 Z_opt = z_opt
 
             optimizerG.step()
+        print("generator loop ended")
 
         # More Logging:
         if step % 10 == 0:

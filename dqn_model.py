@@ -22,22 +22,22 @@ class Net(nn.Module):
     def __init__(self, args):
         super(Net, self).__init__()
         self.net = nn.Sequential(
-            nn.Conv2d(1, 3, 3, 2),        
+            nn.Conv2d(2, 3, 3, 1),        
             nn.ReLU(),
             nn.Conv2d(3, 6, 3, 1),         
             nn.ReLU(),
-            nn.Conv2d(6, 6, 3, 1),         
+            nn.Conv2d(6, 6, 2, 1),         
             nn.ReLU(),
             Flatten()
         ).apply(initialize_weights_he)
 
-        self.fc1 = nn.Linear(args.n_states, args.hid_size)
+        self.fc1 = nn.Linear(150, args.hid_size)
         self.fc1.weight.data.normal_(0, 0.1)   # initialization
         self.out = nn.Linear(args.hid_size, args.n_actions)
         self.out.weight.data.normal_(0, 0.1)   # initialization
 
     def forward(self, x):
-        x = self.net(x)
+        x = torch.tensor(self.net(x))
         x = self.fc1(x)
         x = F.relu(x)
         actions_value = self.out(x)

@@ -16,7 +16,7 @@ class State:
         self.action = -1
 
     def cost(self, state):
-        if self.state == "#" or state.state == "#":
+        if self.state == "O" or state.state == "O":
             return maxsize
 
         return math.sqrt(math.pow((self.x - state.x), 2) +
@@ -30,7 +30,7 @@ class State:
         *: closed state
         s: current state
         """
-        if state not in ["s", ".", "#", "e", "*"]:
+        if state not in ["s", ".", "O", "e", "*"]:
             return
         self.state = state
 
@@ -61,7 +61,7 @@ class Map:
                     continue
                 if state.y + j < 0 or state.y + j >= self.col:
                     continue
-                # if self.map[state.x + i][state.y + j].state == "#":
+                # if self.map[state.x + i][state.y + j].state == "O":
                 #     continue
                 state_list.append(self.map[state.x + i][state.y + j])
 
@@ -73,14 +73,14 @@ class Map:
             if x < 0 or x >= self.row or y < 0 or y >= self.col:
                 continue
 
-            self.map[x][y].set_state("#")
+            self.map[x][y].set_state("O")
 
     
     def get_map(self, prize_locations, agents_locations):
         map = np.array(['' for _ in range(self.row)]*self.col).reshape(self.row,self.col)
         for i in range(self.row):
             for j in range(self.col):
-                if self.map[i][j].state == "#":
+                if self.map[i][j].state == "O":
                     map[i][j] = '|'
 
         for x, y in prize_locations:
@@ -194,7 +194,7 @@ class Dstar:
             # if show_animation:
             #     plt.plot(rx, ry, "-r")
             #     plt.pause(0.01)
-            if tmp.parent.state == "#":
+            if tmp.parent.state == "O":
                 self.modify(tmp)
                 continue
             tmp = tmp.parent
