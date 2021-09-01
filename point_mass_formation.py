@@ -55,8 +55,8 @@ class AgentFormation(gym.Env):
         # Initialization points of agents
         self.init_list = []
 
-        for x in np.arange(1, 10, self.grid_res):
-            for y in np.arange(1, 10, self.grid_res):
+        for x in np.arange(1, 5, self.grid_res):
+            for y in np.arange(1, 5, self.grid_res):
                 self.init_list.append([x, y]) 
         
         # Initialization of agents
@@ -68,22 +68,28 @@ class AgentFormation(gym.Env):
                 self.agents_locations.append(self.init_list[ind])
                 self.agents.append(Agent(self.init_list[ind]))
                 agent_ind += 1
+            #print("agent initalizedL: ", agent_ind)
+        #print("self.agents_locations: ", self.agents_locations)
+        #print("map: ", self.observation)
 
         if self.visualization:
             self.visualize()
         
         # Initialization of trajectories
         self.agents_action_list = [[]*i for i in range(self.n_agents)]
-        print("self.n_agents: ", self.n_agents)
+        #print("self.n_agents: ", self.n_agents)
         for agent_ind in range(self.n_agents):
             feasible = False
+            #print("Mark1")
             while (feasible == False and np.sum(self.infeasible_prizes) < self.N_prize): # check if there are still accessible prizes
+                #print("infeasible_prizes: ", self.infeasible_prizes)
+                #print("feasioble: ", feasible)
                 self.agents_action_list[agent_ind], pos_list, feasible = self.create_trajectory(agent_ind)
             if np.sum(self.infeasible_prizes) == self.N_prize:
                 total_reward = total_reward - np.sum(self.prize_exists) * 10.0
                 return total_reward, done, self.get_observation()
-
-        print("mark 2: ")
+            ##print("agent initalizedL: ", agent_ind)
+        #print("mark 2: ")
         for iteration in range(1, N_iteration + 1):
             for agent_ind in range(self.n_agents):
 
@@ -95,8 +101,8 @@ class AgentFormation(gym.Env):
                         total_reward = total_reward - np.sum(self.prize_exists) * 10.0
                         return total_reward, done, self.get_observation()
 
-                # print("agent_ind: ", agent_ind)
-                # print("self.agents_action_list: ", self.agents_action_list)
+                # #print("agent_ind: ", agent_ind)
+                # #print("self.agents_action_list: ", self.agents_action_list)
                 current_action = (self.agents_action_list[agent_ind][0])
 
                 total_reward -= 0.25
@@ -156,8 +162,11 @@ class AgentFormation(gym.Env):
 
         return self.observation
 
-    def reset(self, ds_map, obstacle_map, prize_map, agent_obs):
+    def reset(self, ds_map, obstacle_map, prize_map, agent_obs, map_lim, obs_y_list, obs_x_list):
         self.agents = []
+        self.obs_y_list = obs_y_list
+        self.obs_x_list = obs_x_list
+        self.map_lim = map_lim
 
         self.ds_map = ds_map
 
@@ -185,9 +194,14 @@ class AgentFormation(gym.Env):
 
         return self.observation
 
+    def get_obstacle_locations(self):
+        ds_map = Map(self.map_lim, self.map_lim)
+        ds_map.set_obstacle([(i, j) for i, j in zip(self.obs_y_list, self.obs_x_list)])
+        return ds_map, self.obstacle_map
+        
     def create_trajectory(self, agent_ind):
         action_list, pos_list = [], []
-        #self.ds_map, self.obstacle_locations = self.get_obstacle_locations()
+        self.ds_map, self.obstacle_locations = self.get_obstacle_locations()
         self.dstar = Dstar(self.ds_map)
         # probabilistic way
         # euclidean_dist = np.sum((self.agents[agent_ind].state - self.prize_locations)**2, axis=1) 
@@ -205,6 +219,7 @@ class AgentFormation(gym.Env):
         # euclidean_dist_pr[~self.prize_exists] = 1e9
         euclidean_dist = np.sum((self.agents[agent_ind].state - self.prize_locations)**2, axis=1) 
         target_cnt = np.array([len(self.assigned_agents_to_prizes[element]) for element in self.assigned_agents_to_prizes]) + 1
+        ##print("$")
         euclidean_dist = euclidean_dist * target_cnt * 10
         # euclidean_dist[~self.prize_exists] = 1e9
         euclidean_dist[self.infeasible_prizes] = 1e9
@@ -214,7 +229,11 @@ class AgentFormation(gym.Env):
         start = self.ds_map.map[int(self.agents_locations[agent_ind][0])][int(self.agents_locations[agent_ind][1])]
         end = self.ds_map.map[int(self.prize_locations[target_prize][0])][int(self.prize_locations[target_prize][1])]
 
+        print("start: ", int(self.agents_locations[agent_ind][0]), int(self.agents_locations[agent_ind][1]))
+        print("end: ", int(self.prize_locations[target_prize][0]), int(self.prize_locations[target_prize][1]))
+        self.ds_map.get_map(self.prize_locations)
         feasible, pos_list, action_list = self.dstar.run(start, end)
+        #print("pos_list: ", pos_list)
         if feasible == True:
             feasible = self.check_feasibility(pos_list)
             if feasible == False:

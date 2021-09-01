@@ -50,7 +50,7 @@ def parameters():
     parser.add_argument('--batch_size', type=int, default=128, help='Batch size to train')
     parser.add_argument('--memory_size', type=int, default=100000, help='Buffer memory size')
     parser.add_argument('--multi_step', type=int, default=1, help='Multi step')
-    parser.add_argument('--out_shape', type=int, default=20, help='Observation image shape')
+    parser.add_argument('--out_shape', type=int, default=10, help='Observation image shape')
     parser.add_argument('--hid_size', type=int, default=64, help='Hidden size dimension')
     parser.add_argument('--device', default=device, help='device')
 
@@ -71,21 +71,19 @@ class rl:
 
     def train(self, coded_fake_map, current_scale, iteration):
         self.iteration = iteration
-        ds_map, obstacle_map, prize_map, agent_obs = fa_regenate(coded_fake_map)
+        ds_map, obstacle_map, prize_map, agent_obs, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
 
         #reset environment
-        self.env.reset(ds_map, obstacle_map, prize_map, agent_obs)
+        self.env.reset(ds_map, obstacle_map, prize_map, agent_obs, map_lim, obs_y_list, obs_x_list)
 
         #get action
         action = self.dqn.choose_action(agent_obs) # output is between 0 and 7
         n_agents = action + 1 # number of allowable agents is 1 to 8
         episode_reward, done, agent_next_obs = self.env.step(n_agents)
-        print("step called")
         if self.args.visualization:
             self.env.close()
         
         self.dqn.memory.append(agent_obs, action, episode_reward, agent_next_obs, done)
-        print("memory appended")
         if  self.iteration > self.args.start_step and self.iteration % self.args.update_interval == 0:
             self.dqn.learn()
             print("dqn learn")
@@ -94,5 +92,5 @@ class rl:
             #self.dqn.save_models(os.path.join(self.args.model_dir, 'train'), current_scale, 1)
 
         #print(f'Train Scale- {current_scale} | Iteration: {self.iteration} | Episode Reward: {round(episode_reward, 2)}')
-        print("rl train func ended")
+        #print("rl train func ended")
         return episode_reward

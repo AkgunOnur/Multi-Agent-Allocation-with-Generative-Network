@@ -23,7 +23,7 @@ def get_arguments():
     parser.add_argument("--manualSeed", type=int, help="manual seed")
     parser.add_argument("--out", help="output folder", default="output")
     parser.add_argument("--input-dir", help="input image dir", default="input")
-    parser.add_argument("--input-name", help="input image name", default="hard1.txt")
+    parser.add_argument("--input-name", help="input image name", default="easy1.txt")
 
     # networks hyper parameters:
     parser.add_argument("--nfc", type=int, help="number of filters for conv layers", default=64)
@@ -38,7 +38,7 @@ def get_arguments():
                         default=False)
 
     # optimization hyper parameters:
-    parser.add_argument("--niter", type=int, default=100, help="number of epochs to train per scale")
+    parser.add_argument("--niter", type=int, default=2500, help="number of epochs to train per scale")
     parser.add_argument("--gamma", type=float, help="scheduler gamma", default=0.1)
     parser.add_argument("--lr_g", type=float, default=0.0005, help="learning rate, default=0.0005")
     parser.add_argument("--lr_d", type=float, default=0.0005, help="learning rate, default=0.0005")

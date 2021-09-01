@@ -12,6 +12,8 @@ def ff_regenate(file_name):
     txt_data = np.loadtxt(file_name, dtype=str)
     ds_map = Map(len(txt_data[:]), len(txt_data[1]))
 
+    map_lim = len(txt_data[:])
+
     matrix_map = np.zeros((2,len(txt_data[:]), len(txt_data[1])))
 
     for x in range(len(txt_data[:])):
@@ -28,7 +30,7 @@ def ff_regenate(file_name):
     #print("matrix_map: ", matrix_map.shape)
     ds_map.set_obstacle([(i, j) for i, j in zip(obs_x_list, obs_y_list)])
     print("file_name: ", str(file_name), " prize_locations : ", prize_locations)
-    return ds_map, obstacle_locations, prize_locations, matrix_map
+    return ds_map, obstacle_locations, prize_locations, matrix_map, map_lim
 
 def fa_regenate(array):
     array = [item.replace("\n", "") for item in array]
@@ -38,24 +40,31 @@ def fa_regenate(array):
     obs_x_list = []
     obs_y_list = []
     ds_map = Map(len(array), len(array[0]))
+    map_lim = len(array[0])
 
     matrix_map = np.zeros((2,len(array), len(array[0])))
 
     for x in range(len(array[0])): #row
         for y in range(len(array[1])): #column
             if array[x][y] == 'O' or array[x][y] == 'W':
+                if(x <=4 and y <=4):
+                    continue
                 obs_x_list.append(x)
                 obs_y_list.append(y)
-                obstacle_locations.append([y, x])
+                obstacle_locations.append([x, y])
                 matrix_map[1,x,y] = 1
             elif array[x][y] == 'X':
-                prize_locations.append([y, x])
+                if(x <=4 and y <=4):
+                    continue
+                prize_locations.append([x, y])
                 matrix_map[0,x,y] = 1
 
-    #print("matrix_map: ", matrix_map)
-    ds_map.set_obstacle([(i, j) for i, j in zip(obs_x_list, obs_y_list)])
+    # print("matrix_map: ", array)
+    # print("matrix_map2: ", matrix_map)
+    ds_map.set_obstacle([(i, j) for i, j in zip(obs_y_list, obs_x_list)])
+    #ds_map.get_map(prize_locations)
     #print("file_name: ", str(file_name), " prize_locations : ", prize_locations)
-    return ds_map, obstacle_locations, prize_locations, matrix_map
+    return ds_map, obstacle_locations, prize_locations, matrix_map, map_lim, obs_y_list, obs_x_list
 
 
 

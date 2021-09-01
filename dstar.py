@@ -16,7 +16,7 @@ class State:
         self.action = -1
 
     def cost(self, state):
-        if self.state == "O" or state.state == "O":
+        if self.state == "#" or state.state == "#":
             return maxsize
 
         return math.sqrt(math.pow((self.x - state.x), 2) +
@@ -30,7 +30,7 @@ class State:
         *: closed state
         s: current state
         """
-        if state not in ["s", ".", "O", "e", "*"]:
+        if state not in ["s", ".", "#", "e", "*"]:
             return
         self.state = state
 
@@ -61,7 +61,7 @@ class Map:
                     continue
                 if state.y + j < 0 or state.y + j >= self.col:
                     continue
-                # if self.map[state.x + i][state.y + j].state == "O":
+                # if self.map[state.x + i][state.y + j].state == "#":
                 #     continue
                 state_list.append(self.map[state.x + i][state.y + j])
 
@@ -73,21 +73,21 @@ class Map:
             if x < 0 or x >= self.row or y < 0 or y >= self.col:
                 continue
 
-            self.map[x][y].set_state("O")
+            self.map[x][y].set_state("#")
 
     
-    def get_map(self, prize_locations, agents_locations):
+    def get_map(self, prize_locations, agents_locations=None):
         map = np.array(['' for _ in range(self.row)]*self.col).reshape(self.row,self.col)
         for i in range(self.row):
             for j in range(self.col):
-                if self.map[i][j].state == "O":
+                if self.map[i][j].state == "#":
                     map[i][j] = '|'
 
         for x, y in prize_locations:
             map[int(x)][int(y)] = 'x'
 
-        for x, y in agents_locations:
-            map[int(x)][int(y)] = 'o'
+        # for x, y in agents_locations:
+        #     map[int(x)][int(y)] = 'o'
 
         print ("self.map: \n", map)
 
@@ -173,12 +173,17 @@ class Dstar:
         feasible = True
 
         self.open_list.add(end)
-
-        while True:
+        iteration2 = 0
+        while True and iteration2 <200:
+            iteration2 +=1
             self.process_state()
+            #print("whileda donuyo")
             if start.t == "close":
+                #print("ife girdi")
                 break
-
+        if iteration2>=200:    
+            return False, pos_list, action_list
+        
         start.set_state("s")
         s = start
         s = s.parent
@@ -194,8 +199,8 @@ class Dstar:
             # if show_animation:
             #     plt.plot(rx, ry, "-r")
             #     plt.pause(0.01)
-            if tmp.parent.state == "O":
-                self.modify(tmp)
+            if tmp.parent.state == "#":
+                feasible = self.modify(tmp)
                 continue
             tmp = tmp.parent
             
@@ -217,10 +222,13 @@ class Dstar:
 
     def modify(self, state):
         self.modify_cost(state)
-        while True:
+        iteration = 0
+        while True and iteration <200:
+            iteration += 1
             k_min = self.process_state()
             if k_min >= state.h:
                 break
+        return False if iteration>=200 else True
 
 
     def test_models(self): # trivial function
@@ -239,12 +247,12 @@ class Dstar:
                     n_agents = action + 1 # number of allowable agents is 1 to 8
                     episode_reward, done, agent_next_obs = env.step(n_agents)
 
-                    print('Episode: ', i_iter + 1, '| Episode Reward: ', round(episode_reward, 2))
+                    #print('Episode: ', i_iter + 1, '| Episode Reward: ', round(episode_reward, 2))
 
                     mean_reward += episode_reward
 
                 mean_reward = mean_reward / args.test_iteration
-                print('Model: {0} / Mean Reward: {1:.3} \n'.format(model_no, mean_reward))
+                #print('Model: {0} / Mean Reward: {1:.3} \n'.format(model_no, mean_reward))
                 model_reward_list[model_no] = mean_reward
 
                 with open('model_reward_list.pkl', 'wb') as f:  

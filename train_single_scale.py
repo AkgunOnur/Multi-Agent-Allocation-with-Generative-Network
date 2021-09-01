@@ -64,6 +64,9 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
     
     RL = rl(current_scale)
 
+    if(current_scale==len(reals)-1):
+        opt.niter = opt.niter*2
+
     for epoch in tqdm(range(opt.niter)):
         step = current_scale * opt.niter + epoch
         noise_ = generate_spatial_noise([1, opt.nc_current, nzx, nzy], device=opt.device)
@@ -168,7 +171,7 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
             agent_mean_reward = RL.train(coded_fake_map, current_scale, epoch)
 
             errG = torch.tensor(agent_mean_reward, requires_grad=True)
-            print("errG: ", errG)
+            #print("errG: ", errG)
             #print("errG: ", errG)
             #print("errG: ", type(errG))
             #================================
@@ -185,7 +188,7 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
                 Z_opt = z_opt
 
             optimizerG.step()
-        print("generator loop ended")
+        #print("generator loop ended")
 
         # More Logging:
         if step % 10 == 0:
