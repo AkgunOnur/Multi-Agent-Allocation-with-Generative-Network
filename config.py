@@ -38,7 +38,7 @@ def get_arguments():
                         default=False)
 
     # optimization hyper parameters:
-    parser.add_argument("--niter", type=int, default=10, help="number of epochs to train per scale")
+    parser.add_argument("--niter", type=int, default=50, help="number of epochs to train per scale")
     parser.add_argument("--gamma", type=float, help="scheduler gamma", default=0.1)
     parser.add_argument("--lr_g", type=float, default=0.0005, help="learning rate, default=0.0005")
     parser.add_argument("--lr_d", type=float, default=0.0005, help="learning rate, default=0.0005")
@@ -69,14 +69,14 @@ def post_config(opt):
     set_seed(opt.manualSeed)
 
     # Defaults for other namespace values that will be overwritten during runtime
-    opt.nc_current = 5  # n tokens of level 1-1
+    opt.nc_current = 4  # n tokens of level 1-1
     if not hasattr(opt, "out_"):
         opt.out_ = "%s/%s/" % (opt.out, opt.input_name[:-4])
     opt.outf = "0"  # changes with each scale trained
     opt.num_scales = len(opt.scales)  # number of scales is implicitly defined
     opt.noise_amp = 1.0  # noise amp for lowest scale always starts at 1
     opt.seed_road = None  # for mario kart seed roads after training
-    opt.token_list = ['-', 'W', 'O', 'X']  # default list of easy1.txt
+    opt.token_list = ['-', 'W', 'X']  # default list of easy1.txt
     opt.ImgGen = []  # needs to be set to the correct image gen for each game
     opt.stop_scale = opt.num_scales  # which scale to stop on - usually always last scale defined
 

@@ -81,6 +81,8 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
             D.zero_grad()
 
             output = D(real).to(opt.device)
+            #print("dis real: ", output.mean())
+            #print("dis real: ", output.shape)
 
             errD_real = -output.mean()
             #print("errD_real: ", errD_real)
@@ -133,6 +135,8 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
 
             # Then run the result through the discriminator
             output = D(fake.detach())
+            #print("dis fake: ", output.mean())
+            #print("dis fake: ", output.shape)
             errD_fake = output.mean()
 
             # Backpropagation
@@ -160,6 +164,7 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
             G.zero_grad()
             fake = G(noise.detach(), prev.detach(), temperature=1 if current_scale != opt.token_insert else 1)
             output = D(fake)
+            #print("gen loss: ", -output.mean())
             #================ Experimental================
             #Calculate loss
             # if epoch <= int(opt.niter/2):

@@ -26,10 +26,10 @@ class LevelImageGen:
         sprite_dict['X'] = mapsheet.crop((7*16, 1*16, 8*16, 2*16)) #prizesheet 
 
         # Wall Img
-        sprite_dict['W'] = mapsheet.crop((2*16, 0, 3*16, 1*16))
+        sprite_dict['O'] = mapsheet.crop((2*16, 0, 3*16, 1*16))
 
         # Obstacle Img
-        sprite_dict['O'] = mapsheet.crop((1*16, 0, 2*16, 1*16))
+        sprite_dict['W'] = mapsheet.crop((1*16, 0, 2*16, 1*16))
 
         # Ground Img
         sprite_dict['-'] = mapsheet.crop((2*16, 5*16, 3*16, 6*16))

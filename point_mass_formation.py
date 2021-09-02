@@ -47,7 +47,7 @@ class AgentFormation(gym.Env):
         self.prize_map = None
 
     def step(self, n_agents):
-        time.sleep(0.3)
+        #time.sleep(0.3)
         # print("infeasible_prizes: ", self.infeasible_prizes)
         # print("prize_exists: ", self.prize_exists)
         # print("N prize: ", self.N_prize)

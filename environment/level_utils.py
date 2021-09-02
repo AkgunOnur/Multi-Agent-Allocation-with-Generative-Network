@@ -99,7 +99,7 @@ def place_a_drone_token(level):
     # First check if default spot is available
     for j in range(1, 4):
         for i in range(1,4):
-            if level[i][j] == '-' and (level[i+1][j] and level[i][j+1] not in ['W', 'O']):
+            if level[i][j] == '-' and (level[i+1][j] and level[i][j+1] not in ['W']):
                 tmp_slice = list(level[i])
                 tmp_slice[j] = 'D'
                 level[i] = "".join(tmp_slice)
