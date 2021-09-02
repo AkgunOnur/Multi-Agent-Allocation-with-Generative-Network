@@ -23,7 +23,7 @@ def get_arguments():
     parser.add_argument("--manualSeed", type=int, help="manual seed")
     parser.add_argument("--out", help="output folder", default="output")
     parser.add_argument("--input-dir", help="input image dir", default="input")
-    parser.add_argument("--input-name", help="input image name", default="easy1.txt")
+    parser.add_argument("--input-name", help="input image name", default="harita.txt")
 
     # networks hyper parameters:
     parser.add_argument("--nfc", type=int, help="number of filters for conv layers", default=64)
@@ -32,19 +32,19 @@ def get_arguments():
 
     # scaling parameters:
     parser.add_argument("--scales", nargs='+', type=float, help="Scales descending (< 1 and > 0)",
-                        default=[0.8, 0.75, 0.5])
+                        default=[0.75, 0.5, 0.25])
     parser.add_argument("--noise_update", type=float, help="additive noise weight", default=0.1)
     parser.add_argument("--pad_with_noise", type=bool, help="use reflection padding? (makes edges random)",
                         default=False)
 
     # optimization hyper parameters:
-    parser.add_argument("--niter", type=int, default=2500, help="number of epochs to train per scale")
+    parser.add_argument("--niter", type=int, default=10, help="number of epochs to train per scale")
     parser.add_argument("--gamma", type=float, help="scheduler gamma", default=0.1)
     parser.add_argument("--lr_g", type=float, default=0.0005, help="learning rate, default=0.0005")
     parser.add_argument("--lr_d", type=float, default=0.0005, help="learning rate, default=0.0005")
     parser.add_argument("--beta1", type=float, default=0.5, help="beta1 for adam. default=0.5")
-    parser.add_argument("--Gsteps", type=int, help="Generator inner steps", default=1)
-    parser.add_argument("--Dsteps", type=int, help="Discriminator inner steps", default=3)
+    parser.add_argument("--Gsteps", type=int, help="Generator inner steps", default=2)
+    parser.add_argument("--Dsteps", type=int, help="Discriminator inner steps", default=2)
     parser.add_argument("--lambda_grad", type=float, help="gradient penalty weight", default=0.1)
     # alpha controls how much the reconstruction factors into the training. 0 = No reconstruction.
     parser.add_argument("--alpha", type=float, help="reconstruction loss weight", default=100)

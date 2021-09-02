@@ -49,7 +49,7 @@ def train(real, opt):
     # Training Loop
     for current_scale in range(0, stop_scale):
         #Initalize rl environment
-        env = AgentFormation(visualization=False)
+        #env = AgentFormation(visualization=False)
         
         opt.outf = "%s/%d" % (opt.out_, current_scale)
         try:

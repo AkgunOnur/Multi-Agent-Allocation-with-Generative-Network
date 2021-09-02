@@ -52,6 +52,8 @@ def parameters():
     parser.add_argument('--multi_step', type=int, default=1, help='Multi step')
     parser.add_argument('--out_shape', type=int, default=10, help='Observation image shape')
     parser.add_argument('--hid_size', type=int, default=64, help='Hidden size dimension')
+    parser.add_argument('--out_shape_list', type=list, default=[20,40,60,80], help='output shape array')
+    parser.add_argument('--fc1_shape_list', type=list, default=[1350,7350,18150,33750], help='fc1 size array')
     parser.add_argument('--device', default=device, help='device')
 
     return parser.parse_args()
@@ -62,6 +64,9 @@ class rl:
         self.current_scale = current_scale
         self.iteration = 0
         self.best_reward = -np.inf
+
+        self.args.out_shape = self.args.out_shape_list[current_scale]#10 if current_scale==0 else 15
+        self.args.fc1_size = self.args.fc1_shape_list[current_scale]#150 if current_scale==0 else 600
         
         # Create environments.
         self.env = AgentFormation(visualization=self.args.visualization)
@@ -86,7 +91,7 @@ class rl:
         self.dqn.memory.append(agent_obs, action, episode_reward, agent_next_obs, done)
         if  self.iteration > self.args.start_step and self.iteration % self.args.update_interval == 0:
             self.dqn.learn()
-            print("dqn learn")
+            #print("dqn learn")
         # if episode_reward > self.best_reward:
         #     self.best_reward = episode_reward
             #self.dqn.save_models(os.path.join(self.args.model_dir, 'train'), current_scale, 1)

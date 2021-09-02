@@ -47,22 +47,24 @@ def fa_regenate(array):
     for x in range(len(array[0])): #row
         for y in range(len(array[1])): #column
             if array[x][y] == 'O' or array[x][y] == 'W':
-                if(x <=4 and y <=4):
+                if(1<= x <=4 and 1<= y <=4):
                     continue
                 obs_x_list.append(x)
                 obs_y_list.append(y)
                 obstacle_locations.append([x, y])
                 matrix_map[1,x,y] = 1
             elif array[x][y] == 'X':
-                if(x <=4 and y <=4):
+                if(1<= x <=4 and 1<= y <=4):
                     continue
                 prize_locations.append([x, y])
                 matrix_map[0,x,y] = 1
 
-    # print("matrix_map: ", array)
-    # print("matrix_map2: ", matrix_map)
+    #print("matrix_map: ", array)
     ds_map.set_obstacle([(i, j) for i, j in zip(obs_y_list, obs_x_list)])
-    #ds_map.get_map(prize_locations)
+    # ds_map.get_map(prize_locations)
+    # print("prize_locations: ", prize_locations)
+    # print("obstacle_locations: ", obstacle_locations)
+    # print("matrix_map2: ", matrix_map)
     #print("file_name: ", str(file_name), " prize_locations : ", prize_locations)
     return ds_map, obstacle_locations, prize_locations, matrix_map, map_lim, obs_y_list, obs_x_list
 

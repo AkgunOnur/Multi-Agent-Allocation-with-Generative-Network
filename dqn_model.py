@@ -31,7 +31,8 @@ class Net(nn.Module):
             Flatten()
         ).apply(initialize_weights_he)
 
-        self.fc1 = nn.Linear(150, args.hid_size)
+        print("self.fc1:", args.fc1_size)
+        self.fc1 = nn.Linear(args.fc1_size, args.hid_size)
         self.fc1.weight.data.normal_(0, 0.1)   # initialization
         self.out = nn.Linear(args.hid_size, args.n_actions)
         self.out.weight.data.normal_(0, 0.1)   # initialization
@@ -102,8 +103,8 @@ class DQN(object):
 
         return model_name
 
-    def save_models(self, save_dir, level, episode_number):
+    def save_models(self, level, save_dir='./saved_models'):#=self.args.model_dir):
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-        torch.save(self.eval_net.state_dict(), os.path.join(save_dir, level + '_policy_' + str(episode_number) + '.pth'))
-        torch.save(self.target_net.state_dict(), os.path.join(save_dir, level + '_target_net_' + str(episode_number) + '.pth'))
+        torch.save(self.eval_net.state_dict(), os.path.join(save_dir, str(level) + '_policy_' +'.pth'))
+        #torch.save(self.target_net.state_dict(), os.path.join(save_dir, str(level) + '_target_net_' + '.pth'))

@@ -64,6 +64,7 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
     
     RL = rl(current_scale)
 
+    #Increase niter two times at final layer
     if(current_scale==len(reals)-1):
         opt.niter = opt.niter*2
 
@@ -169,8 +170,9 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
 
             #Deploy agent in map and get reward for couple of iterations
             agent_mean_reward = RL.train(coded_fake_map, current_scale, epoch)
-
-            errG = torch.tensor(agent_mean_reward, requires_grad=True)
+            # print("output.mean: ", output.mean())
+            #print("(agent_mean_reward: )", agent_mean_reward)
+            errG = -output.mean() + 0.05*torch.tensor(abs(agent_mean_reward), requires_grad=True)
             #print("errG: ", errG)
             #print("errG: ", errG)
             #print("errG: ", type(errG))
@@ -224,6 +226,7 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
         schedulerG.step()
 
     # Save networks
+    RL.dqn.save_models(current_scale)
     torch.save(z_opt, "%s/z_opt.pth" % opt.outf)
     save_networks(G, D, z_opt, opt)
     wandb.save(opt.outf)
