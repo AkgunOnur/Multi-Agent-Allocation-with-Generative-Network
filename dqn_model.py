@@ -22,27 +22,42 @@ class Net(nn.Module):
     def __init__(self, args):
         super(Net, self).__init__()
         self.net = nn.Sequential(
-            nn.Conv2d(2, 3, 3, 1),        
+            nn.Conv2d(2, 8, 5, 1),
+            nn.BatchNorm2d(8),        
             nn.ReLU(),
-            nn.Conv2d(3, 6, 3, 1),         
+            nn.Conv2d(8, 6, 5, 1),
+            nn.BatchNorm2d(6),         
             nn.ReLU(),
-            nn.Conv2d(6, 6, 2, 1),         
+            nn.Conv2d(6, 4, 5, 1),
+            nn.BatchNorm2d(4),
+            nn.ReLU(),
+            nn.Conv2d(4, 2, 3, 1),
+            nn.BatchNorm2d(2),         
+            nn.ReLU(),
+            nn.Conv2d(2, 1, 3, 1),
+            nn.BatchNorm2d(1),         
             nn.ReLU(),
             Flatten()
         ).apply(initialize_weights_he)
 
-        print("self.fc1:", args.fc1_size)
-        self.fc1 = nn.Linear(args.fc1_size, args.hid_size)
+        self.fc1 = nn.Linear(args.fc1_size, 2*args.hid_size)
         self.fc1.weight.data.normal_(0, 0.1)   # initialization
+
+        self.fc2 = nn.Linear(2*args.hid_size, args.hid_size)
+        self.fc2.weight.data.normal_(0, 0.1)   # initialization
+
         self.out = nn.Linear(args.hid_size, args.n_actions)
         self.out.weight.data.normal_(0, 0.1)   # initialization
 
+        self.dropout = nn.Dropout(0.25)
+
     def forward(self, x):
         x = torch.tensor(self.net(x))
-        x = self.fc1(x)
-        x = F.relu(x)
-        actions_value = self.out(x)
-        return actions_value
+        x = F.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = F.relu(self.fc2(x))
+        x = self.dropout(x)
+        return self.out(x)
 
 
 class DQN(object):

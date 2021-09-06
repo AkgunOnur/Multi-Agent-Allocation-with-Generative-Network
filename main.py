@@ -37,9 +37,8 @@ def main():
 
     # Init wandb
     run = wandb.init(project="environment", tags=get_tags(opt),
-                     config=opt, dir=opt.out)
+                     config=opt, dir=opt.out, mode="offline")
     opt.out_ = run.dir
-
     # Init game specific inputs
     replace_tokens = {}
     sprite_path = opt.game + '/sprites'

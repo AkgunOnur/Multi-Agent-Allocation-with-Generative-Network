@@ -60,7 +60,7 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
         z_opt = torch.zeros([1, opt.nc_current, nzx, nzy]).to(opt.device)
         z_opt = pad_noise(z_opt)
 
-    logger.info("Training at scale {}", current_scale)\
+    #logger.info("Training at scale {}", current_scale)\
     
     RL = rl(current_scale)
 
