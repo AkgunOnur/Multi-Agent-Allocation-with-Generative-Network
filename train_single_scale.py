@@ -174,7 +174,7 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
             coded_fake_map = one_hot_to_ascii_level(fake.detach(), opt.token_list)
 
             #Deploy agent in map and get reward for couple of iterations
-            agent_mean_reward = RL.train(coded_fake_map, current_scale, epoch)
+            agent_mean_reward = RL.train(coded_fake_map, epoch)
             # print("output.mean: ", output.mean())
             #print("(agent_mean_reward: )", agent_mean_reward)
             errG = -output.mean() + 0.05*torch.tensor(abs(agent_mean_reward), requires_grad=True)

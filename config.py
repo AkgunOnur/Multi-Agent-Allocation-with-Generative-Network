@@ -33,12 +33,13 @@ def get_arguments():
     # scaling parameters:
     parser.add_argument("--scales", nargs='+', type=float, help="Scales descending (< 1 and > 0)",
                         default=[0.75, 0.5, 0.25])
+    parser.add_argument("--full_map_size", type=int, default=80, help="Full map size. Default 80x80")
     parser.add_argument("--noise_update", type=float, help="additive noise weight", default=0.1)
     parser.add_argument("--pad_with_noise", type=bool, help="use reflection padding? (makes edges random)",
                         default=False)
 
     # optimization hyper parameters:
-    parser.add_argument("--niter", type=int, default=10000, help="number of epochs to train per scale")
+    parser.add_argument("--niter", type=int, default=20000, help="number of epochs to train per scale")
     parser.add_argument("--gamma", type=float, help="scheduler gamma", default=0.1)
     parser.add_argument("--lr_g", type=float, default=0.0005, help="learning rate, default=0.0005")
     parser.add_argument("--lr_d", type=float, default=0.0005, help="learning rate, default=0.0005")
@@ -59,7 +60,7 @@ def get_arguments():
 def post_config(opt):
     """ Initializes parameters. We're using Namespace opt to pass a lot of used parameters to many functions. """
 
-    opt.device = torch.device("cpu" if opt.not_cuda else "cuda:0")
+    opt.device = torch.device("cpu")# if opt.not_cuda else "cuda:0")
     if torch.cuda.is_available() and opt.not_cuda:
         print("WARNING: You have a CUDA device, so you should probably run with --cuda")
 

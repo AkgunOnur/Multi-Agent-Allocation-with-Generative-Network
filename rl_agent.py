@@ -1,17 +1,10 @@
-import os
-import torch
-import time
 import argparse
-import glob
-import re
-import pickle
 import numpy as np
-import csv
 
 from dqn_model import *
 
 from point_mass_formation import AgentFormation
-from read_maps import fa_regenate
+from read_maps import *
 
 
 def parameters():
@@ -73,7 +66,7 @@ class rl:
         #create RL agent
         self.dqn = DQN(self.args)
 
-    def train(self, coded_fake_map, current_scale, iteration):
+    def train(self, coded_fake_map, iteration):
         self.iteration = iteration
         ds_map, obstacle_map, prize_map, agent_obs, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
 
@@ -93,8 +86,31 @@ class rl:
             #print("dqn learn")
         if episode_reward > self.best_reward:
             self.best_reward = episode_reward
-            self.dqn.save_models(current_scale)
+            self.dqn.save_models(self.current_scale)
+        return episode_reward
+    
+    def train_random(self, coded_fake_map, iteration):
+        self.iteration = iteration
+        if isinstance(coded_fake_map, np.ndarray):
+            ds_map, obstacle_map, prize_map, agent_obs, map_lim, obs_y_list, obs_x_list = fa_convert(coded_fake_map) #change it
+        else:
+            ds_map, obstacle_map, prize_map, agent_obs, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
+        #reset environment
+        self.env.reset(ds_map, obstacle_map, prize_map, agent_obs, map_lim, obs_y_list, obs_x_list)
 
-        #print(f'Train Scale- {current_scale} | Iteration: {self.iteration} | Episode Reward: {round(episode_reward, 2)}')
-        #print("rl train func ended")
+        #get action
+        action = self.dqn.choose_action(agent_obs) # output is between 0 and 7
+        n_agents = action + 1 # number of allowable agents is 1 to 8
+        episode_reward, done, agent_next_obs = self.env.step(n_agents)
+        if self.args.visualization:
+            self.env.close()
+        
+        self.dqn.memory.append(agent_obs, action, episode_reward, agent_next_obs, done)
+        if  self.iteration > self.args.start_step and self.iteration % self.args.update_interval == 0:
+            self.dqn.learn()
+            #print("dqn learn")
+        if episode_reward > self.best_reward:
+            self.best_reward = episode_reward
+            self.dqn.save_models(self.current_scale)
+
         return episode_reward

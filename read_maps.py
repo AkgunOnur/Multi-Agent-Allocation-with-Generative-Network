@@ -1,8 +1,7 @@
 import numpy as np
-import glob
-import os
 from dstar import *
 
+#Construct map from file
 def ff_regenate(file_name):
     #for file in x:
     prize_locations = []
@@ -29,9 +28,10 @@ def ff_regenate(file_name):
 
     #print("matrix_map: ", matrix_map.shape)
     ds_map.set_obstacle([(i, j) for i, j in zip(obs_x_list, obs_y_list)])
-    print("file_name: ", str(file_name), " prize_locations : ", prize_locations)
+    #print("file_name: ", str(file_name), " prize_locations : ", prize_locations)
     return ds_map, obstacle_locations, prize_locations, matrix_map, map_lim
 
+#Construct map from text array
 def fa_regenate(array):
     array = [item.replace("\n", "") for item in array]
 
@@ -66,6 +66,34 @@ def fa_regenate(array):
     # print("obstacle_locations: ", obstacle_locations)
     # print("matrix_map2: ", matrix_map)
     #print("file_name: ", str(file_name), " prize_locations : ", prize_locations)
+    return ds_map, obstacle_locations, prize_locations, matrix_map, map_lim, obs_y_list, obs_x_list
+
+
+#Construct map from numpy array
+def fa_convert(matrix_map):
+
+    prize_locations = []
+    obstacle_locations = []
+    obs_x_list = []
+    obs_y_list = []
+    ds_map = Map(len(matrix_map), len(matrix_map[0]))
+    map_lim = len(matrix_map[0])
+
+
+    for x in range(len(matrix_map[0])): #row
+        for y in range(len(matrix_map[1])): #column
+            if matrix_map[1][x][y] == 1:
+                obs_x_list.append(x)
+                obs_y_list.append(y)
+                obstacle_locations.append([x, y])
+            elif matrix_map[0][x][y] == 1:
+                prize_locations.append([x, y])
+
+    #print("matrix_map: ", matrix_map)
+    ds_map.set_obstacle([(i, j) for i, j in zip(obs_y_list, obs_x_list)])
+    # print("gelen matrix_map: ", matrix_map)
+    # print("obstacle_locations: ", obstacle_locations)
+    # print("prize_locations: ", prize_locations)
     return ds_map, obstacle_locations, prize_locations, matrix_map, map_lim, obs_y_list, obs_x_list
 
 
