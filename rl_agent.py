@@ -51,7 +51,7 @@ def parameters():
     return parser.parse_args()
 
 class rl:
-    def __init__(self, current_scale):
+    def __init__(self, current_scale, mode='train'):
         self.args = parameters()
         self.current_scale = current_scale
         self.iteration = 0
@@ -65,6 +65,9 @@ class rl:
 
         #create RL agent
         self.dqn = DQN(self.args)
+
+        if(mode=='test'):
+            self.dqn.load_models(self.args.model_dir, self.current_scale, episode_number)
 
     def train(self, coded_fake_map, iteration):
         self.iteration = iteration
@@ -88,6 +91,29 @@ class rl:
             self.best_reward = episode_reward
             self.dqn.save_models(self.current_scale)
         return episode_reward
+    
+    def test(self, coded_fake_map):
+        ds_map, obstacle_map, prize_map, agent_obs, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
+
+        #reset environment
+        self.env.reset(ds_map, obstacle_map, prize_map, agent_obs, map_lim, obs_y_list, obs_x_list)
+
+        #get action
+        action = self.dqn.choose_action(agent_obs) # output is between 0 and 7
+        n_agents = action + 1 # number of allowable agents is 1 to 8
+        episode_reward, done, agent_next_obs = self.env.step(n_agents)
+        if self.args.visualization:
+            self.env.close()
+        
+        #self.dqn.memory.append(agent_obs, action, episode_reward, agent_next_obs, done)
+        # if  self.iteration > self.args.start_step and self.iteration % self.args.update_interval == 0:
+        #     self.dqn.learn()
+            #print("dqn learn")
+        # if episode_reward > self.best_reward:
+        #     self.best_reward = episode_reward
+        #     self.dqn.save_models(self.current_scale)
+        return episode_reward
+    
     
     def train_random(self, coded_fake_map, iteration):
         self.iteration = iteration

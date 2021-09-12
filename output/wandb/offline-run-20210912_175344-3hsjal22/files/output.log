@@ -1,0 +1,10 @@
+
+scale_number:  0
+Traceback (most recent call last):
+  File "main.py", line 88, in <module>
+    main()
+  File "main.py", line 68, in main
+    test(opt)
+  File "/home/regen/Desktop/Multi-Agent-Allocation-with-Generative-Network/test.py", line 32, in test
+    armut
+NameError: name 'armut' is not defined

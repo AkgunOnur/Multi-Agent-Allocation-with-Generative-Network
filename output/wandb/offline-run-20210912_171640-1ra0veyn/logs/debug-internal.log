@@ -1,0 +1,18 @@
+2021-09-12 17:16:41,067 INFO    MainThread:5905 [internal.py:wandb_internal():91] W&B internal server running at pid: 5905, started at: 2021-09-12 17:16:41.067287
+2021-09-12 17:16:41,069 DEBUG   HandlerThread:5905 [handler.py:handle_request():124] handle_request: run_start
+2021-09-12 17:16:41,069 INFO    WriterThread:5905 [datastore.py:open_for_write():80] open: output/wandb/offline-run-20210912_171640-1ra0veyn/run-1ra0veyn.wandb
+2021-09-12 17:16:41,073 DEBUG   HandlerThread:5905 [meta.py:__init__():34] meta init
+2021-09-12 17:16:41,073 DEBUG   HandlerThread:5905 [meta.py:__init__():48] meta init done
+2021-09-12 17:16:41,073 DEBUG   HandlerThread:5905 [meta.py:probe():205] probe
+2021-09-12 17:16:41,080 DEBUG   HandlerThread:5905 [meta.py:_setup_git():195] setup git
+2021-09-12 17:16:41,092 DEBUG   HandlerThread:5905 [meta.py:_setup_git():202] setup git done
+2021-09-12 17:16:41,093 DEBUG   HandlerThread:5905 [meta.py:_save_pip():52] save pip
+2021-09-12 17:16:41,093 DEBUG   HandlerThread:5905 [meta.py:_save_pip():66] save pip done
+2021-09-12 17:16:41,093 DEBUG   HandlerThread:5905 [meta.py:_save_conda():73] save conda
+2021-09-12 17:16:42,663 DEBUG   HandlerThread:5905 [meta.py:_save_conda():81] save conda done
+2021-09-12 17:16:42,663 DEBUG   HandlerThread:5905 [meta.py:probe():247] probe done
+2021-09-12 17:16:45,238 DEBUG   HandlerThread:5905 [handler.py:handle_request():124] handle_request: shutdown
+2021-09-12 17:16:45,238 INFO    HandlerThread:5905 [handler.py:finish():658] shutting down handler
+2021-09-12 17:16:46,192 INFO    SenderThread:5905 [sender.py:finish():947] shutting down sender
+2021-09-12 17:16:46,206 INFO    WriterThread:5905 [datastore.py:close():288] close: output/wandb/offline-run-20210912_171640-1ra0veyn/run-1ra0veyn.wandb
+2021-09-12 17:16:46,210 INFO    MainThread:5905 [internal.py:handle_exit():78] Internal process exited

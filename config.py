@@ -11,19 +11,23 @@ from utils import set_seed
 
 def get_arguments():
     parser = argparse.ArgumentParser()
-    # Game Type - Supports: mario, mariokart
+    # Game Type - Supports: environment
     parser.add_argument("--game", default="environment", help="Which game is to be used?")
+
+    #Working mode - Supports: train and test
+    parser.add_argument("--mode", default="train", help="Which game is to be used?")
 
     # workspace:
     parser.add_argument("--not_cuda", action="store_true", help="disables cuda", default=0)
 
-    # load, input, save configurations:
+    # load, input, output, save configurations:
     parser.add_argument("--netG", default="", help="path to netG (to continue training)")
     parser.add_argument("--netD", default="", help="path to netD (to continue training)")
     parser.add_argument("--manualSeed", type=int, help="manual seed")
     parser.add_argument("--out", help="output folder", default="output")
     parser.add_argument("--input-dir", help="input image dir", default="input")
     parser.add_argument("--input-name", help="input image name", default="harita.txt")
+    parser.add_argument("--test_dir", help="test input map dir", default="test_maps")
 
     # networks hyper parameters:
     parser.add_argument("--nfc", type=int, help="number of filters for conv layers", default=64)

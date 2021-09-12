@@ -1,6 +1,7 @@
 # Code inspired by https://github.com/tamarott/SinGAN
 from generate_samples import generate_samples
 from train import train
+from test import test
 
 from environment.tokens import REPLACE_TOKENS as REPLACE_TOKENS
 
@@ -50,18 +51,23 @@ def main():
         NameError("name of --game not recognized. Supported: environment")
 
 
-    # Read level according to input arguments
-    real = read_level(opt, None, replace_tokens).to(opt.device)
+    if(opt.mode == 'train'):
+        # Read level according to input arguments
+        real = read_level(opt, None, replace_tokens).to(opt.device)
 
-    # Train!
-    generators, noise_maps, reals, noise_amplitudes = train(real, opt)
+        # Train!
+        generators, noise_maps, reals, noise_amplitudes = train(real, opt)
 
-    
-    # Generate Samples of same size as level
-    logger.info("Finished training! Generating random samples...")
-    in_s = None
-    generate_samples(generators, noise_maps, reals,
-                     noise_amplitudes, opt, in_s=in_s)
+        
+        # Generate Samples of same size as level
+        logger.info("Finished training! Generating random samples...")
+        in_s = None
+        generate_samples(generators, noise_maps, reals,
+                        noise_amplitudes, opt, in_s=in_s)
+    elif(opt.mode == 'test'):
+        test(opt)
+    else:
+        print("Unnoticeable Working Mode")
 
 
 
