@@ -67,7 +67,7 @@ class rl:
         self.dqn = DQN(self.args)
 
         if(mode=='test'):
-            self.dqn.load_models(self.args.model_dir, self.current_scale, episode_number)
+            self.dqn.load_models(self.args.model_dir, self.current_scale)
 
     def train(self, coded_fake_map, iteration):
         self.iteration = iteration

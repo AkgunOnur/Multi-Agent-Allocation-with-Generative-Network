@@ -30,10 +30,8 @@ def test(opt):
         scale_number = int(int(directory)/20-1)
         print("scale_number: ", scale_number)
 
-        #initalize rl agent here
+        #initalizerl agent and load its weights
         RL = rl(int(scale_number), mode='test')
-
-        #TODO: Load RL weights
 
         #for maps in this scale
         for i in range(len(file_names)):
@@ -42,5 +40,5 @@ def test(opt):
             #Deploy agent in map and get reward for couple of iterations
             agent_mean_reward = RL.test(map)
             print("agent_mean_reward: ", agent_mean_reward)
-            armut
+            #armut
             #log rewards

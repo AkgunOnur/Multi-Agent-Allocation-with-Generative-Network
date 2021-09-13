@@ -108,6 +108,9 @@ class DQN(object):
         # print ("Learn function is called!")
 
     def load_models(self, load_dir, level):
+        print("load_dir: ", load_dir)
+        print("level: ", level)
+
         model_path = os.path.join(load_dir, level + '_policy_' + '.pth')
         model_name = os.path.join(level + '_policy_')
         print ("Model ", model_path, " is loaded!")
