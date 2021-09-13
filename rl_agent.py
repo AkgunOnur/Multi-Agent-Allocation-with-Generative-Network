@@ -11,7 +11,6 @@ def parameters():
     # model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/saved_models'
     # load_model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/models'
     model_dir = './saved_models'
-    load_model_dir = './models'
 
     #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     device = "cpu"
@@ -21,7 +20,6 @@ def parameters():
     parser.add_argument('--visualization', default=False, type=bool, help='number of training episodes')
     # test
     #parser.add_argument('--test', default=False, action='store_true', help='number of training episodes')
-    parser.add_argument('--load_model', default=load_model_dir, help='number of training episodes')
     #parser.add_argument('--test_iteration', default=25, type=int, help='number of test iterations')
     parser.add_argument('--seed', default=7, type=int, help='seed number for test')
     #parser.add_argument('--test_model_no', default=0, help='single model to evaluate')
@@ -33,7 +31,7 @@ def parameters():
     parser.add_argument('--start_step', type=int, default=128, help='After how many steps to start training')
     # model
     #parser.add_argument('--resume', default=False, action='store_true', help='to continue the training')
-    parser.add_argument('--model_dir', default=model_dir, help='folder to save models')
+    parser.add_argument('--model_dir', default='./saved_models', help='folder to save models')
     parser.add_argument('--lr', type=float, default=0.01, help='learning rate')
     parser.add_argument('--epsilon', default=0.9, type=float, help='greedy policy')
     parser.add_argument('--gamma', default=0.99, type=float, help='reward discount')
@@ -56,6 +54,7 @@ class rl:
         self.current_scale = current_scale
         self.iteration = 0
         self.best_reward = -np.inf
+        self.mode = mode
 
         self.args.out_shape = self.args.out_shape_list[current_scale]
         self.args.fc1_size = self.args.fc1_shape_list[current_scale]
@@ -66,8 +65,10 @@ class rl:
         #create RL agent
         self.dqn = DQN(self.args)
 
-        if(mode=='test'):
-            self.dqn.load_models(self.args.model_dir, self.current_scale)
+        if(self.mode=='test'):
+            # print("self.args.model_dir:", self.args.model_dir)
+            # print("str(self.current_scale):", str(self.current_scale))
+            self.dqn.load_models(str(self.current_scale))
 
     def train(self, coded_fake_map, iteration):
         self.iteration = iteration
@@ -104,14 +105,6 @@ class rl:
         episode_reward, done, agent_next_obs = self.env.step(n_agents)
         if self.args.visualization:
             self.env.close()
-        
-        #self.dqn.memory.append(agent_obs, action, episode_reward, agent_next_obs, done)
-        # if  self.iteration > self.args.start_step and self.iteration % self.args.update_interval == 0:
-        #     self.dqn.learn()
-            #print("dqn learn")
-        # if episode_reward > self.best_reward:
-        #     self.best_reward = episode_reward
-        #     self.dqn.save_models(self.current_scale)
         return episode_reward
     
     
