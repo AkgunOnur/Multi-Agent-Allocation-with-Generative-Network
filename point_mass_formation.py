@@ -1,7 +1,7 @@
 import gym
 from gym import spaces, error, utils
 from gym.utils import seeding
-# from gym.envs.classic_control import rendering
+from gym.envs.classic_control import rendering
 # import rendering
 import numpy as np
 import configparser
@@ -140,10 +140,10 @@ class AgentFormation(gym.Env):
                 total_reward -= 0.25
                 prev_pos, current_pos = self.get_agent_desired_loc(agent_ind, current_action)
 
-                # if list(current_pos) in self.agents_locations:
-                #     # print ("Non available grid for agent {}!".format(agent_ind+1))
-                #     self.agents[agent_ind].state = np.copy(prev_pos)
-                #     continue
+                if list(current_pos) in self.agents_locations:
+                    # print ("Non available grid for agent {}!".format(agent_ind+1))
+                    self.agents[agent_ind].state = np.copy(prev_pos)
+                    continue
 
                 self.agents_locations[agent_ind] = list(current_pos)
 
@@ -224,6 +224,7 @@ class AgentFormation(gym.Env):
         self.observation[1,:,:] = np.copy(self.obstacle_map)
         self.prize_map = self.prize_map.reshape(1, self.out_shape, self.out_shape)
         return self.prize_map
+
 
     def reset(self, level, index = None):
         # Manual curriculum

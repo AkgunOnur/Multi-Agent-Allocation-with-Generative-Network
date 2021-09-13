@@ -21,7 +21,7 @@ def main():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     device = "cpu"
-    visualization = False
+    visualization = True
 
     # Create environments.
     env = AgentFormation(visualization=visualization)
@@ -124,7 +124,7 @@ def main():
         level = "easy"
         previous_mode = False
         # time.sleep(0.5)
-
+        last_episode = 0
         if args.resume:
             with open('variables.pickle', 'rb') as handle:
                 last_episode, level_actual, train_rewards, eval_rewards = pickle.load(handle)

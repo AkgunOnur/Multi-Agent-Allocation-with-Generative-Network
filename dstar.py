@@ -217,35 +217,11 @@ class Dstar:
 
     def modify(self, state):
         self.modify_cost(state)
-        while True:
+        N_iter = 1000
+        iteration = 0
+        while True and iteration < N_iter:
+            iteration += 1
             k_min = self.process_state()
             if k_min >= state.h:
                 break
-
-
-    def test_models(self): # trivial function
-        for name in glob.glob(os.path.join(args.load_model, '*.pth')):
-            mean_reward = 0
-            if name.find('policy') > 0:
-                model_no = (int(re.findall(r'\d+', name)[0]))
-                dqn.load_models(args.load_model, model_no)
-
-                for i_iter in range(args.test_iteration):
-                    seed_number = i_iter % 20
-                    agent_obs = env.reset(seed_number)
-                    episode_reward = 0
-
-                    action = dqn.choose_action(agent_obs) # output is between 0 and 7
-                    n_agents = action + 1 # number of allowable agents is 1 to 8
-                    episode_reward, done, agent_next_obs = env.step(n_agents)
-
-                    print('Episode: ', i_iter + 1, '| Episode Reward: ', round(episode_reward, 2))
-
-                    mean_reward += episode_reward
-
-                mean_reward = mean_reward / args.test_iteration
-                print('Model: {0} / Mean Reward: {1:.3} \n'.format(model_no, mean_reward))
-                model_reward_list[model_no] = mean_reward
-
-                with open('model_reward_list.pkl', 'wb') as f:  
-                    pickle.dump(model_reward_list, f)
+        return False if iteration >= N_iter else True
