@@ -16,6 +16,7 @@ def get_arguments():
 
     #Working mode - Supports: train and test
     parser.add_argument("--mode", default="train", help="Which game is to be used?")
+    parser.add_argument("--test_type", default="library", help="Testing with test library maps or gan generated maps")
 
     # workspace:
     parser.add_argument("--not_cuda", action="store_true", help="disables cuda", default=0)
@@ -48,8 +49,8 @@ def get_arguments():
     parser.add_argument("--lr_g", type=float, default=0.0005, help="learning rate, default=0.0005")
     parser.add_argument("--lr_d", type=float, default=0.0005, help="learning rate, default=0.0005")
     parser.add_argument("--beta1", type=float, default=0.5, help="beta1 for adam. default=0.5")
-    parser.add_argument("--Gsteps", type=int, help="Generator inner steps", default=2)
-    parser.add_argument("--Dsteps", type=int, help="Discriminator inner steps", default=2)
+    parser.add_argument("--Gsteps", type=int, help="Generator inner steps", default=1)
+    parser.add_argument("--Dsteps", type=int, help="Discriminator inner steps", default=1)
     parser.add_argument("--lambda_grad", type=float, help="gradient penalty weight", default=0.1)
     # alpha controls how much the reconstruction factors into the training. 0 = No reconstruction.
     parser.add_argument("--alpha", type=float, help="reconstruction loss weight", default=100)
@@ -78,6 +79,7 @@ def post_config(opt):
     if not hasattr(opt, "out_"):
         opt.out_ = "%s/%s/" % (opt.out, opt.input_name[:-4])
     opt.outf = "0"  # changes with each scale trained
+    opt.inf = "0"  # changes with each scale tested
     opt.num_scales = len(opt.scales)  # number of scales is implicitly defined
     opt.noise_amp = 1.0  # noise amp for lowest scale always starts at 1
     opt.seed_road = None  # for mario kart seed roads after training
