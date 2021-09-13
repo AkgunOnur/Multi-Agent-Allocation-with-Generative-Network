@@ -277,8 +277,8 @@ class AgentFormation(gym.Env):
             
         # Initialization points of prizes
         # np.random.seed(seed_number)
-        self.N_prize = np.random.randint(1, 10)
-        self.N_prize = 10
+        self.N_prize = np.random.randint(10, 41)
+        # self.N_prize = 40
         self.prize_exists = np.ones(self.N_prize, dtype=bool)
         self.infeasible_prizes = np.zeros(self.N_prize, dtype=bool)
         self.prize_locations = []
@@ -448,7 +448,7 @@ class AgentFormation(gym.Env):
             self.viewer = rendering.Viewer(1000, 1000)
             self.viewer.set_bounds(0, self.map_lim - 1, 0, self.map_lim - 1)
             fname = path.join(path.dirname(__file__), "assets/drone.png")
-            fname_prize = path.join(path.dirname(__file__), "assets/prize.jpg")
+            fname_prize = path.join(path.dirname(__file__), "assets/prize.png")
 
             background = rendering.make_polygon([(0, 0), (0, self.map_lim - 1),
                                                  (self.map_lim - 1, self.map_lim - 1), 
@@ -512,7 +512,7 @@ class AgentFormation(gym.Env):
                     rendering.Image(fname, 1, 1))  # agent size
                 self.agents_img[i].add_attr(self.agent_transforms[i])
 
-            for i in range(10):
+            for i in range(40):
                 self.prize_transformations.append(rendering.Transform())
                 self.prizes.append(rendering.Image(
                     fname_prize, 1., 1.))  # prize size

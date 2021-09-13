@@ -18,14 +18,14 @@ from point_mass_formation import AgentFormation
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     device = "cpu"
-    visualization = False
+    visualization = True
 
     # Create environments.
     env = AgentFormation(visualization=visualization)
     
     parser = argparse.ArgumentParser(description='Collect dataset for classifier')
     parser.add_argument('--seed', default=7, type=int, help='seed number for test')
-    parser.add_argument('--num_episodes', default=600, type=int, help='number of episodes')
+    parser.add_argument('--num_episodes', default=3000, type=int, help='number of episodes')
     parser.add_argument('--resume', default=False, action='store_true', help='to continue the training')
     parser.add_argument('--device', default=device, help='device')
 
@@ -40,10 +40,10 @@ def main():
 
     for i_episode in range(1, args.num_episodes + 1):
 
-        if i_episode <= 100:
+        if i_episode <= 1000:
             level = "easy"
             # index = 0
-        elif i_episode > 100 and i_episode <= 300:
+        elif i_episode > 1000 and i_episode <= 2000:
             level = "medium"
             # index = np.random.choice(6)
         else:
