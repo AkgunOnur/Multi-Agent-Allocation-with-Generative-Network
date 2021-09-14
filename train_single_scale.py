@@ -72,7 +72,7 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
         z_opt = pad_noise(z_opt)
 
     #logger.info("Training at scale {}", current_scale)\
-    
+
     #Initalize environment, library and classifier classes
     e = env_class(current_scale)
     lib = Library(opt.library_size)
@@ -177,7 +177,7 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
             #================ Experimental================
             #Generate fake map(s) and make it playable
             coded_fake_map = one_hot_to_ascii_level(fake.detach(), opt.token_list)
-
+            
             _, _, _, map, _, _, _ = fa_regenate(coded_fake_map)
 
             #Sent generated map into classifier and env
