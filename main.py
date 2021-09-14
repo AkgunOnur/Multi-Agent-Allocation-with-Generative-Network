@@ -1,7 +1,7 @@
 # Code inspired by https://github.com/tamarott/SinGAN
 from generate_samples import generate_samples
 from train import train
-from test import test
+#from test import test
 
 from environment.tokens import REPLACE_TOKENS as REPLACE_TOKENS
 
@@ -52,6 +52,8 @@ def main():
 
 
     if(opt.mode == 'train'):
+        #TODO: Buraya for ekleyip birden fazla resimle egitim yapilabilir.
+        
         # Read level according to input arguments
         real = read_level(opt, None, replace_tokens).to(opt.device)
 
@@ -64,25 +66,11 @@ def main():
         in_s = None
         generate_samples(generators, noise_maps, reals,
                         noise_amplitudes, opt, in_s=in_s)
+    
     elif(opt.mode == 'test'):
         test(opt)
     else:
         print("Unnoticeable Working Mode")
-
-
-
-
-    # Generate samples of smaller size than level
-    # logger.info("Generating arbitrary sized random samples...")
-    # scale_v = 0.8  # Arbitrarily chosen scales
-    # scale_h = 0.4
-    # real_down = downsample(1, [[scale_v, scale_h]], real, opt.token_list)
-    # real_down = real_down[0]
-    # # necessary for correct input shape
-    # in_s = torch.zeros(real_down.shape, device=opt.device)
-    # generate_samples(generators, noise_maps, reals, noise_amplitudes, opt, in_s=in_s,
-    #                  scale_v=scale_v, scale_h=scale_h, save_dir="arbitrary_random_samples")
-
 
 if __name__ == "__main__":
     main()

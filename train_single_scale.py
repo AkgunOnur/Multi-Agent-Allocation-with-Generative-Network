@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 import torch
 import torch.nn as nn
@@ -16,7 +17,15 @@ from environment.level_utils import group_to_token, one_hot_to_ascii_level, toke
 from environment.tokens import TOKEN_GROUPS as TOKEN_GROUPS
 from models import calc_gradient_penalty, save_networks
 
-from rl_agent import rl
+from env_funcs import env_class
+from construct_training_library import Library
+import pandas as pd
+
+stat_columns = ['errD_fake', 'errD_real', 'errG', 'reward']
+
+def write_stats(stats,file_name='training_stats.csv'):
+    df_stats = pd.DataFrame([stats], columns=stat_columns)
+    df_stats.to_csv(file_name, mode='a', index=False,header=not os.path.isfile(file_name))
 
 def update_noise_amplitude(z_prev, real, opt):
     """ Update the amplitude of the noise for the current scale according to the previous noise map. """
@@ -29,7 +38,7 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
     original level, generators and noise_maps contain information from previous scales and will receive information in
     this scale, input_from_previous_scale holds the noise map and images from the previous scale, noise_amplitudes hold
     the amplitudes for the noise in all the scales. opt is a namespace that holds all necessary parameters. """
-    current_scale = len(generators)
+    current_scale = len(generators) #modified
     real = reals[current_scale]
 
     if opt.game == 'environment':
@@ -62,14 +71,13 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
 
     #logger.info("Training at scale {}", current_scale)\
     
-    RL = rl(current_scale)
+    e = env_class(current_scale)
+    lib = Library(opt.library_size)
 
     #Increase niter two times at final layer
-    if(current_scale==len(reals)-1):
-        opt.niter = opt.niter*2
 
     for epoch in tqdm(range(opt.niter)):
-        step = current_scale * opt.niter + epoch
+        step = current_scale*opt.niter + epoch
         noise_ = generate_spatial_noise([1, opt.nc_current, nzx, nzy], device=opt.device)
         noise_ = pad_noise(noise_)
 
@@ -79,18 +87,14 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
         for j in range(opt.Dsteps):
             # train with real
             D.zero_grad()
-
             output = D(real).to(opt.device)
-            #print("dis real: ", output.mean())
-            #print("dis real: ", output.shape)
-
             errD_real = -output.mean()
-            #print("errD_real: ", errD_real)
+            
             errD_real.backward(retain_graph=True)
 
             # train with fake
             if (j == 0) & (epoch == 0):
-                if current_scale == 0:  # If we are in the lowest scale, noise is generated from scratch
+                if current_scale == 0:  #modified: was 0 # If we are in the lowest scale, noise is generated from scratch
                     prev = torch.zeros(1, opt.nc_current, nzx, nzy).to(opt.device)
                     input_from_prev_scale = prev
                     prev = pad_image(prev)
@@ -135,13 +139,10 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
 
             # Then run the result through the discriminator
             output = D(fake.detach())
-            #print("dis fake: ", output.mean())
-            #print("dis fake: ", output.shape)
             errD_fake = output.mean()
 
             # Backpropagation
             errD_fake.backward(retain_graph=False)
-            #print("errD_fake: ", errD_fake)
             # Gradient Penalty
             gradient_penalty = calc_gradient_penalty(D, real, fake, opt.lambda_grad, opt.device)
             #print("gradient_penalty: ", gradient_penalty)
@@ -164,23 +165,21 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
             G.zero_grad()
             fake = G(noise.detach(), prev.detach(), temperature=1 if current_scale != opt.token_insert else 1)
             output = D(fake)
-            #print("gen loss: ", -output.mean())
             #================ Experimental================
-            #Calculate loss
-            # if epoch <= int(opt.niter/2):
-            #     errG = -output.mean()
-            # else:
             #Generate fake map(s) and make it playable
             coded_fake_map = one_hot_to_ascii_level(fake.detach(), opt.token_list)
 
-            #Deploy agent in map and get reward for couple of iterations
-            agent_mean_reward = RL.train(coded_fake_map, epoch)
-            # print("output.mean: ", output.mean())
-            #print("(agent_mean_reward: )", agent_mean_reward)
-            errG = -output.mean() + 0.05*torch.tensor(abs(agent_mean_reward), requires_grad=True)
-            #print("errG: ", errG)
-            #print("errG: ", errG)
-            #print("errG: ", type(errG))
+            #Sent generated map into classifier and env
+            n_agents = np.random.randint(1,8) #RL.train(coded_fake_map, epoch) #classifier returns # agents that are deployed in map
+            
+            #reset env and call D* for n_agents
+            reward, zo_map = e.reset_and_step(coded_fake_map, n_agents)
+
+            lib.evaluate(zo_map, reward)
+
+            errG = -output.mean() + 0.05*torch.tensor(abs(reward), requires_grad=True)
+            #======== log stats ===========
+            write_stats([errD_fake, errD_real, errG, reward])
             #================================
 
             errG.backward(retain_graph=False)
@@ -230,8 +229,8 @@ def train_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scal
         schedulerD.step()
         schedulerG.step()
 
-    # Save networks
-    RL.dqn.save_models(current_scale)
+    # Save networks and training library maps
+    lib.save_maps()
     torch.save(z_opt, "%s/z_opt.pth" % opt.outf)
     save_networks(G, D, z_opt, opt)
     wandb.save(opt.outf)
