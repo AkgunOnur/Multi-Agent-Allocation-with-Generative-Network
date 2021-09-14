@@ -174,14 +174,14 @@ class Dstar:
 
         self.open_list.add(end)
         iteration2 = 0
-        while True and iteration2 <200:
+        while True and iteration2 <1000:
             iteration2 +=1
             self.process_state()
             #print("whileda donuyo")
             if start.t == "close":
                 #print("ife girdi")
                 break
-        if iteration2>=200:    
+        if iteration2>=1000:    
             return False, pos_list, action_list
         
         start.set_state("s")
@@ -190,7 +190,7 @@ class Dstar:
         s.set_state("e")
         tmp = start
 
-        while tmp != end and iteration < 100:
+        while tmp != end and iteration < 1000:
             iteration += 1
             tmp.set_state("*")
             rx.append(tmp.x)
@@ -223,12 +223,12 @@ class Dstar:
     def modify(self, state):
         self.modify_cost(state)
         iteration = 0
-        while True and iteration <200:
+        while True and iteration <1000:
             iteration += 1
             k_min = self.process_state()
             if k_min >= state.h:
                 break
-        return False if iteration>=200 else True
+        return False if iteration>=1000 else True
 
 
     def test_models(self): # trivial function

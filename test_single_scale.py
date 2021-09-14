@@ -16,7 +16,7 @@ from environment.level_utils import group_to_token, one_hot_to_ascii_level, toke
 from environment.tokens import TOKEN_GROUPS as TOKEN_GROUPS
 from models import calc_gradient_penalty, save_networks
 
-from rl_agent import rl
+from env_funcs import env_class
 import pandas as pd
 
 stats_columns = ['errD_fake', 'errD_real', 'errG', 'agent_reward']
@@ -63,7 +63,7 @@ def test_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scale
 
     #logger.info("Training at scale {}", current_scale)\
     
-    RL = rl(current_scale, 'test')
+    e = env_class(current_scale)
 
     for epoch in tqdm(range(opt.niter)):
         step = current_scale * opt.niter + epoch
@@ -137,19 +137,9 @@ def test_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scale
             coded_fake_map = one_hot_to_ascii_level(fake.detach(), opt.token_list)
 
             #Deploy agent in map and get reward for couple of iterations
-            agent_mean_reward = RL.test(coded_fake_map)
+            agent_mean_reward = e.test(coded_fake_map)
 
             errG = -output.mean() + 0.05*torch.tensor(abs(agent_mean_reward), requires_grad=True)
 
         write_stats([errD_fake, errD_real, errG, agent_mean_reward])
-
-        ############################
-        # (2) Update G network: maximize D(G(z))
-        ###########################
-        # for j in range(opt.Gsteps):
-        #     G.zero_grad()
-        #     fake = G(noise.detach(), prev.detach(), temperature=1 if current_scale != opt.token_insert else 1)
-        #     output = D(fake)
-        #     errG = -output.mean() + 0.05*torch.tensor(abs(agent_mean_reward), requires_grad=True)
-
     return z_opt, input_from_prev_scale, G

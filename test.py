@@ -9,7 +9,7 @@ from models import init_models, reset_grads, restore_weights
 from environment.level_utils import load_level_from_text
 from dqn_model import *
 from point_mass_formation import AgentFormation
-from rl_agent import rl
+from env_funcs import env_class
 import os
 import glob
 
@@ -56,7 +56,7 @@ def test(opt):
             #print("scale_number: ", scale_number)
 
             #initalizerl agent and load its weights
-            RL = rl(int(scale_number), 'test')
+            e = env_class(int(scale_number))
 
             agent_mean_reward = 0.0
 
@@ -65,7 +65,7 @@ def test(opt):
                 map = load_level_from_text(file_names[i])
                 
                 #Deploy agent in map and get reward for couple of iterations
-                agent_mean_reward += RL.test(map)
+                agent_mean_reward += e.test(map)
                 #print("Map: "+ str(file_names[i])+ " agent_mean_reward: ", agent_mean_reward)
                 #log rewards
             print("agent_mean_reward for scale" + str(scale_number) + " is :", agent_mean_reward/len(file_names))

@@ -21,25 +21,24 @@ def train(real, opt):
     noise_maps = []
     noise_amplitudes = []
 
-    if opt.game == 'environment':
-        token_group = TOKEN_GROUPS
+    token_group = TOKEN_GROUPS
 
     scales = [[x, x] for x in opt.scales]
     opt.num_scales = len(scales)
 
-    if opt.game == 'environment':
-        scaled_list = special_downsampling(opt.num_scales, scales, real, opt.token_list)
+    # if opt.game == 'environment':
+    #     scaled_list = special_downsampling(opt.num_scales, scales, real, opt.token_list)
 
-    reals = [*scaled_list, real]
+    reals = [real] #[*scaled_list, real]
 
     # If (experimental) token grouping feature is used:
     if opt.token_insert >= 0:
         reals = [(token_to_group(r, opt.token_list, token_group) if i < opt.token_insert else r) for i, r in enumerate(reals)]
         reals.insert(opt.token_insert, token_to_group(reals[opt.token_insert], opt.token_list, token_group))
-    input_from_prev_scale = torch.zeros_like(reals[0])
+    input_from_prev_scale = torch.zeros_like(reals[-1]) #was [0] switched to [-1] for only final scale training
 
-    stop_scale = len(reals)
-    opt.stop_scale = stop_scale
+    #stop_scale = 
+    opt.stop_scale = len(reals)# stop_scale
 
     # Log the original input level as an image
     img = opt.ImgGen.render(one_hot_to_ascii_level(real, opt.token_list))
@@ -47,9 +46,7 @@ def train(real, opt):
     os.makedirs("%s/state_dicts" % (opt.out_), exist_ok=True)
 
     # Training Loop
-    for current_scale in range(0, stop_scale):
-        #Initalize rl environment
-        #env = AgentFormation(visualization=False)
+    for current_scale in range(0, opt.stop_scale):
         
         opt.outf = "%s/%d" % (opt.out_, current_scale)
         try:
@@ -69,8 +66,8 @@ def train(real, opt):
 
         # Actually train the current scale
         z_opt, input_from_prev_scale, G = train_single_scale(D,  G, reals, generators, noise_maps,
-                                                             input_from_prev_scale, noise_amplitudes, opt)
-        print("Single scale bitti")
+                                                            input_from_prev_scale, noise_amplitudes, opt)
+
         # Reset grads and save current scale
         G = reset_grads(G, False)
         G.eval()

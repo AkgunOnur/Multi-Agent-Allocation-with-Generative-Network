@@ -15,8 +15,9 @@ def get_arguments():
     parser.add_argument("--game", default="environment", help="Which game is to be used?")
 
     #Working mode - Supports: train and test
-    parser.add_argument("--mode", default="train", help="Which game is to be used?")
+    parser.add_argument("--mode", default="train", help="working mode train or test")
     parser.add_argument("--test_type", default="library", help="Testing with test library maps or gan generated maps")
+    parser.add_argument("--library_size", type=int, default=25, help=" final training library size")
 
     # workspace:
     parser.add_argument("--not_cuda", action="store_true", help="disables cuda", default=0)
@@ -37,14 +38,14 @@ def get_arguments():
 
     # scaling parameters:
     parser.add_argument("--scales", nargs='+', type=float, help="Scales descending (< 1 and > 0)",
-                        default=[0.75, 0.5, 0.25])
+                        default=[1])#default=[0.75, 0.5, 0.25]
     parser.add_argument("--full_map_size", type=int, default=80, help="Full map size. Default 80x80")
     parser.add_argument("--noise_update", type=float, help="additive noise weight", default=0.1)
     parser.add_argument("--pad_with_noise", type=bool, help="use reflection padding? (makes edges random)",
                         default=False)
 
     # optimization hyper parameters:
-    parser.add_argument("--niter", type=int, default=20000, help="number of epochs to train per scale")
+    parser.add_argument("--niter", type=int, default=200, help="number of epochs to train per scale")
     parser.add_argument("--gamma", type=float, help="scheduler gamma", default=0.1)
     parser.add_argument("--lr_g", type=float, default=0.0005, help="learning rate, default=0.0005")
     parser.add_argument("--lr_d", type=float, default=0.0005, help="learning rate, default=0.0005")
@@ -75,7 +76,7 @@ def post_config(opt):
     set_seed(opt.manualSeed)
 
     # Defaults for other namespace values that will be overwritten during runtime
-    opt.nc_current = 4  # n tokens of level 1-1
+    opt.nc_current = 3  # n tokens of level 1-1
     if not hasattr(opt, "out_"):
         opt.out_ = "%s/%s/" % (opt.out, opt.input_name[:-4])
     opt.outf = "0"  # changes with each scale trained
