@@ -17,12 +17,15 @@ from environment.tokens import TOKEN_GROUPS as TOKEN_GROUPS
 from models import calc_gradient_penalty, save_networks
 
 from env_funcs import env_class
+from classifier import LeNet
+from read_maps import *
+from construct_library import Library
 import pandas as pd
 
-stats_columns = ['errD_fake', 'errD_real', 'errG', 'agent_reward']
+stat_columns = ['errD_fake', 'errD_real', 'errG', 'reward']
 
-def write_stats(stats,file_name):
-    df_stats = pd.DataFrame([stats], columns=stats_columns)
+def write_stats(stats,file_name='test_stats.csv'):
+    df_stats = pd.DataFrame([stats], columns=stat_columns)
     df_stats.to_csv(file_name, mode='a', index=False,header=not os.path.isfile(file_name))
 
 def update_noise_amplitude(z_prev, real, opt):
@@ -64,6 +67,15 @@ def test_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scale
     #logger.info("Training at scale {}", current_scale)\
     
     e = env_class(current_scale)
+    lib = Library(opt.library_size)
+
+    #Initalize classifier
+    classifier = LeNet(numChannels=2, classes=8).to(opt.device) #(0-7) = 8 is max agent number in map
+    #Load model and switch eval mode
+    classifier.load_state_dict(torch.load("classifier.pt"))
+    classifier.eval()
+
+
 
     for epoch in tqdm(range(opt.niter)):
         step = current_scale * opt.niter + epoch
@@ -78,7 +90,6 @@ def test_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scale
             D.zero_grad()
             output = D(real).to(opt.device)
             errD_real = -output.mean()
-            #TODO: log errD_real
 
             # test with fake
             if (j == 0) & (epoch == 0):
@@ -131,15 +142,25 @@ def test_single_scale(D, G, reals, generators, noise_maps, input_from_prev_scale
             # Then run the result through the discriminator
             output = D(fake.detach())
             errD_fake = output.mean()
-            #TODO: log errD_real
 
             #Generate fake map(s) and make it playable
             coded_fake_map = one_hot_to_ascii_level(fake.detach(), opt.token_list)
+            
+            _, _, _, map, _, _, _ = fa_regenate(coded_fake_map)
 
-            #Deploy agent in map and get reward for couple of iterations
-            agent_mean_reward = e.test(coded_fake_map)
+            #Sent generated map into classifier and env
+            #print("map shape: ", map)
+            map = torch.from_numpy((map.reshape(1,2,80,80)))
+            n_agents = classifier(map.float()) #classifier returns # agents that are deployed in map
+            #print("n_agents: ", n_agents)
+            #reset env and call D* for n_agents
+            reward, zo_map = e.reset_and_step(coded_fake_map, n_agents+1)
 
-            errG = -output.mean() + 0.05*torch.tensor(abs(agent_mean_reward), requires_grad=True)
+            lib.evaluate(zo_map, reward)
 
-        write_stats([errD_fake, errD_real, errG, agent_mean_reward])
+            errG = -output.mean() + 0.05*torch.tensor(abs(reward), requires_grad=True)
+
+            #======== log stats ===========
+            write_stats([errD_fake, errD_real, errG, reward])
+            #================================
     return z_opt, input_from_prev_scale, G

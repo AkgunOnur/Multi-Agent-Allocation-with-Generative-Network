@@ -16,7 +16,7 @@ def get_arguments():
 
     #Working mode - Supports: train and test
     parser.add_argument("--mode", default="train", help="working mode train or test")
-    parser.add_argument("--test_type", default="library", help="Testing with test library maps or gan generated maps")
+    parser.add_argument("--test_type", default="gan", help="Testing with test library maps or gan generated maps")
     parser.add_argument("--library_size", type=int, default=25, help=" final training library size")
 
     # workspace:
@@ -39,13 +39,13 @@ def get_arguments():
     # scaling parameters:
     parser.add_argument("--scales", nargs='+', type=float, help="Scales descending (< 1 and > 0)",
                         default=[1])#default=[0.75, 0.5, 0.25]
-    parser.add_argument("--full_map_size", type=int, default=80, help="Full map size. Default 80x80")
+    parser.add_argument("--full_map_size", type=int, default=40, help="Full map size. Default 80x80")
     parser.add_argument("--noise_update", type=float, help="additive noise weight", default=0.1)
     parser.add_argument("--pad_with_noise", type=bool, help="use reflection padding? (makes edges random)",
                         default=False)
 
     # optimization hyper parameters:
-    parser.add_argument("--niter", type=int, default=200, help="number of epochs to train per scale")
+    parser.add_argument("--niter", type=int, default=500, help="number of epochs to train per scale")
     parser.add_argument("--gamma", type=float, help="scheduler gamma", default=0.1)
     parser.add_argument("--lr_g", type=float, default=0.0005, help="learning rate, default=0.0005")
     parser.add_argument("--lr_d", type=float, default=0.0005, help="learning rate, default=0.0005")

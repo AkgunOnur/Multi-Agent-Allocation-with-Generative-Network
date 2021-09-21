@@ -1,29 +1,42 @@
 # Code inspired by https://github.com/tamarott/SinGAN
 from generate_samples import generate_samples
-from train import train
 #from test import test
 
 from environment.tokens import REPLACE_TOKENS as REPLACE_TOKENS
 
 from environment.level_image_gen import LevelImageGen as LevelGen
-from environment.special_downsampling import special_downsampling
-from environment.level_utils import read_level, read_level_from_file
+from environment.level_utils import read_level, one_hot_to_ascii_level
 
 from config import get_arguments, post_config
 from loguru import logger
 import wandb
 import sys
+import torch
+
+from construct_library import Library
+from env_funcs import env_class
+from classifier import LeNet
+from train import GAN
+from read_maps import *
+import pandas as pd
+import os
+import torch
+from torch.optim import Adam
 
 def get_tags(opt):
     """ Get Tags for logging from input name. Helpful for wandb. """
     return [opt.input_name.split(".")[0]]
 
+colon = ['test_loss', 'train_loss', 'train_lib_size']
+
+def write_tocsv(stats,file_name='performance.csv'):
+    df_stats = pd.DataFrame([stats], columns=colon)
+    df_stats.to_csv(file_name, mode='a', index=False,header=not os.path.isfile(file_name))
 
 def main():
     """ Main Training funtion. Parses inputs, inits logger, trains, and then generates some samples. """
-
+    #==================================================================================
     # torch.autograd.set_detect_anomaly(True)
-
     # Logger init
     logger.remove()
     logger.add(sys.stdout, colorize=True,
@@ -41,34 +54,87 @@ def main():
                      config=opt, dir=opt.out, mode="offline")
     opt.out_ = run.dir
     # Init game specific inputs
-    replace_tokens = {}
     sprite_path = opt.game + '/sprites'
-    if opt.game == 'environment':
-        opt.ImgGen = LevelGen(sprite_path)
-        replace_tokens = REPLACE_TOKENS
-        #downsample = special_downsampling
-    else:
-        NameError("name of --game not recognized. Supported: environment")
+    opt.ImgGen = LevelGen(sprite_path)
+    replace_tokens = REPLACE_TOKENS
+    #==================================================================================
 
+    #Initialize Library and environment
+    L = Library(25)
+    e = env_class()
+
+    #Add first (map,label) into the library
+    L.add(read_level(opt, None, replace_tokens).to(opt.device),6)
+
+    #Initalize classifier and save weights
+    classifier = LeNet(numChannels=3, classes=6).to(opt.device) #(0-6) = 6 is max agent number in map
+
+    # initialize classifier optimizer and loss function
+    optimizer = Adam(classifier.parameters(), lr=1e-3)
+    
+    #==== WARNING: Dont forget to comment out next line ====#
+    torch.save(classifier.state_dict(), "./classifier_init.pth")
+
+    #Test initial classifier perf on test library and log perf.
+    with torch.no_grad():
+        test_loss = classifier.predict(L.test_library)
+    write_tocsv([test_loss, 0.0, 0])
 
     if(opt.mode == 'train'):
-        #TODO: Buraya for ekleyip birden fazla resimle egitim yapilabilir.
-        
-        # Read level according to input arguments
-        real = read_level(opt, None, replace_tokens).to(opt.device)
+        g = GAN(opt)
 
-        # Train!
-        generators, noise_maps, reals, noise_amplitudes = train(real, opt)
+        for s in range(2):
+            #Reset classifier
+            classifier.load_state_dict(torch.load("./classifier_init.pth"))
 
+            #train classifier with training library
+            training_loss = classifier.trainer(L.train_library, optimizer)
+
+            #Test classifier perf on test library
+            with torch.no_grad():
+                test_loss = classifier.predict(L.test_library)
+            
+            #Log Data
+            write_tocsv([test_loss, training_loss, s])
+
+            # while condition to repeat GAN training until training lib expand
+            while(True):
+                #get a random real = ([map, label]) from training library
+                sample_map, _ = L.get()
+
+                #Train GAN and return fake map
+                generated_map = g.train(e, sample_map, classifier, opt)
+                coded_fake_map = one_hot_to_ascii_level(generated_map.detach(), opt.token_list)
+                ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
+
+                #Decide whether place the generated map in the training lib
+                with torch.no_grad():
+                    prediction =  classifier.predict2(torch.from_numpy((harita.reshape(1,3,40,40))).float()) + 1 
+                # run D* for all possible n_agents and find best
+                rewards = []
+                for i in range(6):
+                    reward = e.reset_and_step(ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list, i+1)
+                    rewards.append(reward)
+                #Get actual best n_agents
+                actual = np.argmax(rewards)+1
+
+                #Decide whether place the generated map in the training lib
+                if(prediction==actual): #no need to add library
+                  continue
+                else:
+                  L.add(generated_map, prediction) #add it to training library
+                  break
         
-        # Generate Samples of same size as level
-        logger.info("Finished training! Generating random samples...")
-        in_s = None
-        generate_samples(generators, noise_maps, reals,
-                        noise_amplitudes, opt, in_s=in_s)
+        #Save training library maps
+        #L.save_maps()
+        
+        #Repeat same process for random training library
     
-    elif(opt.mode == 'test'):
-        test(opt)
+    # elif(opt.mode == 'test'):
+    #     #Load model and switch eval mode
+    #     # classifier.load_state_dict(torch.load("classifier.pt"))
+    #     # classifier.eval()
+    #     test(opt)
     else:
         print("Unnoticeable Working Mode")
 

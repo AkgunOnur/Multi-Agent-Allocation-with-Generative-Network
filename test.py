@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from models import init_models, reset_grads, restore_weights
 from environment.level_utils import load_level_from_text
-from dqn_model import *
+#from dqn_model import *
 from point_mass_formation import AgentFormation
 from env_funcs import env_class
 import os
@@ -52,7 +52,7 @@ def test(opt):
             #print("current_dir: ", current_dir)
             file_names = glob.glob("./"+current_dir+"*.txt")
 
-            scale_number = int(int(directory)/20-1)
+            scale_number = 0#int(int(directory)/20-1)
             #print("scale_number: ", scale_number)
 
             #initalizerl agent and load its weights

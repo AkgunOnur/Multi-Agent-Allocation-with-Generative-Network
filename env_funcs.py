@@ -1,7 +1,7 @@
 import argparse
 import numpy as np
 
-from dqn_model import *
+#from dqn_model import *
 
 from point_mass_formation import AgentFormation
 from read_maps import *
@@ -49,27 +49,26 @@ def parameters():
     return parser.parse_args()
 
 class env_class:
-    def __init__(self, current_scale, mode='train'):
+    def __init__(self, mode='train'):
         self.args = parameters()
-        self.current_scale = current_scale
         self.iteration = 0
         self.mode = mode
 
-        self.args.out_shape = self.args.out_shape_list[current_scale]
-        self.args.fc1_size = self.args.fc1_shape_list[current_scale]
+        self.args.out_shape = 1#TODO #self.args.out_shape_list[current_scale]
+        self.args.fc1_size = 1#TODO: self.args.fc1_shape_list[current_scale]
         
         # Create environments.
         self.env = AgentFormation(visualization=self.args.visualization)
 
-    def reset_and_step(self, coded_fake_map, n_agents):
-        ds_map, obstacle_map, prize_map, agent_obs, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
+    def reset_and_step(self, ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list, n_agents):
+        #ds_map, obstacle_map, prize_map, agent_obs, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
 
         #env.reset to initalize map for D* (obstacle_locations, prize_locations etc.)
-        self.env.reset(ds_map, obstacle_map, prize_map, agent_obs, map_lim, obs_y_list, obs_x_list)
+        self.env.reset(ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list)
         #Step environment
-        episode_reward, done, agent_next_obs = self.env.step(n_agents)
+        episode_reward, _, _ = self.env.step(n_agents)
 
         if self.args.visualization:
             self.env.close()
 
-        return episode_reward, agent_obs
+        return episode_reward

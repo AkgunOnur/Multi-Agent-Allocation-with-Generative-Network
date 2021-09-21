@@ -25,14 +25,14 @@ def init_models(opt):
     G.apply(weights_init)
     if opt.netG != "":
         G.load_state_dict(torch.load(opt.netG))
-    print(G)
+    #print(G)
 
     # discriminator initialization:
     D = Level_WDiscriminator(opt).to(opt.device)
     D.apply(weights_init)
     if opt.netD != "":
         D.load_state_dict(torch.load(opt.netD))
-    print(D)
+    #print(D)
 
     return D, G
 
@@ -68,8 +68,8 @@ def save_networks(G, D, z_opt, opt):
 
 
 def restore_weights(D_curr, G_curr, scale_num, opt):
-    G_state_dict = torch.load("%s/%d/G.pth" % (opt.out_, scale_num - 1))
-    D_state_dict = torch.load("%s/%d/D.pth" % (opt.out_, scale_num - 1))
+    G_state_dict = torch.load("output/wandb/armut/files/3/G.pth")#torch.load("%s/%d/G.pth" % (opt.out_, scale_num - 1))
+    D_state_dict = torch.load("output/wandb/armut/files/3/D.pth")#torch.load("%s/%d/D.pth" % (opt.out_, scale_num - 1))
 
     G_head_conv_weight = G_state_dict["head.conv.weight"]
     G_state_dict["head.conv.weight"] = G_curr.head.conv.weight

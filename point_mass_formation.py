@@ -47,6 +47,7 @@ class AgentFormation(gym.Env):
         self.prize_map = None
 
     def step(self, n_agents):
+        #print("n_agents: ", n_agents)
         #time.sleep(0.3)
         # print("infeasible_prizes: ", self.infeasible_prizes)
         # print("prize_exists: ", self.prize_exists)
@@ -74,16 +75,13 @@ class AgentFormation(gym.Env):
                 self.agents_locations.append(self.init_list[ind])
                 self.agents.append(Agent(self.init_list[ind]))
                 agent_ind += 1
-            #print("agent initalizedL: ", agent_ind)
-        #print("self.agents_locations: ", self.agents_locations)
-        #print("map: ", self.observation)
 
         if self.visualization:
             self.visualize()
         
         # Initialization of trajectories
         self.agents_action_list = [[]*i for i in range(self.n_agents)]
-        #print("self.n_agents: ", self.n_agents)
+
         for agent_ind in range(self.n_agents):
             feasible = False
             #print("Mark1")
@@ -93,13 +91,8 @@ class AgentFormation(gym.Env):
                 self.agents_action_list[agent_ind], pos_list, feasible = self.create_trajectory(agent_ind)
             if np.sum(self.infeasible_prizes) == self.N_prize:
                 total_reward = total_reward - np.sum(self.prize_exists) * 10.0
-                # print("infeasible_prizes: ", self.infeasible_prizes)
-                # print("prize_exists: ", self.prize_exists)
-                # print("N prize: ", self.N_prize)
-                # print("------------------------")
+
                 return total_reward, done, self.get_observation()
-            ##print("agent initalizedL: ", agent_ind)
-        #print("mark 2: ")
         for iteration in range(1, N_iteration + 1):
             for agent_ind in range(self.n_agents):
 
@@ -109,14 +102,8 @@ class AgentFormation(gym.Env):
                         self.agents_action_list[agent_ind], pos_list, feasible = self.create_trajectory(agent_ind)
                     if np.sum(self.infeasible_prizes) == self.N_prize:
                         total_reward = total_reward - np.sum(self.prize_exists) * 10.0
-                        # print("infeasible_prizes: ", self.infeasible_prizes)
-                        # print("prize_exists: ", self.prize_exists)
-                        # print("N prize: ", self.N_prize)
-                        # print("------------------------")
                         return total_reward, done, self.get_observation()
 
-                # #print("agent_ind: ", agent_ind)
-                # #print("self.agents_action_list: ", self.agents_action_list)
                 current_action = (self.agents_action_list[agent_ind][0])
 
                 total_reward -= 0.25
@@ -144,10 +131,6 @@ class AgentFormation(gym.Env):
                     if np.sum(self.prize_exists) == 0:
                         done = True
                         total_reward = total_reward + np.abs(total_reward) * (1 - iteration / N_iteration)
-                        # print("infeasible_prizes: ", self.infeasible_prizes)
-                        # print("prize_exists: ", self.prize_exists)
-                        # print("N prize: ", self.N_prize)
-                        # print("------------------------")
                         return total_reward, done, self.get_observation()
 
                     agents_for_prize = np.copy(self.assigned_agents_to_prizes[taken_prize_ind])
@@ -165,12 +148,9 @@ class AgentFormation(gym.Env):
                             return total_reward, done, self.get_observation()
 
 
-                if self.visualization:
-                    self.visualize()
+                # if self.visualization:
+                #     self.visualize()              
                 
-                # self.ds_map.get_map(self.prize_locations, self.agents_locations)                
-                
-
         total_reward = total_reward - np.sum(self.prize_exists) * 10.0
         #print("REWARD: ", total_reward)
         return total_reward, done, self.get_observation()
@@ -180,12 +160,9 @@ class AgentFormation(gym.Env):
             if self.prize_exists[i]==False:
                     self.prize_map[self.prize_locations[i][0],self.prize_locations[i][1]] = 0
 
-        self.observation[0,:,:] = np.copy(self.prize_map)
+        self.observation[2,:,:] = np.copy(self.prize_map)
         self.observation[1,:,:] = np.copy(self.obstacle_map)
-        # print("infeasible_prizes: ", self.infeasible_prizes)
-        # print("prize_exists: ", self.prize_exists)
-        # print("N prize: ", self.N_prize)
-        # print("------------------------")
+
 
         return self.observation
 
@@ -201,12 +178,16 @@ class AgentFormation(gym.Env):
         self.N_prize = len(prize_map)
         self.prize_exists = np.ones(self.N_prize, dtype=bool)
         self.infeasible_prizes = np.zeros(self.N_prize, dtype=bool)
-        self.prize_map = agent_obs[0,:,:]
+        self.prize_map = agent_obs[2,:]
         self.prize_locations = []
+
+        # print("self.prize_map: ", self.prize_map.shape)
+        # print("agent_obs: ", agent_obs)
 
         #O = np.where(obstacle_map==1)
         self.N_obstacle = len(obstacle_map)
-        self.obstacle_map = agent_obs[1,:,:]
+        self.obstacle_map = agent_obs[1,:]
+        #print("self.obstacle_map reset:", self.obstacle_map)
         self.obstacle_locations = []
         
         self.observation = agent_obs
@@ -215,6 +196,7 @@ class AgentFormation(gym.Env):
         for i in range(self.N_prize):
             self.prize_locations.append([prize_map[i][0],prize_map[i][1]])
 
+        #print("obstacle_map: ", obstacle_map)
         #get obstacle locations
         for n in range(self.N_obstacle):
             self.obstacle_locations.append([obstacle_map[n][0],obstacle_map[n][1]])
@@ -272,6 +254,8 @@ class AgentFormation(gym.Env):
         return action_list, pos_list, feasible
 
     def check_feasibility(self, pos_list):
+        # print("pos_list: ", pos_list)
+        # print("self.obstacle_locations: ", self.obstacle_locations)
         for pos in pos_list:
             if list(pos) in self.obstacle_locations:
                 return False

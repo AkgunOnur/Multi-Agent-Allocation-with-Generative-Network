@@ -1,94 +1,132 @@
-# Code inspired by https://github.com/tamarott/SinGAN
 import os
+import numpy as np
 
 import torch
-import wandb
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from torch.nn.functional import interpolate
+from loguru import logger
 from tqdm import tqdm
 
-from environment.level_utils import one_hot_to_ascii_level, token_to_group
-from environment.tokens import TOKEN_GROUPS as TOKEN_GROUPS
-from environment.special_downsampling import special_downsampling
-from models import init_models, reset_grads, restore_weights
-from models.generator import Level_GeneratorConcatSkip2CleanAdd
-from train_single_scale import train_single_scale
 
-from dqn_model import *
-from point_mass_formation import AgentFormation
+from generate_noise import generate_spatial_noise
+from environment.level_utils import  one_hot_to_ascii_level
+from models import init_models, reset_grads, restore_weights, calc_gradient_penalty
+from draw_concat import draw_concat
 
-def train(real, opt):
-    """ Wrapper function for training. Calculates necessary scales then calls train_single_scale on each. """
-    generators = []
-    noise_maps = []
-    noise_amplitudes = []
+from read_maps import *
+import pandas as pd
 
-    token_group = TOKEN_GROUPS
 
-    scales = [[x, x] for x in opt.scales]
-    opt.num_scales = len(scales)
+stat_columns = ['errD_fake', 'errD_real', 'errG']
 
-    # if opt.game == 'environment':
-    #     scaled_list = special_downsampling(opt.num_scales, scales, real, opt.token_list)
+def write_stats(stats,file_name='errors.csv'):
+    df_stats = pd.DataFrame([stats], columns=stat_columns)
+    df_stats.to_csv(file_name, mode='a', index=False,header=not os.path.isfile(file_name))
 
-    reals = [real] #[*scaled_list, real]
+class GAN:
+    def __init__(self,opt):
+        self.D, self.G = init_models(opt)
 
-    # If (experimental) token grouping feature is used:
-    if opt.token_insert >= 0:
-        reals = [(token_to_group(r, opt.token_list, token_group) if i < opt.token_insert else r) for i, r in enumerate(reals)]
-        reals.insert(opt.token_insert, token_to_group(reals[opt.token_insert], opt.token_list, token_group))
-    input_from_prev_scale = torch.zeros_like(reals[-1]) #was [0] switched to [-1] for only final scale training
+        self.padsize = int(1 * opt.num_layer)  # As kernel size is always 3 currently, padsize goes up by one per layer
 
-    #stop_scale = 
-    opt.stop_scale = len(reals)# stop_scale
+        self.pad_noise = nn.ZeroPad2d(self.padsize)
+        self.pad_image = nn.ZeroPad2d(self.padsize)
 
-    # Log the original input level as an image
-    img = opt.ImgGen.render(one_hot_to_ascii_level(real, opt.token_list))
-    wandb.log({"real": wandb.Image(img)}, commit=False)
-    os.makedirs("%s/state_dicts" % (opt.out_), exist_ok=True)
+        # setup optimizer
+        self.optimizerD = optim.Adam(self.D.parameters(), lr=opt.lr_d, betas=(opt.beta1, 0.999))
+        self.optimizerG = optim.Adam(self.D.parameters(), lr=opt.lr_g, betas=(opt.beta1, 0.999))
+        self.schedulerD = torch.optim.lr_scheduler.MultiStepLR(optimizer=self.optimizerD, milestones=[1500, 2500], gamma=opt.gamma)
+        self.schedulerG = torch.optim.lr_scheduler.MultiStepLR(optimizer=self.optimizerG, milestones=[1500, 2500], gamma=opt.gamma)
 
-    # Training Loop
-    for current_scale in range(0, opt.stop_scale):
-        
-        opt.outf = "%s/%d" % (opt.out_, current_scale)
-        try:
-            os.makedirs(opt.outf)
-        except OSError:
-            pass
+    def train(self, e, real, classifier, opt):
+        """ Train one scale. D and G are the discriminator and generator, real is the original map and its label.
+        opt is a namespace that holds all necessary parameters. """
+        real = torch.FloatTensor(real)
+        nzx = real.shape[2]  # Noise size x
+        nzy = real.shape[3]  # Noise size y
 
-        # If we are seeding, we need to adjust the number of channels
-        if current_scale < (opt.token_insert + 1):  # (stop_scale - 1):
-            opt.nc_current = len(token_group)
+        for step in tqdm(range(opt.niter)):
+            noise_ = generate_spatial_noise([1, opt.nc_current, nzx, nzy], device=opt.device)
+            noise_ = self.pad_noise(noise_)
 
-        # Initialize models
-        D, G = init_models(opt)
-        # If we are seeding, the weights after the seed need to be adjusted
-        if current_scale == (opt.token_insert + 1):  # (stop_scale - 1):
-            D, G = restore_weights(D, G, current_scale, opt)
+            ############################
+            # (1) Update D network: maximize D(x) + D(G(z))
+            ###########################
+            for j in range(opt.Dsteps):
+                #==========================================
+                if(j==0 and step==0):
+                    prev = torch.zeros(1, opt.nc_current, nzx, nzy).to(opt.device)
+                    prev = self.pad_image(prev)
+                else:
+                    prev = interpolate(prev, real.shape[-2:], mode="bilinear", align_corners=False)
+                    prev = self.pad_image(prev)
+                #==========================================
+                # train with real nad fake
+                self.D.zero_grad()
+                output_r = self.D(real).to(opt.device)
+                errD_real = -output_r.mean()
+                
+                errD_real.backward(retain_graph=True)
 
-        # Actually train the current scale
-        z_opt, input_from_prev_scale, G = train_single_scale(D,  G, reals, generators, noise_maps,
-                                                            input_from_prev_scale, noise_amplitudes, opt)
+                # After creating our correct noise input, we feed it to the generator:
+                noise = opt.noise_amp * noise_ + prev
+                fake = self.G(noise.detach(), prev, temperature=1)
 
-        # Reset grads and save current scale
-        G = reset_grads(G, False)
-        G.eval()
-        D = reset_grads(D, False)
-        D.eval()
+                # Then run the result through the discriminator
+                output_f = self.D(fake.detach())
+                errD_fake = output_f.mean()
 
-        generators.append(G)
-        noise_maps.append(z_opt)
-        noise_amplitudes.append(opt.noise_amp)
+                # Backpropagation
+                errD_fake.backward(retain_graph=False)
+                # Gradient Penalty
+                gradient_penalty = calc_gradient_penalty(self.D, real, fake, opt.lambda_grad, opt.device)
+                gradient_penalty.backward(retain_graph=False)
 
-        torch.save(noise_maps, "%s/noise_maps.pth" % (opt.out_))
-        torch.save(generators, "%s/generators.pth" % (opt.out_))
-        torch.save(reals, "%s/reals.pth" % (opt.out_))
-        torch.save(noise_amplitudes, "%s/noise_amplitudes.pth" % (opt.out_))
-        torch.save(opt.num_layer, "%s/num_layer.pth" % (opt.out_))
-        torch.save(opt.token_list, "%s/token_list.pth" % (opt.out_))
-        wandb.save("%s/*.pth" % opt.out_)
+                self.optimizerD.step()
 
-        torch.save(G.state_dict(), "%s/state_dicts/G_%d.pth" % (opt.out_, current_scale))
-        wandb.save("%s/state_dicts/*.pth" % opt.out_)
+            ############################
+            # (2) Update G network: maximize D(G(z))
+            ###########################
+            for j in range(opt.Gsteps):
+                self.D.zero_grad()
+                fake = self.G(noise.detach(), prev.detach(), temperature=1)
+                output = self.D(fake)
+                #================================
+                #Generate fake map(s) and make it playable
+                coded_fake_map = one_hot_to_ascii_level(fake.detach(), opt.token_list)
+                # print("coded_fake:", coded_fake_map)
+                ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
 
-        del D, G
+                #Sent generated map into classifier and env
+                prediction = classifier.predict2(torch.from_numpy((harita.reshape(1,3,40,40))).float())+1
+                #reset env and call D* for n_agents
+                rewards = []
+                for i in range(6):
+                    reward = e.reset_and_step(ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list, i+1)
+                    rewards.append(reward)
+                #Get actual best n_agents
+                actual = np.argmax(rewards)+1
 
-    return generators, noise_maps, reals, noise_amplitudes
+                #Compute generator error
+                errG = -output.mean() + torch.tensor(abs(prediction-actual))
+                #print("errG: ", errG)
+                errG.backward(retain_graph=False)
+                self.optimizerG.step()
+            
+            #======== log stats ===========
+            write_stats([errD_fake, errD_real, errG])
+            #================================
+
+            # Learning Rate scheduler step
+            self.schedulerD.step()
+            self.schedulerG.step()
+
+        #Take G,D
+        self.G = reset_grads(self.G, True)
+        self.D = reset_grads(self.D, True)
+        with torch.no_grad():
+            generated_map = self.G(noise.detach(), prev.detach(), temperature=1)
+        #print("train bitti")
+        return generated_map

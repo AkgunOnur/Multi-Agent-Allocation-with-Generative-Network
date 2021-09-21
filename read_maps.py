@@ -13,17 +13,19 @@ def ff_regenate(file_name):
 
     map_lim = len(txt_data[:])
 
-    matrix_map = np.zeros((2,len(txt_data[:]), len(txt_data[1])))
+    matrix_map = np.zeros((3,len(txt_data[:]), len(txt_data[1])))
 
     for x in range(len(txt_data[:])):
         for y in range(len(txt_data[1])):
-            if txt_data[x][y] == 'O' or txt_data[x][y] == 'W':
+            if txt_data[x][y] == 'W':
                 obs_x_list.append(x)
                 obs_y_list.append(y)
                 obstacle_locations.append([y, x])
                 matrix_map[1,x,y] = 1
             elif txt_data[x][y] == 'X':
                 prize_locations.append([y, x])
+                matrix_map[2,x,y] = 1
+            else: #if txt_data[x][y] == '-':
                 matrix_map[0,x,y] = 1
 
     #print("matrix_map: ", matrix_map.shape)
@@ -42,11 +44,12 @@ def fa_regenate(array):
     ds_map = Map(len(array), len(array[0]))
     map_lim = len(array[0])
 
-    matrix_map = np.zeros((2,len(array), len(array[0])))
-
+    matrix_map = np.zeros((3,len(array), len(array[0])))
+    # print('len(array[0]): ', len(array[0]))
+    # print('len(array[1]): ', len(array[1]))
     for x in range(len(array[0])): #row
         for y in range(len(array[1])): #column
-            if array[x][y] == 'O' or array[x][y] == 'W':
+            if array[x][y] == 'W':
                 if(1<= x <=4 and 1<= y <=4):
                     continue
                 obs_x_list.append(x)
@@ -57,15 +60,11 @@ def fa_regenate(array):
                 if(1<= x <=4 and 1<= y <=4):
                     continue
                 prize_locations.append([x, y])
+                matrix_map[2,x,y] = 1
+            else: #if array[x][y] == '-':
                 matrix_map[0,x,y] = 1
 
-    #print("matrix_map: ", array)
     ds_map.set_obstacle([(i, j) for i, j in zip(obs_y_list, obs_x_list)])
-    # ds_map.get_map(prize_locations)
-    # print("prize_locations: ", prize_locations)
-    # print("obstacle_locations: ", obstacle_locations)
-    # print("matrix_map2: ", matrix_map)
-    #print("file_name: ", str(file_name), " prize_locations : ", prize_locations)
     return ds_map, obstacle_locations, prize_locations, matrix_map, map_lim, obs_y_list, obs_x_list
 
 
@@ -86,7 +85,7 @@ def fa_convert(matrix_map):
                 obs_x_list.append(x)
                 obs_y_list.append(y)
                 obstacle_locations.append([x, y])
-            elif matrix_map[0][x][y] == 1:
+            elif matrix_map[2][x][y] == 1:
                 prize_locations.append([x, y])
 
     #print("matrix_map: ", matrix_map)

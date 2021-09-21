@@ -35,7 +35,6 @@ class LevelImageGen:
         sprite_dict['-'] = mapsheet.crop((2*16, 5*16, 3*16, 6*16))
 
         self.sprite_dict = sprite_dict
-        #print("self.sprite_dict: ", self.sprite_dict)
 
     def prepare_sprite_and_box(self, ascii_level, sprite_key, curr_x, curr_y):
         """ Helper to make correct sprites and sprite sizes to draw into the image.
