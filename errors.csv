@@ -16,3 +16,5 @@ errD_fake,errD_real,errG
 "tensor(0.1604, grad_fn=<MeanBackward0>)","tensor(-0.3394, grad_fn=<NegBackward>)","tensor([-0.1073], grad_fn=<AddBackward0>)"
 "tensor(0.2176, grad_fn=<MeanBackward0>)","tensor(-0.4307, grad_fn=<NegBackward>)","tensor([-0.1791], grad_fn=<AddBackward0>)"
 "tensor(0.2718, grad_fn=<MeanBackward0>)","tensor(-0.4993, grad_fn=<NegBackward>)","tensor([-0.2263], grad_fn=<AddBackward0>)"
+"tensor(0.0541, grad_fn=<MeanBackward0>)","tensor(-0.0540, grad_fn=<NegBackward>)","tensor([0.0123], grad_fn=<AddBackward0>)"
+"tensor(0.0916, grad_fn=<MeanBackward0>)","tensor(-0.1866, grad_fn=<NegBackward>)","tensor([-0.0320], grad_fn=<AddBackward0>)"

@@ -46,3 +46,5 @@ test_loss,train_loss,train_lib_size
 16.0,0.0,0
 38.0,"(tensor(7.0927e-05, grad_fn=<DivBackward0>), 1.0)",0
 0.0,0.0,0
+0.0,0.0,0
+38.0,"(tensor(1.9073e-05, grad_fn=<DivBackward0>), 1.0)",0

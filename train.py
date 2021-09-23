@@ -85,7 +85,7 @@ class GAN:
 
                 self.optimizerD.step()
 
-            ############################
+            ###########################
             # (2) Update G network: maximize D(G(z))
             ###########################
             for j in range(opt.Gsteps):
