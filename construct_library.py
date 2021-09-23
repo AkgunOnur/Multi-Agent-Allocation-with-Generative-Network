@@ -5,7 +5,7 @@ from generate_random_map import generate_random_map
 
 class Library():
     #Initialize library
-    def __init__(self,library_size=25):
+    def __init__(self,library_size=180):
         self.library_size = library_size
         self.train_library = [[],[]]
         #Load test maps and add it to test_library
@@ -17,8 +17,8 @@ class Library():
         self.train_library[0].append(np.array(map))
         self.train_library[1].append(np.array(label))
         print("Library size increased:", len(self.train_library[0]))
-        # print("self.obs: ", self.train_library[1])
-        self.save()
+        #Save training library maps
+        self.save_maps()
     
     def get(self):
         rindex = np.random.randint(0,len(self.train_library[0]))

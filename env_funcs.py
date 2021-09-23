@@ -43,7 +43,7 @@ def parameters():
     parser.add_argument('--multi_step', type=int, default=1, help='Multi step')
     #parser.add_argument('--out_shape', type=int, default=10, help='Observation image shape')
     parser.add_argument('--hid_size', type=int, default=64, help='Hidden size dimension')
-    parser.add_argument('--out_shape_list', type=list, default=[80], help='output shape array')#default=[20,40,60,80]
+    parser.add_argument('--out_shape_list', type=list, default=[40], help='output shape array')#default=[20,40,60,80]
     parser.add_argument('--fc1_shape_list', type=list, default=[4096], help='fc1 size array')#default=[16,576,1936,4096]
 
     return parser.parse_args()

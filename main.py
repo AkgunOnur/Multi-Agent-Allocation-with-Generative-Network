@@ -60,7 +60,7 @@ def main():
     #==================================================================================
 
     #Initialize Library and environment
-    L = Library(25)
+    L = Library(180)
     e = env_class()
 
     #Add first (map,label) into the library
@@ -70,20 +70,19 @@ def main():
     classifier = LeNet(numChannels=3, classes=6).to(opt.device) #(0-6) = 6 is max agent number in map
 
     # initialize classifier optimizer and loss function
-    optimizer = Adam(classifier.parameters(), lr=1e-3)
+    optimizer = Adam(classifier.parameters(), lr=1e-4)
     
     #==== WARNING: Dont forget to comment out next line ====#
     torch.save(classifier.state_dict(), "./classifier_init.pth")
 
     #Test initial classifier perf on test library and log perf.
-    with torch.no_grad():
-        test_loss = classifier.predict(L.test_library)
+    test_loss = classifier.predict(L.test_library)
     write_tocsv([test_loss, 0.0, 0])
 
     if(opt.mode == 'train'):
         g = GAN(opt)
 
-        for s in range(2):
+        for s in range(180):
             #Reset classifier
             classifier.load_state_dict(torch.load("./classifier_init.pth"))
 
@@ -91,8 +90,7 @@ def main():
             training_loss = classifier.trainer(L.train_library, optimizer)
 
             #Test classifier perf on test library
-            with torch.no_grad():
-                test_loss = classifier.predict(L.test_library)
+            test_loss = classifier.predict(L.test_library)
             
             #Log Data
             write_tocsv([test_loss, training_loss, s])
@@ -105,15 +103,14 @@ def main():
                 #Train GAN and return fake map
                 generated_map = g.train(e, sample_map, classifier, opt)
                 coded_fake_map = one_hot_to_ascii_level(generated_map.detach(), opt.token_list)
-                ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
+                ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
 
                 #Decide whether place the generated map in the training lib
-                with torch.no_grad():
-                    prediction =  classifier.predict2(torch.from_numpy((harita.reshape(1,3,40,40))).float()) + 1 
+                prediction =  classifier.predict2(torch.from_numpy((agent_map.reshape(1,3,40,40))).float()) + 1 
                 # run D* for all possible n_agents and find best
                 rewards = []
                 for i in range(6):
-                    reward = e.reset_and_step(ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list, i+1)
+                    reward = e.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
                     rewards.append(reward)
                 #Get actual best n_agents
                 actual = np.argmax(rewards)+1
@@ -122,11 +119,10 @@ def main():
                 if(prediction==actual): #no need to add library
                   continue
                 else:
-                  L.add(generated_map, prediction) #add it to training library
+                  L.add(agent_map, prediction) #add it to training library
+                  if (s%10==0 and s>0):
+                    g.better_save(s)
                   break
-        
-        #Save training library maps
-        #L.save_maps()
         
         #Repeat same process for random training library
     

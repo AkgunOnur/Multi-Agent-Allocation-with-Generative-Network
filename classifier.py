@@ -69,17 +69,18 @@ class LeNet(Module):
         for i, y in enumerate(Y):
             Y_c[i][y-1] = 1
         
-        for e in range(100):
+        # send the input to the device
+        X = torch.FloatTensor(X)
+        Y_c = torch.FloatTensor(Y_c)#.float()
+        #print("Y.type:", Y_c.argmax(1))
+        X, Y_c = X.to(self.device), Y_c.to(self.device)
+
+        for e in range(20):
             # initialize the total training and validation loss
             totalTrainLoss = 0
             # initialize the number of correct predictions in the training
             trainCorrect = 0
 
-            # send the input to the device
-            X = torch.FloatTensor(X)
-            Y_c = torch.FloatTensor(Y_c)#.float()
-            #print("Y.type:", Y_c.argmax(1))
-            X, Y_c = X.to(self.device), Y_c.to(self.device)
             # perform a forward pass and calculate the training loss
             pred = self.forward(X.float())
             # print("pred ", pred.unsqueeze(0))

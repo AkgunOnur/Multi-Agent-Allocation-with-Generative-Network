@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from generate_noise import generate_spatial_noise
 from environment.level_utils import  one_hot_to_ascii_level
-from models import init_models, reset_grads, restore_weights, calc_gradient_penalty
+from models import init_models, reset_grads, calc_gradient_penalty, save_networks
 from draw_concat import draw_concat
 
 from read_maps import *
@@ -90,7 +90,7 @@ class GAN:
             # (2) Update G network: maximize D(G(z))
             ###########################
             for j in range(opt.Gsteps):
-                self.D.zero_grad()
+                self.G.zero_grad()
                 fake = self.G(noise.detach(), prev.detach(), temperature=1)
                 output = self.D(fake)
                 #================================
@@ -128,5 +128,7 @@ class GAN:
         self.D = reset_grads(self.D, True)
         with torch.no_grad():
             generated_map = self.G(noise.detach(), prev.detach(), temperature=1)
-        #print("train bitti")
         return generated_map
+    
+    def better_save(self, iteration):
+        save_networks(self.G, self.D, iteration)
