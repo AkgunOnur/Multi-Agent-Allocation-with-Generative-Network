@@ -90,7 +90,7 @@ class GAN:
             # (2) Update G network: maximize D(G(z))
             ###########################
             for j in range(opt.Gsteps):
-                self.D.zero_grad()
+                self.G.zero_grad()
                 fake = self.G(noise.detach(), prev.detach(), temperature=1)
                 output = self.D(fake)
                 #================================
