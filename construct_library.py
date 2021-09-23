@@ -18,7 +18,7 @@ class Library():
         self.train_library[1].append(np.array(label))
         print("Library size increased:", len(self.train_library[0]))
         # print("self.obs: ", self.train_library[1])
-        self.save()
+        self.save_maps()
     
     def get(self):
         rindex = np.random.randint(0,len(self.train_library[0]))

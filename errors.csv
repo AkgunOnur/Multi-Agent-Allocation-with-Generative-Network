@@ -1,0 +1,2 @@
+errD_fake,errD_real,errG
+"tensor(-0.1852, grad_fn=<MeanBackward0>)","tensor(0.1439, grad_fn=<NegBackward>)","tensor([0.2611], grad_fn=<AddBackward0>)"

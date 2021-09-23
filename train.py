@@ -51,7 +51,7 @@ class GAN:
             noise_ = generate_spatial_noise([1, opt.nc_current, nzx, nzy], device=opt.device)
             noise_ = self.pad_noise(noise_)
 
-            ############################
+            ###########################
             # (1) Update D network: maximize D(x) + D(G(z))
             ###########################
             for j in range(opt.Dsteps):

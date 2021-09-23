@@ -76,23 +76,25 @@ def main():
     torch.save(classifier.state_dict(), "./classifier_init.pth")
 
     #Test initial classifier perf on test library and log perf.
-    with torch.no_grad():
-        test_loss = classifier.predict(L.test_library)
+    classifier.eval()
+    test_loss = classifier.predict(L.test_library)
     write_tocsv([test_loss, 0.0, 0])
 
     if(opt.mode == 'train'):
         g = GAN(opt)
+        
 
         for s in range(2):
             #Reset classifier
             classifier.load_state_dict(torch.load("./classifier_init.pth"))
 
             #train classifier with training library
+            classifier.train()
             training_loss = classifier.trainer(L.train_library, optimizer)
 
             #Test classifier perf on test library
-            with torch.no_grad():
-                test_loss = classifier.predict(L.test_library)
+            classifier.eval()
+            test_loss = classifier.predict(L.test_library)
             
             #Log Data
             write_tocsv([test_loss, training_loss, s])
