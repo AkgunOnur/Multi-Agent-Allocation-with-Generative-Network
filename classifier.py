@@ -106,9 +106,9 @@ class LeNet(Module):
             
         return  testCorrect/len([test_library[1]])
     
-    def predict2(self, single_map):
+    def predict_nagent(self, single_map):
         with torch.no_grad():
-            X= single_map.to(self.device)
+            X = single_map.to(self.device)
             # perform a forward pass and calculate the training loss
             pred = self.forward(X.float())
         return  pred.argmax(1)

@@ -9,7 +9,6 @@ from torch.nn.functional import interpolate
 from loguru import logger
 from tqdm import tqdm
 
-
 from generate_noise import generate_spatial_noise
 from environment.level_utils import  one_hot_to_ascii_level
 from models import init_models, reset_grads, restore_weights, calc_gradient_penalty
@@ -96,15 +95,13 @@ class GAN:
                 #================================
                 #Generate fake map(s) and make it playable
                 coded_fake_map = one_hot_to_ascii_level(fake.detach(), opt.token_list)
-                # print("coded_fake:", coded_fake_map)
-                ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
-
+                ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
                 #Sent generated map into classifier and env
-                prediction = classifier.predict2(torch.from_numpy((harita.reshape(1,3,40,40))).float())+1
+                prediction = classifier.predict_nagent(torch.from_numpy((agent_map.reshape(1,3,40,40))).float())+1
                 #reset env and call D* for n_agents
                 rewards = []
                 for i in range(6):
-                    reward = e.reset_and_step(ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list, i+1)
+                    reward = e.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
                     rewards.append(reward)
                 #Get actual best n_agents
                 actual = np.argmax(rewards)+1
