@@ -76,6 +76,7 @@ def main():
     torch.save(classifier.state_dict(), "./classifier_init.pth")
 
     #Test initial classifier perf on test library and log perf.
+    classifier.eval()
     test_loss = classifier.predict(L.test_library)
     write_tocsv([test_loss, 0.0, 0])
 
@@ -87,9 +88,11 @@ def main():
             classifier.load_state_dict(torch.load("./classifier_init.pth"))
 
             #train classifier with training library
+            classifier.train()
             training_loss = classifier.trainer(L.train_library, optimizer)
 
             #Test classifier perf on test library
+            classifier.eval()
             test_loss = classifier.predict(L.test_library)
             
             #Log Data
@@ -106,6 +109,7 @@ def main():
                 ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
 
                 #Decide whether place the generated map in the training lib
+                classifier.eval()
                 prediction =  classifier.predict2(torch.from_numpy((agent_map.reshape(1,3,40,40))).float()) + 1 
                 # run D* for all possible n_agents and find best
                 rewards = []
