@@ -100,14 +100,14 @@ class GAN:
                 ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
 
                 #Sent generated map into classifier and env
-                prediction = classifier.predict2(torch.from_numpy((harita.reshape(1,3,40,40))).float())+1
+                prediction = classifier.predict2(torch.from_numpy((harita.reshape(1,3,40,40))).float())#+1
                 #reset env and call D* for n_agents
                 rewards = []
                 for i in range(6):
                     reward = e.reset_and_step(ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list, i+1)
                     rewards.append(reward)
                 #Get actual best n_agents
-                actual = np.argmax(rewards)+1
+                actual = np.argmax(rewards)#+1
 
                 #Compute generator error
                 errG = -output.mean() + torch.tensor(abs(prediction-actual))
@@ -116,7 +116,7 @@ class GAN:
                 self.optimizerG.step()
             
             #======== log stats ===========
-            write_stats([errD_fake, errD_real, errG])
+            write_stats([errD_fake.item(), errD_real.item(), errG.item()])
             #================================
 
             # Learning Rate scheduler step

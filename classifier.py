@@ -60,10 +60,6 @@ class LeNet(Module):
 
     def trainer(self, train_library, optimizer):
         #train lib : (nx3x40x40, n)
-        #print("library: ", np.asarray(train_library[0]).shape)
-        #train_library = [t.np() for t in library]
-        # print("training lib: ", train_library[0])
-        #print("training lib[0]: ", np.asarray(train_library[0]).shape)
         X = np.squeeze(np.asarray(train_library[0]), axis=1)
         Y = np.asarray(train_library[1])
         # print("Y.shape: ", Y.shape)
@@ -74,7 +70,6 @@ class LeNet(Module):
         # send the input to the device
         X = torch.FloatTensor(X)
         Y_c = torch.FloatTensor(Y_c)#.float()
-        #print("Y.type:", Y_c.argmax(1))
         X, Y_c = X.to(self.device), Y_c.to(self.device)
 
         for e in range(20):
@@ -85,8 +80,6 @@ class LeNet(Module):
 
             # perform a forward pass and calculate the training loss
             pred = self.forward(X.float())
-            # print("pred ", pred.unsqueeze(0))
-            # print("Y_c.argmax(1): ", Y_c.argmax(1).size())
             loss = self.lossFn(pred, Y_c.argmax(1))
             # zero out the gradients, perform the backpropagation step,
             # and update the weights
@@ -100,14 +93,12 @@ class LeNet(Module):
             #print("Yc.argmax(1): ", Y_c.argmax(1))
             trainCorrect = (pred.argmax(1) == Y_c.argmax(1)).type(torch.float).sum().item()
             
-
         # calculate the average training and validation loss
-        return  totalTrainLoss/len([train_library[1]]), trainCorrect/len([train_library[1]])
+        return  totalTrainLoss, trainCorrect/len((np.asarray([train_library[1][:]][0])))
         
 
     def predict(self, test_library):
         with torch.no_grad():
-            #print("test_library.shape: ", np.array(test_library).shape)
             X = np.asarray(test_library[0])
             #print("X test .shape: ", X.shape)
             Y = np.asarray(test_library[1])
@@ -121,12 +112,8 @@ class LeNet(Module):
             X, Y_c = X.to(self.device), Y_c.to(self.device)
             # perform a forward pass and calculate the training loss
             pred = self.forward(X.float())
-            # print("pred: ", pred.shape)
-            # print("pred.argmax(1): ", np.array(pred))
-            # print("Yc.argmax(1): ", Y_c.argmax(1))
             testCorrect = (np.array(pred).argmax(1) == np.array(Y_c.argmax(1))).sum().item()
-            #print("testCorrect: ", testCorrect)
-        return  testCorrect/len([test_library[1]])
+        return  testCorrect/len((np.asarray([test_library[1][:]][0])))
     
     def predict2(self, single_map):
         with torch.no_grad():

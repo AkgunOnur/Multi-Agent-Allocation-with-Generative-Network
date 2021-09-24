@@ -27,7 +27,7 @@ def get_tags(opt):
     """ Get Tags for logging from input name. Helpful for wandb. """
     return [opt.input_name.split(".")[0]]
 
-colon = ['test_loss', 'train_loss', 'train_lib_size']
+colon = ['testc_labeled', 'train_loss', 'trainc_labeled', 'train_lib_size']
 
 def write_tocsv(stats,file_name='performance.csv'):
     df_stats = pd.DataFrame([stats], columns=colon)
@@ -64,7 +64,7 @@ def main():
     e = env_class()
 
     #Add first (map,label) into the library
-    L.add(read_level(opt, None, replace_tokens).to(opt.device),6)
+    L.add(read_level(opt, None, replace_tokens).to(opt.device),6)#6
 
     #Initalize classifier and save weights
     classifier = LeNet(numChannels=3, classes=6).to(opt.device) #(0-6) = 6 is max agent number in map
@@ -77,8 +77,8 @@ def main():
 
     #Test initial classifier perf on test library and log perf.
     classifier.eval()
-    test_loss = classifier.predict(L.test_library)
-    write_tocsv([test_loss, 0.0, 0])
+    testc_labeled = classifier.predict(L.test_library)
+    write_tocsv([testc_labeled, 0.0, 0,  0])
 
     if(opt.mode == 'train'):
         g = GAN(opt)
@@ -89,14 +89,14 @@ def main():
 
             #train classifier with training library
             classifier.train()
-            training_loss = classifier.trainer(L.train_library, optimizer)
+            training_loss, trainc_labeled = classifier.trainer(L.train_library, optimizer)
 
             #Test classifier perf on test library
             classifier.eval()
-            test_loss = classifier.predict(L.test_library)
+            testc_labeled = classifier.predict(L.test_library)
             
             #Log Data
-            write_tocsv([test_loss, training_loss, s])
+            write_tocsv([testc_labeled, training_loss, trainc_labeled, s])
 
             # while condition to repeat GAN training until training lib expand
             while(True):
@@ -110,14 +110,14 @@ def main():
 
                 #Decide whether place the generated map in the training lib
                 classifier.eval()
-                prediction =  classifier.predict2(torch.from_numpy((agent_map.reshape(1,3,40,40))).float()) + 1 
+                prediction =  classifier.predict2(torch.from_numpy((agent_map.reshape(1,3,40,40))).float()) #+ 1 
                 # run D* for all possible n_agents and find best
                 rewards = []
                 for i in range(6):
                     reward = e.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
                     rewards.append(reward)
                 #Get actual best n_agents
-                actual = np.argmax(rewards)+1
+                actual = np.argmax(rewards)#+1
 
                 #Decide whether place the generated map in the training lib
                 if(prediction==actual): #no need to add library
