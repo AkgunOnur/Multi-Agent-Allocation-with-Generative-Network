@@ -128,8 +128,8 @@ def main():
                     g.better_save(s)
                   break
         
-        #Repeat same process for random training library
-    
+        #TODO:Repeat same process for random training library
+    #TODO: test mode
     # elif(opt.mode == 'test'):
     #     #Load model and switch eval mode
     #     # classifier.load_state_dict(torch.load("classifier.pt"))
