@@ -22,7 +22,4 @@ class env_class:
         #Step environment
         episode_reward, _, _ = self.env.step(n_agents)
 
-        if self.args.visualization:
-            self.env.close()
-
         return episode_reward
