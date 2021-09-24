@@ -11,13 +11,15 @@ class Library():
         #Load test maps and add it to test_library
         test_libfile = open('./test_dataset.pickle', 'rb')
         self.test_library = pickle.load(test_libfile)
+        #print("test lib[0]: ", np.asarray(self.test_library[0]).shape)
       
 
     def add(self, map, label):
-        self.train_library[0].append(np.array(map))
+        self.train_library[0].append(np.array(map).reshape((1,3,40,40)))
         self.train_library[1].append(np.array(label))
         print("Library size increased:", len(self.train_library[0]))
         #Save training library maps
+        # print("map_shape: ", np.asarray(map).reshape((1,3,40,40)).shape)
         self.save_maps()
     
     def get(self):

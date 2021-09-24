@@ -62,6 +62,8 @@ class LeNet(Module):
         #train lib : (nx3x40x40, n)
         #print("library: ", np.asarray(train_library[0]).shape)
         #train_library = [t.np() for t in library]
+        # print("training lib: ", train_library[0])
+        #print("training lib[0]: ", np.asarray(train_library[0]).shape)
         X = np.squeeze(np.asarray(train_library[0]), axis=1)
         Y = np.asarray(train_library[1])
         # print("Y.shape: ", Y.shape)
