@@ -14,6 +14,7 @@ import sys
 import torch
 
 from construct_library import Library
+from generate_random_map import generate_random_map
 from env_funcs import env_class
 from classifier import LeNet
 from train import GAN
@@ -72,8 +73,9 @@ def main():
     # initialize classifier optimizer and loss function
     optimizer = Adam(classifier.parameters(), lr=1e-4)
     
-    #==== WARNING: Dont forget to comment out next line ====#
-    torch.save(classifier.state_dict(), "./classifier_init.pth")
+    #==== TODO: WARNING: Dont forget to comment out next line ====#
+    #torch.save(classifier.state_dict(), "./classifier_init.pth")
+    #==== TODO: WARNING: Dont forget to comment out previous line #
 
     #Test initial classifier perf on test library and log perf.
     classifier.eval()
@@ -127,14 +129,75 @@ def main():
                   if (s%10==0 and s>0):
                     g.better_save(s)
                   break
+    elif(opt.mode == 'random_without_gan'):
+        for s in range(180):
+            #Reset classifier
+            classifier.load_state_dict(torch.load("./classifier_init.pth"))
+
+            #train classifier with training library
+            classifier.train()
+            training_loss, trainc_labeled = classifier.trainer(L.train_library, optimizer)
+
+            #Test classifier perf on test library
+            classifier.eval()
+            testc_labeled = classifier.predict(L.test_library)
+
+            #Log Data
+            #write_tocsv([testc_labeled, training_loss, trainc_labeled, s])
+
+            # while condition to repeat training until training lib expand
+            while(True):
+                #Generate Random Map and add it to training library
+                generated_map = generate_random_map(40)
+                ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate2(generated_map)
+
+                #Decide whether place the generated map in the training lib
+                classifier.eval()
+                prediction =  classifier.predict2(torch.from_numpy((agent_map.reshape(1,3,40,40))).float())
+
+                rewards = []
+                for i in range(6):
+                    reward = e.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
+                    rewards.append(reward)
+                #Get actual best n_agents
+                actual = np.argmax(rewards)
+
+
+                #Decide whether place the generated map in the training lib
+                if(prediction==actual): #no need to add library
+                  continue
+                else:
+                  L.add(agent_map, prediction) #add it to training library
+                  break
+        os.rename('./training_map_library.pkl', './training_maps_random_without_gan.pkl')
+
+    elif(opt.mode == 'random_train'):
+        for s in range(180):
+            #Generate Random Map and add it to training library
+            generated_map = generate_random_map(40)
+            ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate2(generated_map)
+
+            rewards = []
+            for i in range(6):
+                reward = e.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
+                rewards.append(reward)
+            #Get actual best n_agents
+            actual = np.argmax(rewards)
+            L.add(agent_map,actual)
         
-        #TODO:Repeat same process for random training library
-    #TODO: test mode
-    # elif(opt.mode == 'test'):
-    #     #Load model and switch eval mode
-    #     # classifier.load_state_dict(torch.load("classifier.pt"))
-    #     # classifier.eval()
-    #     test(opt)
+        #Reset classifier
+        classifier.load_state_dict(torch.load("./classifier_init.pth"))
+
+        #train classifier with training library
+        classifier.train()
+        training_loss, trainc_labeled = classifier.trainer(L.train_library, optimizer)
+
+        #Test trained classifier perf on test library and log perf.
+        classifier.eval()
+        testc_labeled = classifier.predict(L.test_library)
+        print("testc_labeled:", testc_labeled, "training_loss:", training_loss, "trainc_labeled:", trainc_labeled,  "s:", s)
+        #write_tocsv([testc_labeled, training_loss, trainc_labeled,  s],file_name='random_performance.csv')
+        os.rename('./training_map_library.pkl', './training_maps_random.pkl')
     else:
         print("Unnoticeable Working Mode")
 

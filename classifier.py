@@ -94,7 +94,7 @@ class LeNet(Module):
             trainCorrect = (pred.argmax(1) == Y_c.argmax(1)).type(torch.float).sum().item()
             
         # calculate the average training and validation loss
-        return  totalTrainLoss, trainCorrect/len((np.asarray([train_library[1][:]][0])))
+        return  totalTrainLoss.item(), trainCorrect/len((np.asarray([train_library[1][:]][0])))
         
 
     def predict(self, test_library):
