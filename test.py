@@ -1,33 +1,16 @@
 # Code inspired by https://github.com/tamarott/SinGAN
-from generate_samples import generate_samples
-#from test import test
-
-from environment.tokens import REPLACE_TOKENS as REPLACE_TOKENS
-
-from environment.level_image_gen import LevelImageGen as LevelGen
-from environment.level_utils import read_level, one_hot_to_ascii_level
-
-from config import get_arguments, post_config
-from loguru import logger
-import wandb
-import sys
-import torch
-
 from construct_library import Library
 from generate_random_map import generate_random_map
-from env_funcs import env_class
 from classifier import LeNet
 from train import GAN
 from read_maps import *
 import pandas as pd
-import os
 import torch
 from torch.optim import Adam
-from argparse import ArgumentTypeError
+import torch
 import numpy as np
 import os
 import pickle
-from generate_random_map import generate_random_map
 
 class Library():
     #Initialize library
@@ -42,7 +25,6 @@ class Library():
                 self.test_library = unpickler.load()
 
         self.test_library[1] = [x-1 for x in self.test_library[1]]
-        print("self.testlib: ", self.test_library[1])
 
         #Load training maps
         if(mode=='test_gan'):
@@ -60,9 +42,7 @@ class Library():
                 # to the value unpickled
                 self.train_library = unpickler.load()
                 self.train_library[1][0] = np.array(self.train_library[1][0] - 1)
-                # print("self.train_library[0]: ", self.train_library[1])
-                # armut
-        
+
 def main():
     # Parse arguments
     opt = get_arguments().parse_args()
@@ -85,7 +65,6 @@ def main():
     #Test classifier perf on test library
     classifier.eval()
     testc_labeled = classifier.predict(L.test_library)
-    print("testc_labeled: ", )
     
     print("training_loss: ", training_loss, "trainc_labeled: ", trainc_labeled, "testc_labeled: ", testc_labeled)
 
