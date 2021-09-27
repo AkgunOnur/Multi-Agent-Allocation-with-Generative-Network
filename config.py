@@ -15,7 +15,7 @@ def get_arguments():
     parser.add_argument("--game", default="environment", help="Which game is to be used?")
 
     #Working mode - Supports: train and test
-    parser.add_argument("--mode", default="train", help="working mode train or test")
+    parser.add_argument("--mode", default="random_train", help="working mode train or test")
     parser.add_argument("--test_type", default="gan", help="Testing with test library maps or gan generated maps")
     parser.add_argument("--library_size", type=int, default=25, help=" final training library size")
 

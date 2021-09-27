@@ -143,7 +143,7 @@ def main():
             testc_labeled = classifier.predict(L.test_library)
 
             #Log Data
-            #write_tocsv([testc_labeled, training_loss, trainc_labeled, s])
+            write_tocsv([testc_labeled, training_loss, trainc_labeled, s], file_name ='rwg_performance.csv')
 
             # while condition to repeat training until training lib expand
             while(True):
@@ -196,7 +196,7 @@ def main():
         classifier.eval()
         testc_labeled = classifier.predict(L.test_library)
         print("testc_labeled:", testc_labeled, "training_loss:", training_loss, "trainc_labeled:", trainc_labeled,  "s:", s)
-        #write_tocsv([testc_labeled, training_loss, trainc_labeled,  s],file_name='random_performance.csv')
+        write_tocsv([testc_labeled, training_loss, trainc_labeled,  s],file_name='random_performance.csv')
         os.rename('./training_map_library.pkl', './training_maps_random.pkl')
     else:
         print("Unnoticeable Working Mode")
