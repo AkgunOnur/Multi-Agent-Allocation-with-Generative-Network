@@ -7,27 +7,17 @@ from environment.tokens import REPLACE_TOKENS as REPLACE_TOKENS
 from environment.level_image_gen import LevelImageGen as LevelGen
 from environment.level_utils import read_level, one_hot_to_ascii_level
 
-from config import get_arguments, post_config
-from loguru import logger
-import wandb
-import sys
-import torch
+
 
 from construct_library import Library
-from generate_random_map import generate_random_map
 from env_funcs import env_class
 from classifier import LeNet
 from train import GAN
 from read_maps import *
-import pandas as pd
-import os
-import torch
-from torch.optim import Adam
-from argparse import ArgumentTypeError
 import numpy as np
 import os
 import pickle
-from generate_random_map import generate_random_map
+
 
 class Library():
     #Initialize library
@@ -45,11 +35,11 @@ class Library():
 
         #Load training maps
         if(mode=='test_gan'):
-            target = './training_map_library.pkl'
+            target = './Training_Libs/training_map_library.pkl'
         elif(mode=='test_wo_gan'):
-            target = './training_maps_random_without_gan.pkl'
+            target = './Training_Libs/training_maps_random_without_gan.pkl'
         elif(mode=='test_random'):
-            target = './training_maps_random.pkl'
+            target = './Training_Libs/training_maps_random.pkl'
         else:
             print("WARNING: Failed to select test maps!!!!")
         if os.path.getsize(target) > 0:      
@@ -61,31 +51,39 @@ class Library():
                 self.train_library[1][0] = np.array(self.train_library[1][0] - 1)
                 # print("self.train_library[0]: ", self.train_library[1])
                 # armut
+
+def write_maps(map, index):
+    txt_list = []
+    # print("map: ", map.shape)
+    for x in range(map.shape[1]): #row
+        line = []
+        # print(map[0][x])
+        # print(map[1][x])
+        # print(map[2][x])
+        for y in range(map.shape[2]): #column
+            if map[0][x][y] == 1:
+                line.append('-')
+            elif map[1][x][y] == 1:
+                line.append('W')
+            elif map[2][x][y] == 1:
+                line.append('X')
+        #line.append('\n')
+        line = ''.join(line)
+        # print(line)
+        txt_list.append(line)
+        # print(txt_list)
+
+
+    with open(f"./generated_maps/random_wo_gan/map-{index}.txt", "w") as output:
+        output.write(str(txt_list))
         
-def main():
-    # Parse arguments
-    opt = get_arguments().parse_args()
-    opt = post_config(opt)
-
+def write():
     #Initialize Library and environment
-    L = Library(opt.testmode)
+    L = Library('test_wo_gan')
+    for x in range(len(L.train_library[0])):
+        #print("len(L.train_library): ", len(L.train_library[0]))
+        write_maps(np.asarray(L.train_library[0][x]).squeeze(axis=0), x)
 
-    #Initalize classifier and load its weights
-    classifier = LeNet(numChannels=3, classes=6).to(opt.device) #(0-5) = 6 is max agent number in map
-    classifier.load_state_dict(torch.load("./classifier_init.pth"))
-
-    # initialize classifier optimizer and loss function
-    optimizer = Adam(classifier.parameters(), lr=1e-4)
-
-    #train classifier with training library
-    classifier.train()
-    training_loss, trainc_labeled = classifier.trainer(L.train_library, optimizer)
-
-    #Test classifier perf on test library
-    classifier.eval()
-    testc_labeled = classifier.predict(L.test_library)
-    
-    print("training_loss: ", training_loss, "trainc_labeled: ", trainc_labeled, "testc_labeled: ", testc_labeled)
 
 if __name__ == "__main__":
-    main()
+    write()
