@@ -65,10 +65,10 @@ def main():
     e = env_class()
 
     #Add first (map,label) into the library
-    L.add(read_level(opt, None, replace_tokens).to(opt.device),6)#6
+    L.add(read_level(opt, None, replace_tokens).to(opt.device),5)#6 agent
 
     #Initalize classifier and save weights
-    classifier = LeNet(numChannels=3, classes=6).to(opt.device) #(0-6) = 6 is max agent number in map
+    classifier = LeNet(numChannels=3, classes=6).to(opt.device) #(0-5) = 6 is max agent number in map
 
     # initialize classifier optimizer and loss function
     optimizer = Adam(classifier.parameters(), lr=1e-4)
@@ -143,7 +143,7 @@ def main():
             testc_labeled = classifier.predict(L.test_library)
 
             #Log Data
-            write_tocsv([testc_labeled, training_loss, trainc_labeled, s], file_name ='rwg_performance.csv')
+            # write_tocsv([testc_labeled, training_loss, trainc_labeled, s], file_name ='rwg_performance.csv')
 
             # while condition to repeat training until training lib expand
             while(True):

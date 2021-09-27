@@ -72,7 +72,7 @@ class LeNet(Module):
         Y_c = torch.FloatTensor(Y_c)#.float()
         X, Y_c = X.to(self.device), Y_c.to(self.device)
 
-        for e in range(20):
+        for e in range(100):
             # initialize the total training and validation loss
             totalTrainLoss = 0
             # initialize the number of correct predictions in the training
@@ -94,7 +94,7 @@ class LeNet(Module):
             trainCorrect = (pred.argmax(1) == Y_c.argmax(1)).type(torch.float).sum().item()
             
         # calculate the average training and validation loss
-        return  totalTrainLoss.item(), trainCorrect/len((np.asarray([train_library[1][:]][0])))
+        return  totalTrainLoss.item(), trainCorrect#/len((np.asarray([train_library[1][:]][0])))
         
 
     def predict(self, test_library):
@@ -113,7 +113,7 @@ class LeNet(Module):
             # perform a forward pass and calculate the training loss
             pred = self.forward(X.float())
             testCorrect = (np.array(pred).argmax(1) == np.array(Y_c.argmax(1))).sum().item()
-        return  testCorrect/len((np.asarray([test_library[1][:]][0])))
+        return  testCorrect#/len((np.asarray([test_library[1][:]][0])))
     
     def predict2(self, single_map):
         with torch.no_grad():

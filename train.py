@@ -110,7 +110,7 @@ class GAN:
                 actual = np.argmax(rewards)#+1
 
                 #Compute generator error
-                errG = -output.mean() + torch.tensor(abs(prediction-actual))
+                errG = -output.mean() + torch.tensor(abs(prediction-actual)) + torch.abs(torch.from_numpy(rewards[prediction]/15))
                 #print("errG: ", errG)
                 errG.backward(retain_graph=False)
                 self.optimizerG.step()
