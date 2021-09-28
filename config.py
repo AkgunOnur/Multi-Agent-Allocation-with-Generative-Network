@@ -15,8 +15,20 @@ def get_arguments():
     parser.add_argument("--game", default="environment", help="Which game is to be used?")
 
     #Working mode - Supports: train and test
+<<<<<<< HEAD
     parser.add_argument("--mode", default="train", help="working train mode selection")
     parser.add_argument("--testmode", default="test_random", help="working test mode selection")
+=======
+<<<<<<< HEAD
+    parser.add_argument("--mode", default="train", help="working train mode selection")
+    parser.add_argument("--testmode", default="test_gan", help="working test mode selection")
+||||||| merged common ancestors
+    parser.add_argument("--mode", default="random_train", help="working mode train or test")
+=======
+    parser.add_argument("--mode", default="random_train", help="working train mode selection")
+    parser.add_argument("--testmode", default="test_random", help="working test mode selection")
+>>>>>>> 8db39c4c4a324700c86592b989af9e4de01bee40
+>>>>>>> 083d36b5c16cdfc754cc141691dcdaeb8ca175d8
     parser.add_argument("--test_type", default="gan", help="Testing with test library maps or gan generated maps")
     parser.add_argument("--library_size", type=int, default=25, help=" final training library size")
 
@@ -46,7 +58,11 @@ def get_arguments():
                         default=False)
 
     # optimization hyper parameters:
+<<<<<<< HEAD
     parser.add_argument("--niter", type=int, default=15, help="number of epochs to train")
+=======
+    parser.add_argument("--niter", type=int, default=15, help="number of epochs to train per scale")
+>>>>>>> 083d36b5c16cdfc754cc141691dcdaeb8ca175d8
     parser.add_argument("--gamma", type=float, help="scheduler gamma", default=0.1)
     parser.add_argument("--lr_g", type=float, default=0.0005, help="learning rate, default=0.0005")
     parser.add_argument("--lr_d", type=float, default=0.0005, help="learning rate, default=0.0005")
