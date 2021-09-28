@@ -63,7 +63,7 @@ class GAN:
                     else:
                         prev = interpolate(prev, real.shape[-2:], mode="bilinear", align_corners=False)
                         prev = self.pad_image(prev)
-                        
+
                 else:
                     prev = torch.zeros(1, opt.nc_current, nzx, nzy).to(opt.device)
                     prev = self.pad_image(prev)
@@ -126,7 +126,6 @@ class GAN:
             self.schedulerD.step()
             self.schedulerG.step()
 
-        #Take G,D
         self.G = reset_grads(self.G, True)
         self.D = reset_grads(self.D, True)
         with torch.no_grad():
