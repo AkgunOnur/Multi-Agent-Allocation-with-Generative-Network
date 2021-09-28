@@ -43,40 +43,44 @@ class GAN:
     def train(self, e, real, classifier, opt):
         """ Train one scale. D and G are the discriminator and generator, real is the original map and its label.
         opt is a namespace that holds all necessary parameters. """
-        real = torch.FloatTensor(real)
+        real = torch.FloatTensor(real) # 1x3x40x40
         nzx = real.shape[2]  # Noise size x
         nzy = real.shape[3]  # Noise size y
 
         for step in tqdm(range(opt.niter)):
-            noise_ = generate_spatial_noise([1, opt.nc_current, nzx, nzy], device=opt.device)
-            noise_ = self.pad_noise(noise_)
+            noise_ = generate_spatial_noise([1, opt.nc_current, nzx, nzy], device=opt.device) # 1x3x40x40
+            noise_ = self.pad_noise(noise_) # 1x3x46x46
 
             ############################
             # (1) Update D network: maximize D(x) + D(G(z))
             ###########################
             for j in range(opt.Dsteps):
-                #==========================================
-                if(j==0 and step==0):
+
+                if opt.add_prev:
+                    if(j==0 and step==0):
+                        prev = torch.zeros(1, opt.nc_current, nzx, nzy).to(opt.device)
+                        prev = self.pad_image(prev)
+                    else:
+                        prev = interpolate(prev, real.shape[-2:], mode="bilinear", align_corners=False)
+                        prev = self.pad_image(prev)
+                        
+                else:
                     prev = torch.zeros(1, opt.nc_current, nzx, nzy).to(opt.device)
                     prev = self.pad_image(prev)
-                else:
-                    prev = interpolate(prev, real.shape[-2:], mode="bilinear", align_corners=False)
-                    prev = self.pad_image(prev)
-                #==========================================
                 # train with real nad fake
                 self.D.zero_grad()
                 output_r = self.D(real).to(opt.device)
-                errD_real = -torch.clip(output_r.mean(),-5.,5.)
+                errD_real = -torch.clamp(output_r.mean(),min=-5.0,max=5.0)
                 
                 errD_real.backward(retain_graph=True)
 
                 # After creating our correct noise input, we feed it to the generator:
-                noise = opt.noise_amp * noise_ + prev
+                noise = noise_ + prev
                 fake = self.G(noise.detach(), prev, temperature=1)
 
                 # Then run the result through the discriminator
                 output_f = self.D(fake.detach())
-                errD_fake = torch.clip(output_f.mean(),-5.,5.)
+                errD_fake = torch.clamp(output_f.mean(),min=-5.0,max=5.0)
 
                 # Backpropagation
                 errD_fake.backward(retain_graph=False)
@@ -96,7 +100,6 @@ class GAN:
                 #================================
                 #Generate fake map(s) and make it playable
                 coded_fake_map = one_hot_to_ascii_level(fake.detach(), opt.token_list)
-                # print("coded_fake:", coded_fake_map)
                 ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
 
                 #Sent generated map into classifier and env
@@ -110,9 +113,8 @@ class GAN:
                 actual = np.argmax(rewards)#+1
 
                 #Compute generator error
-                errG = -torch.clip(output.mean(),-5.,5.) + torch.tensor(abs(prediction-actual)) + torch.abs(np.clip(torch.from_numpy(rewards[prediction]/100.0),-5.,5.))
+                errG = -torch.clamp(output.mean(),-5.,5.) + torch.tensor(abs(prediction-actual)) + torch.abs(np.clamp(torch.from_numpy(rewards[prediction]/100.0),-5.,5.))
                 
-                #print("errG: ", errG)
                 errG.backward(retain_graph=False)
                 self.optimizerG.step()
             

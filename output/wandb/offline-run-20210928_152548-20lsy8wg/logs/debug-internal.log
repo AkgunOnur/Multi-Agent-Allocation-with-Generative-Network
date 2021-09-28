@@ -1,0 +1,20 @@
+2021-09-28 15:25:48,959 INFO    MainThread:20264 [internal.py:wandb_internal():89] W&B internal server running at pid: 20264, started at: 2021-09-28 15:25:48.958543
+2021-09-28 15:25:48,961 DEBUG   HandlerThread:20264 [handler.py:handle_request():126] handle_request: run_start
+2021-09-28 15:25:48,963 INFO    WriterThread:20264 [datastore.py:open_for_write():77] open: output/wandb/offline-run-20210928_152548-20lsy8wg/run-20lsy8wg.wandb
+2021-09-28 15:25:51,681 DEBUG   HandlerThread:20264 [meta.py:__init__():40] meta init
+2021-09-28 15:25:51,681 DEBUG   HandlerThread:20264 [meta.py:__init__():54] meta init done
+2021-09-28 15:25:51,681 DEBUG   HandlerThread:20264 [meta.py:probe():211] probe
+2021-09-28 15:25:51,698 DEBUG   HandlerThread:20264 [meta.py:_setup_git():201] setup git
+2021-09-28 15:25:51,734 DEBUG   HandlerThread:20264 [meta.py:_setup_git():208] setup git done
+2021-09-28 15:25:51,734 DEBUG   HandlerThread:20264 [meta.py:_save_pip():58] save pip
+2021-09-28 15:25:51,735 DEBUG   HandlerThread:20264 [meta.py:_save_pip():72] save pip done
+2021-09-28 15:25:51,735 DEBUG   HandlerThread:20264 [meta.py:_save_conda():79] save conda
+2021-09-28 15:25:55,272 WARNING MainThread:20264 [internal.py:wandb_internal():145] Internal process interrupt: 1
+2021-09-28 15:25:55,414 WARNING MainThread:20264 [internal.py:wandb_internal():145] Internal process interrupt: 2
+2021-09-28 15:25:55,415 ERROR   MainThread:20264 [internal.py:wandb_internal():148] Internal process interrupted.
+2021-09-28 15:25:55,420 DEBUG   HandlerThread:20264 [meta.py:_save_conda():87] save conda done
+2021-09-28 15:25:55,420 DEBUG   HandlerThread:20264 [meta.py:probe():249] probe done
+2021-09-28 15:25:55,432 INFO    HandlerThread:20264 [handler.py:finish():683] shutting down handler
+2021-09-28 15:25:55,967 INFO    WriterThread:20264 [datastore.py:close():281] close: output/wandb/offline-run-20210928_152548-20lsy8wg/run-20lsy8wg.wandb
+2021-09-28 15:25:55,969 INFO    SenderThread:20264 [sender.py:finish():979] shutting down sender
+2021-09-28 15:25:55,971 INFO    MainThread:20264 [internal.py:handle_exit():76] Internal process exited

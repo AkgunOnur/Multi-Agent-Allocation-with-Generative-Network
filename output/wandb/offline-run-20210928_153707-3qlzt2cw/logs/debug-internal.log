@@ -1,0 +1,20 @@
+2021-09-28 15:37:08,256 INFO    MainThread:21645 [internal.py:wandb_internal():89] W&B internal server running at pid: 21645, started at: 2021-09-28 15:37:08.255782
+2021-09-28 15:37:08,261 DEBUG   HandlerThread:21645 [handler.py:handle_request():126] handle_request: run_start
+2021-09-28 15:37:08,261 INFO    WriterThread:21645 [datastore.py:open_for_write():77] open: output/wandb/offline-run-20210928_153707-3qlzt2cw/run-3qlzt2cw.wandb
+2021-09-28 15:37:10,635 DEBUG   HandlerThread:21645 [meta.py:__init__():40] meta init
+2021-09-28 15:37:10,635 DEBUG   HandlerThread:21645 [meta.py:__init__():54] meta init done
+2021-09-28 15:37:10,636 DEBUG   HandlerThread:21645 [meta.py:probe():211] probe
+2021-09-28 15:37:10,653 DEBUG   HandlerThread:21645 [meta.py:_setup_git():201] setup git
+2021-09-28 15:37:10,686 DEBUG   HandlerThread:21645 [meta.py:_setup_git():208] setup git done
+2021-09-28 15:37:10,686 DEBUG   HandlerThread:21645 [meta.py:_save_pip():58] save pip
+2021-09-28 15:37:10,687 DEBUG   HandlerThread:21645 [meta.py:_save_pip():72] save pip done
+2021-09-28 15:37:10,687 DEBUG   HandlerThread:21645 [meta.py:_save_conda():79] save conda
+2021-09-28 15:37:15,124 WARNING MainThread:21645 [internal.py:wandb_internal():145] Internal process interrupt: 1
+2021-09-28 15:37:15,281 WARNING MainThread:21645 [internal.py:wandb_internal():145] Internal process interrupt: 2
+2021-09-28 15:37:15,281 ERROR   MainThread:21645 [internal.py:wandb_internal():148] Internal process interrupted.
+2021-09-28 15:37:15,288 DEBUG   HandlerThread:21645 [meta.py:_save_conda():87] save conda done
+2021-09-28 15:37:15,289 DEBUG   HandlerThread:21645 [meta.py:probe():249] probe done
+2021-09-28 15:37:15,293 INFO    HandlerThread:21645 [handler.py:finish():683] shutting down handler
+2021-09-28 15:37:15,297 INFO    SenderThread:21645 [sender.py:finish():979] shutting down sender
+2021-09-28 15:37:15,298 INFO    WriterThread:21645 [datastore.py:close():281] close: output/wandb/offline-run-20210928_153707-3qlzt2cw/run-3qlzt2cw.wandb
+2021-09-28 15:37:15,302 INFO    MainThread:21645 [internal.py:handle_exit():76] Internal process exited

@@ -33,4 +33,3 @@ class Level_GeneratorConcatSkip2CleanAdd(nn.Module):
         ind = int((y.shape[2] - x.shape[2]) / 2)
         y = y[:, :, ind:(y.shape[2] - ind), ind:(y.shape[3] - ind)]
         return x + y
-
