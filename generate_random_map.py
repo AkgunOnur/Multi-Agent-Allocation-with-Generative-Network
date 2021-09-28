@@ -4,10 +4,10 @@ import os
 
 # This function return matrix type map for obstacles and prizes
 def generate_random_map(map_size):
-    matrix_map = np.zeros((2,map_size,map_size))
+    matrix_map = np.zeros((3,map_size,map_size))
 
-    N_prize = (map_size/20)*random.randint(1,10)
-    N_obstacle = (map_size/20)*random.randint(5,map_size*2)
+    N_prize = (map_size/40)*random.randint(10,30)
+    N_obstacle = (map_size/40)*random.randint(40,map_size*2)
 
     prize_locations = []
     obstacle_locations = []
@@ -31,7 +31,7 @@ def generate_random_map(map_size):
         [x,y] = prize_locations[i]
         if(1<=x<=4 and 1<=y<=4):
             continue
-        matrix_map[0,x,y] = 1
+        matrix_map[2,x,y] = 1
     
     #placing obstacles in matrix map
     for i in range(int(N_obstacle)):
@@ -39,12 +39,18 @@ def generate_random_map(map_size):
         if(1<=x<=4 and 1<=y<=4):
             continue
         matrix_map[1,x,y] = 1
+    
+    #placing ground in matrix map
+    for x in range(40):
+        for y in range(40):
+            if(matrix_map[2,x,y]==0 and matrix_map[1,x,y]==0):
+                matrix_map[0,x,y] = 1
 
     #Draw border around map
-    matrix_map[1,0,:] = 1
-    matrix_map[1,:,0] = 1
-    matrix_map[1,map_size-1,:] = 1
-    matrix_map[1,:,map_size-1] = 1
+    # matrix_map[1,0,:] = 1
+    # matrix_map[1,:,0] = 1
+    # matrix_map[1,map_size-1,:] = 1
+    # matrix_map[1,:,map_size-1] = 1
 
     return matrix_map
 
@@ -80,7 +86,3 @@ def construct_test_maps(N_maps, map_dir='test_maps', map_size = 80, scales=[0.25
             with open(os.path.join(map_dir, str(int(scales[s]*map_size)),'test'+str(n+1)+'.txt'), "w") as tf:
                 for element in ascii_level:
                     tf.write(element + "\n")
-
-# if __name__ == "__main__":
-#     #matrix_map = generate_random_map(20)
-#     construct_test_maps(25)

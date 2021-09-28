@@ -17,15 +17,18 @@ if __name__ == '__main__':
         dir_names.remove('README.md')
 
     for curr_gen in dir_names:
-        directory_gen = directory + curr_gen
+        directory_gen = directory #+ curr_gen
+        print("dirgen: ", directory_gen)
         names = os.listdir(directory_gen)
         names.sort()
         
-        target_dir = '/home/regen/Desktop/Multi-Agent-Allocation-with-Generative-Network/output/level_images/' + curr_gen #
+        target_dir = '/home/deepdrone/Desktop/Multi-Agent-Allocation-with-Generative-Network/output/level_images/' + curr_gen #
         os.makedirs(target_dir, exist_ok=True)
 
         for i in range(min(10, len(names))):
             lvl = load_level_from_text(os.path.join(directory_gen, names[i]))
+            print("lvl: ", lvl)
+            armut
             if lvl[-1][-1] == '\n':
                 lvl[-1] = lvl[-1][0:-1]
             lvl_img = ImgGen.render(lvl)

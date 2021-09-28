@@ -9,9 +9,10 @@ from torch.nn.functional import interpolate
 from loguru import logger
 from tqdm import tqdm
 
+
 from generate_noise import generate_spatial_noise
 from environment.level_utils import  one_hot_to_ascii_level
-from models import init_models, reset_grads, restore_weights, calc_gradient_penalty
+from models import init_models, reset_grads, calc_gradient_penalty, save_networks
 from draw_concat import draw_concat
 
 from read_maps import *
@@ -50,7 +51,7 @@ class GAN:
             noise_ = generate_spatial_noise([1, opt.nc_current, nzx, nzy], device=opt.device)
             noise_ = self.pad_noise(noise_)
 
-            ###########################
+            ############################
             # (1) Update D network: maximize D(x) + D(G(z))
             ###########################
             for j in range(opt.Dsteps):
@@ -65,7 +66,7 @@ class GAN:
                 # train with real nad fake
                 self.D.zero_grad()
                 output_r = self.D(real).to(opt.device)
-                errD_real = -output_r.mean()
+                errD_real = -torch.clip(output_r.mean(),-5.,5.)
                 
                 errD_real.backward(retain_graph=True)
 
@@ -75,7 +76,7 @@ class GAN:
 
                 # Then run the result through the discriminator
                 output_f = self.D(fake.detach())
-                errD_fake = output_f.mean()
+                errD_fake = torch.clip(output_f.mean(),-5.,5.)
 
                 # Backpropagation
                 errD_fake.backward(retain_graph=False)
@@ -95,25 +96,28 @@ class GAN:
                 #================================
                 #Generate fake map(s) and make it playable
                 coded_fake_map = one_hot_to_ascii_level(fake.detach(), opt.token_list)
-                ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
+                # print("coded_fake:", coded_fake_map)
+                ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
+
                 #Sent generated map into classifier and env
-                prediction = classifier.predict_nagent(torch.from_numpy((agent_map.reshape(1,3,40,40))).float())+1
+                prediction = classifier.predict2(torch.from_numpy((harita.reshape(1,3,40,40))).float())#+1
                 #reset env and call D* for n_agents
                 rewards = []
                 for i in range(6):
-                    reward = e.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
+                    reward = e.reset_and_step(ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list, i+1)
                     rewards.append(reward)
                 #Get actual best n_agents
-                actual = np.argmax(rewards)+1
+                actual = np.argmax(rewards)#+1
 
                 #Compute generator error
-                errG = -output.mean() + torch.tensor(abs(prediction-actual))
+                errG = -torch.clip(output.mean(),-5.,5.) + torch.tensor(abs(prediction-actual)) + torch.abs(np.clip(torch.from_numpy(rewards[prediction]/100.0),-5.,5.))
+                
                 #print("errG: ", errG)
                 errG.backward(retain_graph=False)
                 self.optimizerG.step()
             
             #======== log stats ===========
-            write_stats([errD_fake, errD_real, errG])
+            write_stats([errD_fake.item(), errD_real.item(), errG.item()])
             #================================
 
             # Learning Rate scheduler step
@@ -125,5 +129,7 @@ class GAN:
         self.D = reset_grads(self.D, True)
         with torch.no_grad():
             generated_map = self.G(noise.detach(), prev.detach(), temperature=1)
-        #print("train bitti")
         return generated_map
+    
+    def better_save(self, iteration):
+        save_networks(self.G, self.D, iteration)

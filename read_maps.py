@@ -67,6 +67,25 @@ def fa_regenate(array):
     ds_map.set_obstacle([(i, j) for i, j in zip(obs_y_list, obs_x_list)])
     return ds_map, obstacle_locations, prize_locations, matrix_map, map_lim, obs_y_list, obs_x_list
 
+def fa_regenate2(matrix_map):
+    prize_locations = []
+    obstacle_locations = []
+    obs_x_list = []
+    obs_y_list = []
+    ds_map = Map(40, 40)
+    map_lim = 40
+
+    for x in range(40): #row
+        for y in range(40): #column
+            if matrix_map[1,x,y] == 1:
+                obs_x_list.append(x)
+                obs_y_list.append(y)
+                obstacle_locations.append([x, y])
+            if matrix_map[2,x,y] == 1:
+                prize_locations.append([x, y])
+
+    ds_map.set_obstacle([(i, j) for i, j in zip(obs_y_list, obs_x_list)])
+    return ds_map, obstacle_locations, prize_locations, matrix_map, map_lim, obs_y_list, obs_x_list
 
 #Construct map from numpy array
 def fa_convert(matrix_map):
