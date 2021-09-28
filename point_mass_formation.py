@@ -55,7 +55,7 @@ class AgentFormation(gym.Env):
         # print("------------------------")
         done = False
         total_reward = 0
-        N_iteration = 100
+        N_iteration = 250
         self.n_agents = n_agents
         self.assigned_agents_to_prizes = {i: [] for i in range(self.N_prize)}
 

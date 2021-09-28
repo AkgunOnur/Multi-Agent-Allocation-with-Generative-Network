@@ -66,7 +66,7 @@ class GAN:
                 # train with real nad fake
                 self.D.zero_grad()
                 output_r = self.D(real).to(opt.device)
-                errD_real = -output_r.mean()
+                errD_real = -torch.clip(output_r.mean(),-5.,5.)
                 
                 errD_real.backward(retain_graph=True)
 
@@ -76,7 +76,7 @@ class GAN:
 
                 # Then run the result through the discriminator
                 output_f = self.D(fake.detach())
-                errD_fake = output_f.mean()
+                errD_fake = torch.clip(output_f.mean(),-5.,5.)
 
                 # Backpropagation
                 errD_fake.backward(retain_graph=False)
@@ -110,7 +110,7 @@ class GAN:
                 actual = np.argmax(rewards)#+1
 
                 #Compute generator error
-                errG = -output.mean() + torch.tensor(abs(prediction-actual)) + torch.abs(torch.from_numpy(rewards[prediction]/15))
+                errG = -torch.clip(output.mean(),-5.,5.) + torch.tensor(abs(prediction-actual)) + torch.abs(np.clip(torch.from_numpy(rewards[prediction]/100.0),-5.,5.))
                 
                 #print("errG: ", errG)
                 errG.backward(retain_graph=False)
