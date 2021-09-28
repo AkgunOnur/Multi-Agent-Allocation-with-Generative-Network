@@ -4,13 +4,7 @@ import torch
 import os
 import pandas as pd
 
-<<<<<<< HEAD
 from loguru import logger
-=======
-from construct_library import Library
-from generate_random_map import generate_random_map
-from env_funcs import env_class
->>>>>>> 083d36b5c16cdfc754cc141691dcdaeb8ca175d8
 from classifier import LeNet
 from train import GAN
 from read_maps import *
@@ -61,7 +55,6 @@ def main():
     replace_tokens = REPLACE_TOKENS
     #==================================================================================
 
-<<<<<<< HEAD
     L = Library(180)
     e = env_class()
 
@@ -76,51 +69,16 @@ def main():
     write_tocsv([testc_labeled, 0.0, 0,  0])
     
     print("MODE:", opt.mode)
-=======
-    #Initialize Library and environment
-    L = Library(180)
-    e = env_class()
-
-    #Add first (map,label) into the library
-    L.add(read_level(opt, None, replace_tokens).to(opt.device),5)#6 agent
-
-    #Initalize classifier and save weights
-    classifier = LeNet(numChannels=3, classes=6).to(opt.device) #(0-5) = 6 is max agent number in map
-
-    # initialize classifier optimizer and loss function
-    optimizer = Adam(classifier.parameters(), lr=1e-4)
-    
-    #==== TODO: WARNING: Dont forget to comment out next line ====#
-    #torch.save(classifier.state_dict(), "./classifier_init.pth")
-    #==== TODO: WARNING: Dont forget to comment out previous line #
-
-    #Test initial classifier perf on test library and log perf.
-    classifier.eval()
-    testc_labeled = classifier.predict(L.test_library)
-    write_tocsv([testc_labeled, 0.0, 0,  0])
-
->>>>>>> 083d36b5c16cdfc754cc141691dcdaeb8ca175d8
     if(opt.mode == 'train'):
 
         g = GAN(opt)
 
         for s in range(180):
-<<<<<<< HEAD
             classifier.load_state_dict(torch.load("./classifier_init.pth"))
 
             classifier.train()
             training_loss, trainc_labeled = classifier.trainer(L.train_library, optimizer)
 
-=======
-            #Reset classifier
-            classifier.load_state_dict(torch.load("./classifier_init.pth"))
-
-            #train classifier with training library
-            classifier.train()
-            training_loss, trainc_labeled = classifier.trainer(L.train_library, optimizer)
-
-            #Test classifier perf on test library
->>>>>>> 083d36b5c16cdfc754cc141691dcdaeb8ca175d8
             classifier.eval()
             testc_labeled = classifier.predict(L.test_library)
             
@@ -137,24 +95,16 @@ def main():
 
                 #Decide whether place the generated map in the training lib
                 classifier.eval()
-<<<<<<< HEAD
                 prediction =  classifier.predict2(torch.from_numpy((agent_map.reshape(1,3,40,40))).float())
 
-=======
-                prediction =  classifier.predict2(torch.from_numpy((agent_map.reshape(1,3,40,40))).float()) #+ 1 
->>>>>>> 083d36b5c16cdfc754cc141691dcdaeb8ca175d8
                 # run D* for all possible n_agents and find best
                 rewards = []
                 for i in range(6):
                     reward = e.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
                     rewards.append(reward)
                 #Get actual best n_agents
-<<<<<<< HEAD
 
                 actual = np.argmax(rewards)
-=======
-                actual = np.argmax(rewards)#+1
->>>>>>> 083d36b5c16cdfc754cc141691dcdaeb8ca175d8
 
                 #Decide whether place the generated map in the training lib
                 if(prediction==actual): #no need to add library
@@ -164,10 +114,6 @@ def main():
                   if (s%10==0 and s>0):
                     g.better_save(s)
                   break
-<<<<<<< HEAD
-
-=======
->>>>>>> 083d36b5c16cdfc754cc141691dcdaeb8ca175d8
     elif(opt.mode == 'random_without_gan'):
         for s in range(180):
             #Reset classifier

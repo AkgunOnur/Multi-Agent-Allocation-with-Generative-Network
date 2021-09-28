@@ -70,11 +70,7 @@ class GAN:
                 # train with real nad fake
                 self.D.zero_grad()
                 output_r = self.D(real).to(opt.device)
-<<<<<<< HEAD
                 errD_real = -torch.clamp(output_r.mean(),min=-5.0,max=5.0)
-=======
-                errD_real = -torch.clamp(output_r.mean(),-5.,5.)
->>>>>>> 083d36b5c16cdfc754cc141691dcdaeb8ca175d8
                 
                 errD_real.backward(retain_graph=True)
 
@@ -84,11 +80,7 @@ class GAN:
 
                 # Then run the result through the discriminator
                 output_f = self.D(fake.detach())
-<<<<<<< HEAD
                 errD_fake = torch.clamp(output_f.mean(),min=-5.0,max=5.0)
-=======
-                errD_fake = torch.clamp(output_f.mean(),-5.,5.)
->>>>>>> 083d36b5c16cdfc754cc141691dcdaeb8ca175d8
 
                 # Backpropagation
                 errD_fake.backward(retain_graph=False)
