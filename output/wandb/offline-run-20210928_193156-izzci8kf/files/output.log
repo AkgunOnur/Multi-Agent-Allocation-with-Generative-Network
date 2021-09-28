@@ -1,0 +1,16 @@
+self.testlib:  [5, 5, 5, 5, 5, 5, 5, 5, 4, 5, 5, 4, 5, 5, 5, 5, 5, 4, 4, 4, 5, 5, 4, 5, 5, 4, 4, 4, 5, 4, 5, 4, 5, 4, 5, 4, 5, 5, 5, 5, 3, 3, 5, 3, 5, 5, 5, 4, 5, 5, 5, 3, 5, 5, 4, 4, 5, 5, 3, 4]
+[32m2021-09-28 19:32:01.551[39m | [1mINFO[22m | [90m/home/av/Desktop/Multi-Agent-Allocation-with-Generative-Network/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Library size increased: 1
+MODE: train
+Traceback (most recent call last):
+  File "main.py", line 190, in <module>
+    main()
+  File "main.py", line 77, in main
+    classifier.load_state_dict(torch.load("/weights/classifier_init.pth"))
+  File "/home/av/anaconda3/envs/gpn/lib/python3.7/site-packages/torch/serialization.py", line 571, in load
+    with _open_file_like(f, 'rb') as opened_file:
+  File "/home/av/anaconda3/envs/gpn/lib/python3.7/site-packages/torch/serialization.py", line 229, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+  File "/home/av/anaconda3/envs/gpn/lib/python3.7/site-packages/torch/serialization.py", line 210, in __init__
+    super(_open_file, self).__init__(open(name, mode))
+FileNotFoundError: [Errno 2] No such file or directory: '/weights/classifier_init.pth'

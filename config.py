@@ -38,9 +38,7 @@ def get_arguments():
     parser.add_argument("--num_layer", type=int, help="number of layers", default=3)
 
     # scaling parameters:
-    # parser.add_argument("--scales", nargs='+', type=float, help="Scales descending (< 1 and > 0)",
-    #                     default=[1])#default=[0.75, 0.5, 0.25]
-    parser.add_argument("--full_map_size", type=int, default=20, help="Full map size. Default 80x80")
+    parser.add_argument("--full_map_size", type=int, default=40, help="Full map size. Default 80x80")
     parser.add_argument("--noise_update", type=float, help="additive noise weight", default=0.1)
     parser.add_argument("--pad_with_noise", type=bool, help="use reflection padding? (makes edges random)",
                         default=False)
@@ -61,7 +59,7 @@ def get_arguments():
     parser.add_argument("--token_insert", type=int, help="layer in which token groupings will be split out "
                                                          "(<-2 means no grouping at all)", default=-2)
 
-    parser.add_argument("--add_prev", type=bool, help="Add previous generated image for scale system",
+    parser.add_argument("--add_prev", type=bool, help="Add previous generated image, this is for scale system",
                         default=False)
 
     return parser

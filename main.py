@@ -58,7 +58,7 @@ def main():
     L = Library(180)
     e = env_class()
 
-    L.add(read_level(opt, None, replace_tokens).to(opt.device),5)#6 agent
+    L.add(read_level(opt, None, replace_tokens).to(opt.device),5,opt)#6 agent
 
     classifier = LeNet(numChannels=3, classes=6).to(opt.device) #(0-5) = 6 is max agent number in map
 
@@ -74,7 +74,7 @@ def main():
         g = GAN(opt)
 
         for s in range(180):
-            classifier.load_state_dict(torch.load("./classifier_init.pth"))
+            classifier.load_state_dict(torch.load("./weights/classifier_init.pth"))
 
             classifier.train()
             training_loss, trainc_labeled = classifier.trainer(L.train_library, optimizer)
@@ -82,7 +82,6 @@ def main():
             classifier.eval()
             testc_labeled = classifier.predict(L.test_library)
             
-            #Log Data
             write_tocsv([testc_labeled, training_loss, trainc_labeled, s])
 
             while(True):
@@ -93,20 +92,17 @@ def main():
                 coded_fake_map = one_hot_to_ascii_level(generated_map.detach(), opt.token_list)
                 ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
 
-                #Decide whether place the generated map in the training lib
                 classifier.eval()
-                prediction =  classifier.predict2(torch.from_numpy((agent_map.reshape(1,3,40,40))).float())
+                prediction = classifier.predict_label(torch.from_numpy((agent_map.reshape(1,3,opt.full_map_size,opt.full_map_size))).float())
 
                 # run D* for all possible n_agents and find best
                 rewards = []
                 for i in range(6):
                     reward = e.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
                     rewards.append(reward)
-                #Get actual best n_agents
 
                 actual = np.argmax(rewards)
 
-                #Decide whether place the generated map in the training lib
                 if(prediction==actual): #no need to add library
                   continue
                 else:
@@ -114,10 +110,12 @@ def main():
                   if (s%10==0 and s>0):
                     g.better_save(s)
                   break
+
     elif(opt.mode == 'random_without_gan'):
+
         for s in range(180):
             #Reset classifier
-            classifier.load_state_dict(torch.load("./classifier_init.pth"))
+            classifier.load_state_dict(torch.load("./weights/classifier_init.pth"))
 
             #train classifier with training library
             classifier.train()
@@ -138,7 +136,7 @@ def main():
 
                 #Decide whether place the generated map in the training lib
                 classifier.eval()
-                prediction =  classifier.predict2(torch.from_numpy((agent_map.reshape(1,3,40,40))).float())
+                prediction =  classifier.predict_label(torch.from_numpy((agent_map.reshape(1,3,40,40))).float())
 
                 rewards = []
                 for i in range(6):
@@ -171,7 +169,7 @@ def main():
             L.add(agent_map,actual)
         
         #Reset classifier
-        classifier.load_state_dict(torch.load("./classifier_init.pth"))
+        classifier.load_state_dict(torch.load("./weights/classifier_init.pth"))
 
         #train classifier with training library
         classifier.train()

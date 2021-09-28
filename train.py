@@ -93,27 +93,26 @@ class GAN:
             ###########################
             # (2) Update G network: maximize D(G(z))
             ###########################
+
             for j in range(opt.Gsteps):
                 self.G.zero_grad()
                 fake = self.G(noise.detach(), prev.detach(), temperature=1)
                 output = self.D(fake)
-                #================================
-                #Generate fake map(s) and make it playable
-                coded_fake_map = one_hot_to_ascii_level(fake.detach(), opt.token_list)
-                ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
 
-                #Sent generated map into classifier and env
-                prediction = classifier.predict2(torch.from_numpy((harita.reshape(1,3,40,40))).float())#+1
-                #reset env and call D* for n_agents
+                coded_fake_map = one_hot_to_ascii_level(fake.detach(), opt.token_list)
+                ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
+
+                prediction = classifier.predict_label(torch.from_numpy((agent_map.reshape(1,3,opt.full_map_size,opt.full_map_size))).float())#+1
+
                 rewards = []
                 for i in range(6):
-                    reward = e.reset_and_step(ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list, i+1)
+                    reward = e.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
                     rewards.append(reward)
                 #Get actual best n_agents
                 actual = np.argmax(rewards)#+1
 
                 #Compute generator error
-                errG = -torch.clamp(output.mean(),-5.,5.) + torch.tensor(abs(prediction-actual)) + torch.abs(np.clamp(torch.from_numpy(rewards[prediction]/100.0),-5.,5.))
+                errG = -torch.clamp(output.mean(),-5.,5.) + torch.tensor(abs(prediction-actual)) + torch.abs(torch.clamp(torch.tensor(rewards[prediction]/100.0),-5.,5.))
                 
                 #print("errG: ", errG)
                 errG.backward(retain_graph=False)

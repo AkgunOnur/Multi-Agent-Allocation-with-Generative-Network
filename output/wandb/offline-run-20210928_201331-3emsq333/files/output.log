@@ -1,0 +1,13 @@
+self.testlib:  [5, 5, 5, 5, 5, 5, 5, 5, 4, 5, 5, 4, 5, 5, 5, 5, 5, 4, 4, 4, 5, 5, 4, 5, 5, 4, 4, 4, 5, 4, 5, 4, 5, 4, 5, 4, 5, 5, 5, 5, 3, 3, 5, 3, 5, 5, 5, 4, 5, 5, 5, 3, 5, 5, 4, 4, 5, 5, 3, 4]
+[32m2021-09-28 20:13:36.942[39m | [1mINFO[22m | [90m/home/av/Desktop/Multi-Agent-Allocation-with-Generative-Network/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Library size increased: 1
+MODE: train
+  0%|                                                                        | 0/15 [00:23<?, ?it/s]
+Traceback (most recent call last):
+  File "main.py", line 188, in <module>
+    main()
+  File "main.py", line 91, in main
+    generated_map = g.train(e, sample_map, classifier, opt)
+  File "/home/av/Desktop/Multi-Agent-Allocation-with-Generative-Network/train.py", line 115, in train
+    errG = -torch.clamp(output.mean(),-5.,5.) + torch.tensor(abs(prediction-actual)) + torch.abs(torch.clamp(torch.from_numpy(rewards[prediction]/100.0),-5.,5.))
+TypeError: expected np.ndarray (got numpy.float64)

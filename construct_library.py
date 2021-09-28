@@ -15,8 +15,8 @@ class Library():
         self.test_library[1] = [x-1 for x in self.test_library[1]]
         print("self.testlib: ", self.test_library[1])
 
-    def add(self, map, label):
-        self.train_library[0].append(np.array(map).reshape((1,3,40,40)))
+    def add(self, map, label, opt):
+        self.train_library[0].append(np.array(map).reshape((1,3,opt.full_map_size,opt.full_map_size)))
         self.train_library[1].append(np.array(label))
         print("Library size increased:", len(self.train_library[0]))
         #Save training library maps
