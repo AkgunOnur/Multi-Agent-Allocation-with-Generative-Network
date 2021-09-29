@@ -106,10 +106,10 @@ def main():
                 if(prediction==actual): #no need to add library
                   continue
                 else:
-                  L.add(agent_map, prediction, opt) #add it to training library
-                  if (s%10==0 and s>0):
-                    g.better_save(s)
-                  break
+                    L.add(agent_map, prediction.cpu(), opt) #add it to training library
+                    if (s%10==0 and s>0):
+                        g.better_save(s)
+                        break
 
     elif(opt.mode == 'random_without_gan'):
 
@@ -145,8 +145,7 @@ def main():
                 #Get actual best n_agents
                 actual = np.argmax(rewards)
 
-                print("type agent_map",type(agent_map))
-                print("type pediction",type(prediction))
+                
                 #Decide whether place the generated map in the training lib
                 if(prediction==actual): #no need to add library
                   continue
