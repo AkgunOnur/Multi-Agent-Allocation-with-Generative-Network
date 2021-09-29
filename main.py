@@ -58,9 +58,9 @@ def main():
     L = Library(180)
     e = env_class()
 
-    L.add(read_level(opt, None, replace_tokens).to(opt.device),5,opt)#6 agent
+    L.add(read_level(opt, None, replace_tokens),5,opt)#6 agent
 
-    classifier = LeNet(numChannels=3, classes=6).to(opt.device) #(0-5) = 6 is max agent number in map
+    classifier = LeNet(numChannels=3, classes=6, args=opt).to(opt.device) #(0-5) = 6 is max agent number in map
 
     optimizer = Adam(classifier.parameters(), lr=1e-4)
     
@@ -106,7 +106,7 @@ def main():
                 if(prediction==actual): #no need to add library
                   continue
                 else:
-                  L.add(agent_map, prediction) #add it to training library
+                  L.add(agent_map, prediction, opt) #add it to training library
                   if (s%10==0 and s>0):
                     g.better_save(s)
                   break
@@ -145,13 +145,16 @@ def main():
                 #Get actual best n_agents
                 actual = np.argmax(rewards)
 
-
+                print("type agent_map",type(agent_map))
+                print("type pediction",type(prediction))
                 #Decide whether place the generated map in the training lib
                 if(prediction==actual): #no need to add library
                   continue
                 else:
-                  L.add(agent_map, prediction) #add it to training library
-                  break
+                    agent_map = agent_map.cpu()
+                    prediction = prediction.cpu()
+                    L.add(agent_map, prediction) #add it to training library
+                    break
         os.rename('./training_map_library.pkl', './training_maps_random_without_gan.pkl')
 
     elif(opt.mode == 'random_train'):

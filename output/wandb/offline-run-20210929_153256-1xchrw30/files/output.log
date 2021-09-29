@@ -1,0 +1,9 @@
+self.testlib:  [5, 5, 5, 5, 5, 5, 5, 5, 4, 5, 5, 4, 5, 5, 5, 5, 5, 4, 4, 4, 5, 5, 4, 5, 5, 4, 4, 4, 5, 4, 5, 4, 5, 4, 5, 4, 5, 5, 5, 5, 3, 3, 5, 3, 5, 5, 5, 4, 5, 5, 5, 3, 5, 5, 4, 4, 5, 5, 3, 4]
+[32m2021-09-29 15:33:01.813[39m | [1mINFO[22m | [90m/home/avsp/Masaüstü/Multi-Agent-Allocation-with-Generative-Network/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Library size increased: 1
+Traceback (most recent call last):
+  File "main.py", line 188, in <module>
+    main()
+  File "main.py", line 68, in main
+    testc_labeled = classifier.predict(L.test_library.to(opt.device))
+AttributeError: 'list' object has no attribute 'to'

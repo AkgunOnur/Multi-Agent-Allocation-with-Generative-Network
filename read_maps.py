@@ -45,8 +45,7 @@ def fa_regenate(array):
     map_lim = len(array[0])
 
     matrix_map = np.zeros((3,len(array), len(array[0])))
-    # print('len(array[0]): ', len(array[0]))
-    # print('len(array[1]): ', len(array[1]))
+    
     for x in range(len(array[0])): #row
         for y in range(len(array[1])): #column
             if array[x][y] == 'W':

@@ -63,12 +63,12 @@ class GAN:
                     else:
                         prev = interpolate(prev, real.shape[-2:], mode="bilinear", align_corners=False)
                         prev = self.pad_image(prev)
-
                 else:
                     prev = torch.zeros(1, opt.nc_current, nzx, nzy).to(opt.device)
                     prev = self.pad_image(prev)
                 # train with real nad fake
                 self.D.zero_grad()
+                real = real.to(opt.device)
                 output_r = self.D(real).to(opt.device)
                 errD_real = -torch.clamp(output_r.mean(),min=-5.0,max=5.0)
                 
@@ -112,7 +112,7 @@ class GAN:
                 actual = np.argmax(rewards)#+1
 
                 #Compute generator error
-                errG = -torch.clamp(output.mean(),-5.,5.) + torch.tensor(abs(prediction-actual)) + torch.abs(torch.clamp(torch.tensor(rewards[prediction]/100.0),-5.,5.))
+                errG = -torch.clamp(output.mean(),-5.,5.) - torch.tensor(abs(prediction-actual)) + torch.abs(torch.clamp(torch.tensor(rewards[prediction]/100.0),-5.,5.))
                 
                 #print("errG: ", errG)
                 errG.backward(retain_graph=False)

@@ -1,0 +1,20 @@
+self.testlib:  [5, 5, 5, 5, 5, 5, 5, 5, 4, 5, 5, 4, 5, 5, 5, 5, 5, 4, 4, 4, 5, 5, 4, 5, 5, 4, 4, 4, 5, 4, 5, 4, 5, 4, 5, 4, 5, 5, 5, 5, 3, 3, 5, 3, 5, 5, 5, 4, 5, 5, 5, 3, 5, 5, 4, 4, 5, 5, 3, 4]
+[32m2021-09-29 15:23:31.672[39m | [1mINFO[22m | [90m/home/avsp/Masaüstü/Multi-Agent-Allocation-with-Generative-Network/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Library size increased: 1
+THCudaCheck FAIL file=/pytorch/aten/src/THC/THCGeneral.cpp line=47 error=999 : unknown error
+Traceback (most recent call last):
+  File "main.py", line 188, in <module>
+    main()
+  File "main.py", line 63, in main
+    classifier = LeNet(numChannels=3, classes=6).to(opt.device) #(0-5) = 6 is max agent number in map
+  File "/home/avsp/.local/lib/python3.6/site-packages/torch/nn/modules/module.py", line 443, in to
+    return self._apply(convert)
+  File "/home/avsp/.local/lib/python3.6/site-packages/torch/nn/modules/module.py", line 203, in _apply
+    module._apply(fn)
+  File "/home/avsp/.local/lib/python3.6/site-packages/torch/nn/modules/module.py", line 225, in _apply
+    param_applied = fn(param)
+  File "/home/avsp/.local/lib/python3.6/site-packages/torch/nn/modules/module.py", line 441, in convert
+    return t.to(device, dtype if t.is_floating_point() else None, non_blocking)
+  File "/home/avsp/.local/lib/python3.6/site-packages/torch/cuda/__init__.py", line 153, in _lazy_init
+    torch._C._cuda_init()
+RuntimeError: cuda runtime error (999) : unknown error at /pytorch/aten/src/THC/THCGeneral.cpp:47

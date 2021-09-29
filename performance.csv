@@ -47,3 +47,21 @@ testc_labeled,train_loss,trainc_labeled,train_lib_size
 38,"tensor(0.1683, grad_fn=<DivBackward0>)",0.99,0
 1,0.0,0,0
 38,"tensor(0.1683, grad_fn=<DivBackward0>)",0.99,0
+0,0.0,0,0
+38,"tensor(0.1683, grad_fn=<DivBackward0>)",0.99,0
+4,0.0,0,0
+38,"tensor(0.1683, grad_fn=<DivBackward0>)",0.99,0
+14,0.0,0,0
+38,"tensor(0.1683, device='cuda:0', grad_fn=<DivBackward0>)",0.99,0
+0,0.0,0,0
+38,"tensor(0.1683, device='cuda:0', grad_fn=<DivBackward0>)",0.99,0
+0,0.0,0,0
+38,"tensor(0.1683, device='cuda:0', grad_fn=<DivBackward0>)",0.99,0
+38,0.0,0,0
+38,"tensor(0.1683, device='cuda:0', grad_fn=<DivBackward0>)",0.99,0
+1,0.0,0,0
+38,"tensor(0.1683, device='cuda:0', grad_fn=<DivBackward0>)",0.99,0
+32,0.0,0,0
+38,"tensor(0.1683, device='cuda:0', grad_fn=<DivBackward0>)",0.99,0
+18,0.0,0,0
+38,"tensor(0.1683, device='cuda:0', grad_fn=<DivBackward0>)",0.99,0

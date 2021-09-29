@@ -11,7 +11,7 @@ from torch.nn import ReLU
 from torch.nn import LogSoftmax
 from torch import flatten
 class LeNet(Module):
-    def __init__(self, numChannels, classes):
+    def __init__(self, numChannels, classes, args):
         # call the parent constructor
         super(LeNet, self).__init__()
         # initialize first set of CONV => RELU => POOL layers
@@ -33,7 +33,8 @@ class LeNet(Module):
 
         self.lossFn = nn.NLLLoss()
         # set the device we will be using to train the model
-        self.device = torch.device("cpu")
+        # self.device = torch.device("cpu")
+        self.device = args.device
         
     def forward(self, x):
         # pass the input through our first set of CONV => RELU =>
@@ -89,7 +90,7 @@ class LeNet(Module):
             totalTrainLoss = loss
             meanTrainLoss += loss
             
-            trainCorrect = (pred.argmax(1) == Y_c.argmax(1)).type(torch.float).sum().item()
+            trainCorrect = (pred.cpu().argmax(1) == Y_c.cpu().argmax(1)).type(torch.float).sum().item()
             meanCorrect += trainCorrect
 
         # return  totalTrainLoss.item(), trainCorrect
@@ -107,7 +108,7 @@ class LeNet(Module):
             Y_c = torch.from_numpy(Y_c)
             X, Y_c = X.to(self.device), Y_c.to(self.device)
             pred = self.forward(X.float())
-            testCorrect = (np.array(pred).argmax(1) == np.array(Y_c.argmax(1))).sum().item()
+            testCorrect = (np.array(pred.cpu()).argmax(1) == np.array(Y_c.cpu().argmax(1))).sum().item()
         return  testCorrect
     
     def predict_label(self, single_map):

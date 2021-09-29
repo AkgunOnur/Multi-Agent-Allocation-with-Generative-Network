@@ -1,0 +1,15 @@
+self.testlib:  [5, 5, 5, 5, 5, 5, 5, 5, 4, 5, 5, 4, 5, 5, 5, 5, 5, 4, 4, 4, 5, 5, 4, 5, 5, 4, 4, 4, 5, 4, 5, 4, 5, 4, 5, 4, 5, 5, 5, 5, 3, 3, 5, 3, 5, 5, 5, 4, 5, 5, 5, 3, 5, 5, 4, 4, 5, 5, 3, 4]
+[32m2021-09-29 16:28:22.207[39m | [1mINFO[22m | [90m/home/avsp/Masaüstü/Multi-Agent-Allocation-with-Generative-Network/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Library size increased: 1
+MODE: train
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 15/15 [10:18<00:00, 41.26s/it]
+Traceback (most recent call last):
+  File "main.py", line 188, in <module>
+    main()
+  File "main.py", line 109, in main
+    L.add(agent_map, prediction, opt) #add it to training library
+  File "/home/avsp/Masaüstü/Multi-Agent-Allocation-with-Generative-Network/construct_library.py", line 20, in add
+    self.train_library[1].append(np.array(label))
+  File "/home/avsp/.local/lib/python3.6/site-packages/torch/tensor.py", line 492, in __array__
+    return self.numpy()
+TypeError: can't convert cuda:0 device type tensor to numpy. Use Tensor.cpu() to copy the tensor to host memory first.
