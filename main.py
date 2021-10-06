@@ -72,7 +72,7 @@ def main():
 
     # initialize classifier optimizer and loss function
     optimizer = Adam(classifier.parameters(), lr=1e-4)
-    
+
     #==== TODO: WARNING: Dont forget to comment out next line ====#
     #torch.save(classifier.state_dict(), "./classifier_init.pth")
     #==== TODO: WARNING: Dont forget to comment out previous line #
@@ -96,7 +96,7 @@ def main():
             #Test classifier perf on test library
             classifier.eval()
             testc_labeled = classifier.predict(L.test_library)
-            
+
             #Log Data
             write_tocsv([testc_labeled, training_loss, trainc_labeled, s])
 

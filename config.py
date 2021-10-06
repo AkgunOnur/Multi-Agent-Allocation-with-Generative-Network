@@ -4,7 +4,18 @@ import random
 import numpy as np
 import torch
 
-from utils import set_seed
+
+def set_seed(seed=0):
+    """ Set the seed for all possible sources of randomness to allow for reproduceability. """
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.enabled = False
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+    np.random.seed(seed)
+    random.seed(seed)
 
 
 
@@ -15,15 +26,8 @@ def get_arguments():
     parser.add_argument("--game", default="environment", help="Which game is to be used?")
 
     #Working mode - Supports: train and test
-<<<<<<< HEAD
     parser.add_argument("--mode", default="train", help="working train mode selection")
     parser.add_argument("--testmode", default="test_gan", help="working test mode selection")
-||||||| merged common ancestors
-    parser.add_argument("--mode", default="random_train", help="working mode train or test")
-=======
-    parser.add_argument("--mode", default="random_train", help="working train mode selection")
-    parser.add_argument("--testmode", default="test_random", help="working test mode selection")
->>>>>>> 8db39c4c4a324700c86592b989af9e4de01bee40
     parser.add_argument("--test_type", default="gan", help="Testing with test library maps or gan generated maps")
     parser.add_argument("--library_size", type=int, default=25, help=" final training library size")
 
