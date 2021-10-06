@@ -106,7 +106,7 @@ class AgentFormation(gym.Env):
 
                 current_action = (self.agents_action_list[agent_ind][0])
 
-                total_reward -= 0.25
+                total_reward -= 0.75
                 prev_pos, current_pos = self.get_agent_desired_loc(agent_ind, current_action)
 
 

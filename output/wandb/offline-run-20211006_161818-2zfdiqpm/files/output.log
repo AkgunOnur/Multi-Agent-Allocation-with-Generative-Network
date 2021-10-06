@@ -1,0 +1,10 @@
+
+[32m2021-10-06 16:18:23.080[39m | [1mINFO[22m | [90m/home/avsp/Masaüstü/ganner/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Traceback (most recent call last):
+  File "main.py", line 190, in <module>
+    main()
+  File "main.py", line 61, in main
+    L.add(read_level(opt, None, replace_tokens),5,opt)#6 agent
+  File "/home/avsp/Masaüstü/ganner/construct_library.py", line 18, in add
+    self.train_library[0].append(np.array(map).reshape((1,3,opt.full_map_size,opt.full_map_size)))
+ValueError: cannot reshape array of size 4800 into shape (1,3,20,20)

@@ -1,0 +1,19 @@
+2021-10-06 16:37:04,922 INFO    MainThread:9055 [internal.py:wandb_internal():91] W&B internal server running at pid: 9055, started at: 2021-10-06 16:37:04.922474
+2021-10-06 16:37:04,925 INFO    WriterThread:9055 [datastore.py:open_for_write():80] open: output/wandb/offline-run-20211006_163704-1zwjx5y5/run-1zwjx5y5.wandb
+2021-10-06 16:37:04,928 DEBUG   HandlerThread:9055 [handler.py:handle_request():124] handle_request: run_start
+2021-10-06 16:37:05,801 DEBUG   HandlerThread:9055 [meta.py:__init__():39] meta init
+2021-10-06 16:37:05,801 DEBUG   HandlerThread:9055 [meta.py:__init__():53] meta init done
+2021-10-06 16:37:05,801 DEBUG   HandlerThread:9055 [meta.py:probe():210] probe
+2021-10-06 16:37:05,808 DEBUG   HandlerThread:9055 [meta.py:_setup_git():200] setup git
+2021-10-06 16:37:05,832 DEBUG   HandlerThread:9055 [meta.py:_setup_git():207] setup git done
+2021-10-06 16:37:05,832 DEBUG   HandlerThread:9055 [meta.py:_save_pip():57] save pip
+2021-10-06 16:37:05,833 DEBUG   HandlerThread:9055 [meta.py:_save_pip():71] save pip done
+2021-10-06 16:37:05,833 DEBUG   HandlerThread:9055 [meta.py:_save_conda():78] save conda
+2021-10-06 16:37:09,580 DEBUG   HandlerThread:9055 [meta.py:_save_conda():86] save conda done
+2021-10-06 16:37:09,581 DEBUG   HandlerThread:9055 [meta.py:probe():252] probe done
+2021-10-06 16:37:11,489 WARNING MainThread:9055 [internal.py:wandb_internal():147] Internal process interrupt: 1
+2021-10-06 16:37:11,662 WARNING MainThread:9055 [internal.py:wandb_internal():147] Internal process interrupt: 2
+2021-10-06 16:37:11,662 ERROR   MainThread:9055 [internal.py:wandb_internal():150] Internal process interrupted.
+2021-10-06 16:37:11,931 INFO    SenderThread:9055 [sender.py:finish():947] shutting down sender
+2021-10-06 16:37:12,616 INFO    WriterThread:9055 [datastore.py:close():288] close: output/wandb/offline-run-20211006_163704-1zwjx5y5/run-1zwjx5y5.wandb
+2021-10-06 16:37:12,617 INFO    MainThread:9055 [internal.py:handle_exit():78] Internal process exited

@@ -74,7 +74,7 @@ def write_maps(map, index):
         txt_list.append(lin)
         # print(txt_list)
 
-    with open(f"./input/harita/map-{index}.txt", "w+", encoding="latin-1") as output:
+    with open(f"./output/generated_maps/map-{index}.txt", "w+", encoding="latin-1") as output:
         for lne in txt_list:
             output.write(str(lne))
             output.write('\n')

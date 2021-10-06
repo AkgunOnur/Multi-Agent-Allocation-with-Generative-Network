@@ -61,6 +61,7 @@ def main():
     L.add(read_level(opt, None, replace_tokens),5,opt)#6 agent
 
     classifier = LeNet(numChannels=3, classes=6, args=opt).to(opt.device) #(0-5) = 6 is max agent number in map
+    torch.save(classifier.state_dict(),"./weights/classifier_init.pth")
 
     optimizer = Adam(classifier.parameters(), lr=1e-4)
     

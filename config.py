@@ -38,7 +38,7 @@ def get_arguments():
     parser.add_argument("--num_layer", type=int, help="number of layers", default=3)
 
     # scaling parameters:
-    parser.add_argument("--full_map_size", type=int, default=40, help="Full map size. Default 80x80")
+    parser.add_argument("--full_map_size", type=int, default=20, help="Full map size. Default 80x80")
     parser.add_argument("--noise_update", type=float, help="additive noise weight", default=0.1)
     parser.add_argument("--pad_with_noise", type=bool, help="use reflection padding? (makes edges random)",
                         default=False)

@@ -5,19 +5,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import pandas as pd
+
 from torch.nn.functional import interpolate
 from loguru import logger
 from tqdm import tqdm
-
-
 from generate_noise import generate_spatial_noise
 from environment.level_utils import  one_hot_to_ascii_level
 from models import init_models, reset_grads, calc_gradient_penalty, save_networks
 from draw_concat import draw_concat
-
 from read_maps import *
-import pandas as pd
-
 
 stat_columns = ['errD_fake', 'errD_real', 'errG']
 
@@ -110,11 +107,11 @@ class GAN:
                     rewards.append(reward)
                 #Get actual best n_agents
                 actual = np.argmax(rewards)#+1
-
+                print(rewards[prediction])
                 #Compute generator error
-                errG = -torch.clamp(output.mean(),-5.,5.) - torch.tensor(abs(prediction-actual)) + torch.abs(torch.clamp(torch.tensor(rewards[prediction]/100.0),-5.,5.))
-                
-                #print("errG: ", errG)
+                # errG = -torch.clamp(output.mean(),-5.,5.) - torch.tensor(abs(prediction-actual)) + torch.abs(torch.clamp(torch.tensor(rewards[prediction]/100.0),-5.,5.))
+                errG = torch.clamp(torch.tensor(rewards[prediction]/10.0, requires_grad=True),-10.,10.)
+                print(errG.item())
                 errG.backward(retain_graph=False)
                 self.optimizerG.step()
             

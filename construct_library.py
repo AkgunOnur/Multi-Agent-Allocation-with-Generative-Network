@@ -13,7 +13,6 @@ class Library():
         test_libfile = open('./test_dataset.pickle', 'rb')
         self.test_library = pickle.load(test_libfile)
         self.test_library[1] = [x-1 for x in self.test_library[1]]
-        print("self.testlib: ", self.test_library[1])
 
     def add(self, map, label, opt):
         self.train_library[0].append(np.array(map).reshape((1,3,opt.full_map_size,opt.full_map_size)))

@@ -25,10 +25,10 @@ class LeNet(Module):
         self.relu2 = ReLU()
         self.maxpool2 = MaxPool2d(kernel_size=(2, 2), stride=(2, 2))
         # initialize first (and only) set of FC => RELU layers
-        self.fc1 = Linear(in_features=2450, out_features=500)
+        self.fc1 = Linear(in_features=200, out_features=100)
         self.relu3 = ReLU()
         # initialize our softmax classifier
-        self.fc2 = Linear(in_features=500, out_features=classes)
+        self.fc2 = Linear(in_features=100, out_features=classes)
         self.logSoftmax = LogSoftmax(dim=1)
 
         self.lossFn = nn.NLLLoss()

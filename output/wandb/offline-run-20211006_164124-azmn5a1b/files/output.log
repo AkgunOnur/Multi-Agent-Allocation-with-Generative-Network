@@ -1,0 +1,15 @@
+input-dir input map_zero.txt
+[32m2021-10-06 16:41:29.142[39m | [1mINFO[22m | [90m/home/avsp/Masaüstü/ganner/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Library size increased: 1
+MODE: train
+  0%|                                                                                                                     | 0/15 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "main.py", line 191, in <module>
+    main()
+  File "main.py", line 92, in main
+    generated_map = g.train(e, sample_map, classifier, opt)
+  File "/home/avsp/Masaüstü/ganner/train.py", line 109, in train
+    reward = e.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
+  File "/home/avsp/Masaüstü/ganner/env_funcs.py", line 21, in reset_and_step
+    self.env.reset(ds_map, obstacle_map, prize_map, harita, map_lim, obs_y_list, obs_x_list)
+TypeError: reset() takes from 2 to 3 positional arguments but 8 were given
