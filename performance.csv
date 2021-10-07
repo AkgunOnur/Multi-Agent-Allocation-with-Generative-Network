@@ -204,3 +204,35 @@ testc_labeled,train_loss,trainc_labeled,train_lib_size
 3,"tensor(0.3555, grad_fn=<DivBackward0>)",1.0,0
 0,0.0,0,0
 3,"tensor(0.4291, grad_fn=<DivBackward0>)",0.95,0
+0,0.0,0,0
+3,"tensor(0.4893, grad_fn=<DivBackward0>)",0.9,0
+0,0.0,0,0
+3,"tensor(0.5037, grad_fn=<DivBackward0>)",0.93,0
+3,0.0,0,0
+3,"tensor(0.5114, grad_fn=<DivBackward0>)",1.0,0
+2,0.0,0,0
+3,"tensor(0.5732, grad_fn=<DivBackward0>)",1.0,0
+0,0.0,0,0
+3,"tensor(0.4327, grad_fn=<DivBackward0>)",0.88,0
+6,0.0,0,0
+3,"tensor(0.4474, grad_fn=<DivBackward0>)",0.99,0
+1,0.0,0,0
+3,"tensor(0.3889, grad_fn=<DivBackward0>)",1.0,0
+0,0.0,0,0
+3,"tensor(0.4342, grad_fn=<DivBackward0>)",0.98,0
+3,0.0,0,0
+3,"tensor(0.4930, grad_fn=<DivBackward0>)",1.0,0
+4,0.0,0,0
+3,"tensor(0.4479, grad_fn=<DivBackward0>)",1.0,0
+6,0.0,0,0
+3,"tensor(0.5641, grad_fn=<DivBackward0>)",0.92,0
+3,0.0,0,0
+3,"tensor(0.4187, grad_fn=<DivBackward0>)",1.0,0
+0,0.0,0,0
+3,"tensor(0.4543, grad_fn=<DivBackward0>)",0.93,0
+3,0.0,0,0
+3,"tensor(0.3833, grad_fn=<DivBackward0>)",1.0,0
+0,0.0,0,0
+3,"tensor(0.3772, grad_fn=<DivBackward0>)",1.0,0
+0,0.0,0,0
+3,"tensor(0.5280, grad_fn=<DivBackward0>)",0.89,0

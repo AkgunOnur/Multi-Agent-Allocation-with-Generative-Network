@@ -106,7 +106,6 @@ class GAN:
 
                 for i in range(3):
                     print(i)
-                    print("agent map for loop",agent_map[2])
                     reward = env.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
                     rewards.append(reward)
                 #Get actual best n_agents
@@ -118,7 +117,7 @@ class GAN:
                 errG.backward(retain_graph=False)
                 self.optimizerG.step()
             
-            #======== log stats ===========
+            #======== log stats =============
             write_stats([errD_fake.item(), errD_real.item(), errG.item()])
             #================================
 
