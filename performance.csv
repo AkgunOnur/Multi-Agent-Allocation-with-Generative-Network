@@ -242,3 +242,5 @@ testc_labeled,train_loss,trainc_labeled,train_lib_size
 3,"tensor(0.4355, grad_fn=<DivBackward0>)",0.97,0
 0,0.0,0,0
 3,"tensor(0.4323, grad_fn=<DivBackward0>)",0.9,0
+3,0.0,0,0
+3,"tensor(0.4122, grad_fn=<DivBackward0>)",1.0,0

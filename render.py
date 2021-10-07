@@ -52,7 +52,6 @@ class Library():
 
 def write_maps(map, index):
     txt_list = []
-    print(map.shape)
     for x in range(map.shape[1]): #row
         line = []
         print(map[0][x])

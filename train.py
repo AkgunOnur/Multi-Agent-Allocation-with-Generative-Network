@@ -112,7 +112,7 @@ class GAN:
 
                 #Compute generator error
                 # errG = -torch.clamp(output.mean(),-5.,5.) - torch.tensor(abs(prediction-actual)) + torch.abs(torch.clamp(torch.tensor(rewards[prediction]/100.0),-5.,5.))
-                errG = torch.clamp(torch.tensor(rewards[prediction]/10.0, requires_grad=True),-10.,10.)
+                errG = torch.clamp(torch.tensor(rewards[prediction]/100.0, requires_grad=True),-10.,10.)
                 errG.backward(retain_graph=False)
                 self.optimizerG.step()
             

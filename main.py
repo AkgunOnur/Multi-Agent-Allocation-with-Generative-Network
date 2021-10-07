@@ -86,7 +86,6 @@ def main():
             write_tocsv([testc_labeled, training_loss, trainc_labeled, s])
 
             while(True):
-                print("WHİLE "*30)
                 sample_map, _ = L.get()
 
                 #Train GAN and return fake map
@@ -112,7 +111,6 @@ def main():
                 if (prediction==actual): #no need to add library
                   continue
                 else:
-                    print("agent map4",agent_map[2])
                     L.add(agent_map, prediction.cpu(), opt) #add it to training library
 
                     if (s%10==0 and s>0):
