@@ -112,6 +112,7 @@ class LeNet(Module):
         return  testCorrect
     
     def predict_label(self, single_map):
+        # print("predict map[2]", single_map[:,2,:,:])
         with torch.no_grad():
             X= single_map.to(self.device)
             pred = self.forward(X.float())

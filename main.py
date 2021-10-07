@@ -56,11 +56,11 @@ def main():
     #==================================================================================
 
     L = Library(180)
-    e = env_class()
+    env = env_class()
 
-    L.add(read_level(opt, None, replace_tokens),5,opt)#6 agent
+    L.add(read_level(opt, None, replace_tokens),2,opt)
 
-    classifier = LeNet(numChannels=3, classes=6, args=opt).to(opt.device) #(0-5) = 6 is max agent number in map
+    classifier = LeNet(numChannels=3, classes=3, args=opt).to(opt.device)
     torch.save(classifier.state_dict(),"./weights/classifier_init.pth")
 
     optimizer = Adam(classifier.parameters(), lr=1e-4)
@@ -86,28 +86,35 @@ def main():
             write_tocsv([testc_labeled, training_loss, trainc_labeled, s])
 
             while(True):
+                print("WHİLE "*30)
                 sample_map, _ = L.get()
 
                 #Train GAN and return fake map
-                generated_map = g.train(e, sample_map, classifier, opt)
+                generated_map = g.train(env, sample_map, classifier, opt)
                 coded_fake_map = one_hot_to_ascii_level(generated_map.detach(), opt.token_list)
+                # print("coded_fake_map",coded_fake_map)
                 ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
-
+                # print("agent map1", agent_map[2])
                 classifier.eval()
                 prediction = classifier.predict_label(torch.from_numpy((agent_map.reshape(1,3,opt.full_map_size,opt.full_map_size))).float())
-
+                # print("agent map2",agent_map[2])
+                # print("agent map2 shape",agent_map.shape)
                 # run D* for all possible n_agents and find best
                 rewards = []
-                for i in range(6):
-                    reward = e.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
+                for i in range(3):
+                    # print(i)
+                    # print("agent map for loop",agent_map[2])
+                    reward = env.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
                     rewards.append(reward)
 
                 actual = np.argmax(rewards)
 
-                if(prediction==actual): #no need to add library
+                if (prediction==actual): #no need to add library
                   continue
                 else:
+                    print("agent map4",agent_map[2])
                     L.add(agent_map, prediction.cpu(), opt) #add it to training library
+
                     if (s%10==0 and s>0):
                         g.better_save(s)
                         break
@@ -141,7 +148,7 @@ def main():
 
                 rewards = []
                 for i in range(6):
-                    reward = e.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
+                    reward = env.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
                     rewards.append(reward)
                 #Get actual best n_agents
                 actual = np.argmax(rewards)
@@ -165,7 +172,7 @@ def main():
 
             rewards = []
             for i in range(6):
-                reward = e.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
+                reward = env.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
                 rewards.append(reward)
             #Get actual best n_agents
             actual = np.argmax(rewards)

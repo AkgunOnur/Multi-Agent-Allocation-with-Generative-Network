@@ -84,3 +84,123 @@ testc_labeled,train_loss,trainc_labeled,train_lib_size
 0,"tensor(0.8351, device='cuda:0', grad_fn=<DivBackward0>)",0.87,0
 6,0.0,0,0
 0,"tensor(0.7045, device='cuda:0', grad_fn=<DivBackward0>)",0.98,0
+21,0.0,0,0
+0,"tensor(0.8418, grad_fn=<DivBackward0>)",0.97,0
+0,0.0,0,0
+0,"tensor(0.6878, grad_fn=<DivBackward0>)",1.0,0
+0,0.0,0,0
+3,"tensor(0.5710, grad_fn=<DivBackward0>)",0.87,0
+3,0.0,0,0
+3,"tensor(0.4580, grad_fn=<DivBackward0>)",1.0,0
+5,0.0,0,0
+3,"tensor(0.4564, grad_fn=<DivBackward0>)",0.99,0
+1,0.0,0,0
+3,"tensor(0.3668, grad_fn=<DivBackward0>)",0.98,0
+3,0.0,0,0
+3,"tensor(0.4625, grad_fn=<DivBackward0>)",1.0,0
+5,0.0,0,0
+3,"tensor(0.4133, grad_fn=<DivBackward0>)",0.97,0
+0,0.0,0,0
+3,"tensor(0.4113, grad_fn=<DivBackward0>)",0.96,0
+3,0.0,0,0
+3,"tensor(0.4520, grad_fn=<DivBackward0>)",1.0,0
+6,0.0,0,0
+3,"tensor(0.4943, grad_fn=<DivBackward0>)",0.84,0
+3,0.0,0,0
+3,"tensor(0.4192, grad_fn=<DivBackward0>)",1.0,0
+6,0.0,0,0
+3,"tensor(0.4310, grad_fn=<DivBackward0>)",0.98,0
+3,0.0,0,0
+3,"tensor(0.3750, grad_fn=<DivBackward0>)",1.0,0
+6,0.0,0,0
+3,"tensor(0.4772, grad_fn=<DivBackward0>)",0.92,0
+6,0.0,0,0
+3,"tensor(0.5119, grad_fn=<DivBackward0>)",0.96,0
+3,0.0,0,0
+3,"tensor(0.4135, grad_fn=<DivBackward0>)",1.0,0
+0,0.0,0,0
+3,"tensor(0.4470, grad_fn=<DivBackward0>)",0.92,0
+0,0.0,0,0
+3,"tensor(0.4893, grad_fn=<DivBackward0>)",0.9,0
+0,0.0,0,0
+3,"tensor(0.5075, grad_fn=<DivBackward0>)",0.96,0
+0,0.0,0,0
+3,"tensor(0.5547, grad_fn=<DivBackward0>)",0.95,0
+0,0.0,0,0
+3,"tensor(0.4252, grad_fn=<DivBackward0>)",0.97,0
+0,0.0,0,0
+3,"tensor(0.4506, grad_fn=<DivBackward0>)",0.96,0
+0,0.0,0,0
+3,"tensor(0.3999, grad_fn=<DivBackward0>)",0.91,0
+3,0.0,0,0
+3,"tensor(0.4608, grad_fn=<DivBackward0>)",1.0,0
+4,0.0,0,0
+3,"tensor(0.4367, grad_fn=<DivBackward0>)",0.91,0
+3,0.0,0,0
+3,"tensor(0.4797, grad_fn=<DivBackward0>)",1.0,0
+3,0.0,0,0
+0,0.0,0,0
+6,0.0,0,0
+3,"tensor(0.5344, grad_fn=<DivBackward0>)",0.87,0
+0,0.0,0,0
+3,"tensor(0.4229, grad_fn=<DivBackward0>)",0.94,0
+0,0.0,0,0
+3,"tensor(0.3719, grad_fn=<DivBackward0>)",0.97,0
+0,0.0,0,0
+3,"tensor(0.3865, grad_fn=<DivBackward0>)",0.95,0
+0,0.0,0,0
+3,"tensor(0.4717, grad_fn=<DivBackward0>)",0.95,0
+0,0.0,0,0
+3,"tensor(0.5289, grad_fn=<DivBackward0>)",1.0,0
+0,0.0,0,0
+3,"tensor(0.4732, grad_fn=<DivBackward0>)",0.94,0
+6,0.0,0,0
+3,"tensor(0.5519, grad_fn=<DivBackward0>)",0.94,0
+3,0.0,0,0
+3,"tensor(0.4425, grad_fn=<DivBackward0>)",1.0,0
+0,0.0,0,0
+3,"tensor(0.4950, grad_fn=<DivBackward0>)",0.92,0
+0,0.0,0,0
+3,"tensor(0.4081, grad_fn=<DivBackward0>)",0.98,0
+3,0.0,0,0
+3,"tensor(0.5834, grad_fn=<DivBackward0>)",1.0,0
+0,0.0,0,0
+3,"tensor(0.5062, grad_fn=<DivBackward0>)",0.94,0
+3,0.0,0,0
+3,"tensor(0.3802, grad_fn=<DivBackward0>)",1.0,0
+6,0.0,0,0
+3,"tensor(0.4157, grad_fn=<DivBackward0>)",0.96,0
+0,0.0,0,0
+3,"tensor(0.4228, grad_fn=<DivBackward0>)",0.99,0
+6,0.0,0,0
+3,"tensor(0.4711, grad_fn=<DivBackward0>)",0.97,0
+6,0.0,0,0
+3,"tensor(0.5207, grad_fn=<DivBackward0>)",0.96,0
+6,0.0,0,0
+3,"tensor(0.5345, grad_fn=<DivBackward0>)",0.96,0
+3,0.0,0,0
+3,"tensor(0.4169, grad_fn=<DivBackward0>)",1.0,0
+4,0.0,0,0
+3,"tensor(0.4927, grad_fn=<DivBackward0>)",0.99,0
+4,0.0,0,0
+3,"tensor(0.4665, grad_fn=<DivBackward0>)",0.92,0
+0,0.0,0,0
+3,"tensor(0.4407, grad_fn=<DivBackward0>)",0.89,0
+4,0.0,0,0
+3,"tensor(0.3897, grad_fn=<DivBackward0>)",0.99,0
+1,0.0,0,0
+3,"tensor(0.3905, grad_fn=<DivBackward0>)",1.0,0
+2,0.0,0,0
+3,"tensor(0.4686, grad_fn=<DivBackward0>)",0.93,0
+0,0.0,0,0
+3,"tensor(0.5896, grad_fn=<DivBackward0>)",0.98,0
+0,0.0,0,0
+3,"tensor(0.4377, grad_fn=<DivBackward0>)",0.95,0
+0,0.0,0,0
+3,"tensor(0.4509, grad_fn=<DivBackward0>)",0.97,0
+6,0.0,0,0
+3,"tensor(0.4946, grad_fn=<DivBackward0>)",0.9,0
+3,0.0,0,0
+3,"tensor(0.3555, grad_fn=<DivBackward0>)",1.0,0
+0,0.0,0,0
+3,"tensor(0.4291, grad_fn=<DivBackward0>)",0.95,0

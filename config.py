@@ -68,7 +68,7 @@ def get_arguments():
 def post_config(opt):
     """ Initializes parameters. We're using Namespace opt to pass a lot of used parameters to many functions. """
 
-    opt.device = torch.device("cuda")# if opt.not_cuda else "cuda:0")
+    opt.device = torch.device("cpu")# if opt.not_cuda else "cuda:0")
     if torch.cuda.is_available() and opt.not_cuda:
         print("WARNING: You have a CUDA device, so you should probably run with --cuda")
 

@@ -37,7 +37,7 @@ class GAN:
         self.schedulerD = torch.optim.lr_scheduler.MultiStepLR(optimizer=self.optimizerD, milestones=[1500, 2500], gamma=opt.gamma)
         self.schedulerG = torch.optim.lr_scheduler.MultiStepLR(optimizer=self.optimizerG, milestones=[1500, 2500], gamma=opt.gamma)
 
-    def train(self, e, real, classifier, opt):
+    def train(self, env, real, classifier, opt):
         """ Train one scale. D and G are the discriminator and generator, real is the original map and its label.
         opt is a namespace that holds all necessary parameters. """
         real = torch.FloatTensor(real) # 1x3x40x40
@@ -48,9 +48,9 @@ class GAN:
             noise_ = generate_spatial_noise([1, opt.nc_current, nzx, nzy], device=opt.device) # 1x3x40x40
             noise_ = self.pad_noise(noise_) # 1x3x46x46
 
-            ############################
+            ###############################################
             # (1) Update D network: maximize D(x) + D(G(z))
-            ###########################
+            ###############################################
             for j in range(opt.Dsteps):
 
                 if opt.add_prev:
@@ -87,31 +87,34 @@ class GAN:
 
                 self.optimizerD.step()
 
-            ###########################
+            ########################################
             # (2) Update G network: maximize D(G(z))
-            ###########################
+            ########################################
 
             for j in range(opt.Gsteps):
+                self.G.train()
                 self.G.zero_grad()
                 fake = self.G(noise.detach(), prev.detach(), temperature=1)
                 output = self.D(fake)
 
                 coded_fake_map = one_hot_to_ascii_level(fake.detach(), opt.token_list)
+
                 ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
 
-                prediction = classifier.predict_label(torch.from_numpy((agent_map.reshape(1,3,opt.full_map_size,opt.full_map_size))).float())#+1
-
+                prediction = classifier.predict_label(torch.from_numpy((agent_map.reshape(1,3,opt.full_map_size,opt.full_map_size))).float())
                 rewards = []
-                for i in range(6):
-                    reward = e.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
+
+                for i in range(3):
+                    print(i)
+                    print("agent map for loop",agent_map[2])
+                    reward = env.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
                     rewards.append(reward)
                 #Get actual best n_agents
-                actual = np.argmax(rewards)#+1
-                print(rewards[prediction])
+                actual = np.argmax(rewards)
+
                 #Compute generator error
                 # errG = -torch.clamp(output.mean(),-5.,5.) - torch.tensor(abs(prediction-actual)) + torch.abs(torch.clamp(torch.tensor(rewards[prediction]/100.0),-5.,5.))
                 errG = torch.clamp(torch.tensor(rewards[prediction]/10.0, requires_grad=True),-10.,10.)
-                print(errG.item())
                 errG.backward(retain_graph=False)
                 self.optimizerG.step()
             
@@ -126,6 +129,7 @@ class GAN:
         self.G = reset_grads(self.G, True)
         self.D = reset_grads(self.D, True)
         with torch.no_grad():
+            self.G.eval()
             generated_map = self.G(noise.detach(), prev.detach(), temperature=1)
         return generated_map
     

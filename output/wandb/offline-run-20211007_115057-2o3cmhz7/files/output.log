@@ -1,0 +1,14 @@
+input-dir input map_zero.txt
+[32m2021-10-07 11:51:02.773[39m | [1mINFO[22m | [90m/home/av/Desktop/Multi-Agent-Allocation-with-Generative-Network/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Library size increased: 1
+MODE: train
+[1396.512, 1844.15, 2027.855]
+  0%|                                                                                        | 0/15 [00:01<?, ?it/s]
+Traceback (most recent call last):
+  File "main.py", line 191, in <module>
+    main()
+  File "main.py", line 92, in main
+    generated_map = g.train(e, sample_map, classifier, opt)
+  File "/home/av/Desktop/Multi-Agent-Allocation-with-Generative-Network/train.py", line 111, in train
+    print(rewards[prediction])
+IndexError: list index out of range

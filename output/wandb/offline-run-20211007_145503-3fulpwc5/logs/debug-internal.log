@@ -1,0 +1,20 @@
+2021-10-07 14:55:03,983 INFO    MainThread:405 [internal.py:wandb_internal():89] W&B internal server running at pid: 405, started at: 2021-10-07 14:55:03.982476
+2021-10-07 14:55:03,985 INFO    WriterThread:405 [datastore.py:open_for_write():77] open: output/wandb/offline-run-20211007_145503-3fulpwc5/run-3fulpwc5.wandb
+2021-10-07 14:55:03,986 DEBUG   HandlerThread:405 [handler.py:handle_request():126] handle_request: run_start
+2021-10-07 14:55:11,903 DEBUG   HandlerThread:405 [meta.py:__init__():40] meta init
+2021-10-07 14:55:11,904 DEBUG   HandlerThread:405 [meta.py:__init__():54] meta init done
+2021-10-07 14:55:11,904 DEBUG   HandlerThread:405 [meta.py:probe():211] probe
+2021-10-07 14:55:11,919 DEBUG   HandlerThread:405 [meta.py:_setup_git():201] setup git
+2021-10-07 14:55:11,954 DEBUG   HandlerThread:405 [meta.py:_setup_git():208] setup git done
+2021-10-07 14:55:11,955 DEBUG   HandlerThread:405 [meta.py:_save_pip():58] save pip
+2021-10-07 14:55:11,956 DEBUG   HandlerThread:405 [meta.py:_save_pip():72] save pip done
+2021-10-07 14:55:11,956 DEBUG   HandlerThread:405 [meta.py:_save_conda():79] save conda
+2021-10-07 14:55:20,124 DEBUG   HandlerThread:405 [meta.py:_save_conda():87] save conda done
+2021-10-07 14:55:20,124 DEBUG   HandlerThread:405 [meta.py:probe():249] probe done
+2021-10-07 14:55:23,923 WARNING MainThread:405 [internal.py:wandb_internal():145] Internal process interrupt: 1
+2021-10-07 14:55:24,101 WARNING MainThread:405 [internal.py:wandb_internal():145] Internal process interrupt: 2
+2021-10-07 14:55:24,102 ERROR   MainThread:405 [internal.py:wandb_internal():148] Internal process interrupted.
+2021-10-07 14:55:24,135 INFO    WriterThread:405 [datastore.py:close():281] close: output/wandb/offline-run-20211007_145503-3fulpwc5/run-3fulpwc5.wandb
+2021-10-07 14:55:24,136 INFO    HandlerThread:405 [handler.py:finish():683] shutting down handler
+2021-10-07 14:55:24,999 INFO    SenderThread:405 [sender.py:finish():979] shutting down sender
+2021-10-07 14:55:25,000 INFO    MainThread:405 [internal.py:handle_exit():76] Internal process exited

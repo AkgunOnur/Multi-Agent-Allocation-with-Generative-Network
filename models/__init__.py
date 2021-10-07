@@ -62,8 +62,8 @@ def calc_gradient_penalty(netD, real_data, fake_data, LAMBDA, device):
 
 
 def save_networks(G, D,iteration):
-    torch.save(G.state_dict(), "./Saved_Models/Generators/G_"+str(iteration)+".pth")
-    torch.save(D.state_dict(), "./Saved_Models/Discriminators/D_"+str(iteration)+".pth")
+    torch.save(G.state_dict(), "./weights/G_"+str(iteration)+".pth")
+    torch.save(D.state_dict(), "./weights/D_"+str(iteration)+".pth")
 
 
 def restore_weights(D_curr, G_curr, scale_num, opt):

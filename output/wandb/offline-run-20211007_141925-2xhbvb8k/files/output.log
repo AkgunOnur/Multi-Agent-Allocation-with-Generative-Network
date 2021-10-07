@@ -1,0 +1,10 @@
+input-dir input map_zero.txt
+[32m2021-10-07 14:19:30.580[39m | [1mINFO[22m | [90m/home/av/Desktop/Multi-Agent-Allocation-with-Generative-Network/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Traceback (most recent call last):
+  File "main.py", line 195, in <module>
+    main()
+  File "main.py", line 61, in main
+    L.add(read_level(opt, None, replace_tokens),2,opt)
+  File "/home/av/Desktop/Multi-Agent-Allocation-with-Generative-Network/construct_library.py", line 20, in add
+    print(np.array(map)[2])
+IndexError: index 2 is out of bounds for axis 0 with size 1

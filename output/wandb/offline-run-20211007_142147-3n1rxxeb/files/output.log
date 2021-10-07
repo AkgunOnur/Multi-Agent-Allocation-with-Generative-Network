@@ -1,0 +1,15 @@
+input-dir input map_zero.txt
+[32m2021-10-07 14:21:52.410[39m | [1mINFO[22m | [90m/home/av/Desktop/Multi-Agent-Allocation-with-Generative-Network/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Library size increased: 1
+MODE: train
+  0%|                                                                                        | 0/15 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "main.py", line 195, in <module>
+    main()
+  File "main.py", line 92, in main
+    generated_map = g.train(e, sample_map, classifier, opt)
+  File "/home/av/Desktop/Multi-Agent-Allocation-with-Generative-Network/train.py", line 102, in train
+    ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
+  File "/home/av/Desktop/Multi-Agent-Allocation-with-Generative-Network/read_maps.py", line 39, in fa_regenate
+    print("array shape", array.shape)
+AttributeError: 'list' object has no attribute 'shape'

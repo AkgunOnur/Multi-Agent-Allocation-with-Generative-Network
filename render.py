@@ -52,7 +52,7 @@ class Library():
 
 def write_maps(map, index):
     txt_list = []
-    # print("map: ", map.shape)
+    print(map.shape)
     for x in range(map.shape[1]): #row
         line = []
         print(map[0][x])
@@ -82,9 +82,9 @@ def write_maps(map, index):
 def write():
     #Initialize Library and environment
     L = Library('test_gan')
-    for x in range(len(L.train_library[0])):
+    for idx in range(len(L.train_library[0])):
         #print("len(L.train_library): ", len(L.train_library[0]))
-        write_maps(np.asarray(L.train_library[0][x]).squeeze(axis=0), x)
+        write_maps(np.asarray(L.train_library[0][idx]).squeeze(axis=0), idx)
 
 
 if __name__ == "__main__":
