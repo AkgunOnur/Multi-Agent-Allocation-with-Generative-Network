@@ -92,7 +92,7 @@ class AgentFormation(gym.Env):
             if np.sum(self.infeasible_prizes) == self.N_prize:
                 total_reward = total_reward - np.sum(self.prize_exists) * 10.0
 
-                return total_reward, done, self.get_observation()
+                return total_reward, done
         for iteration in range(1, N_iteration + 1):
             for agent_ind in range(self.n_agents):
 
@@ -102,7 +102,7 @@ class AgentFormation(gym.Env):
                         self.agents_action_list[agent_ind], pos_list, feasible = self.create_trajectory(agent_ind)
                     if np.sum(self.infeasible_prizes) == self.N_prize:
                         total_reward = total_reward - np.sum(self.prize_exists) * 10.0
-                        return total_reward, done, self.get_observation()
+                        return total_reward, done
 
                 current_action = (self.agents_action_list[agent_ind][0])
 
@@ -131,7 +131,7 @@ class AgentFormation(gym.Env):
                     if np.sum(self.prize_exists) == 0:
                         done = True
                         total_reward = total_reward + np.abs(total_reward) * (1 - iteration / N_iteration)
-                        return total_reward, done, self.get_observation()
+                        return total_reward, done
 
                     agents_for_prize = np.copy(self.assigned_agents_to_prizes[taken_prize_ind])
                     self.assigned_agents_to_prizes[taken_prize_ind] = []
@@ -145,7 +145,7 @@ class AgentFormation(gym.Env):
                             # print("prize_exists: ", self.prize_exists)
                             # print("N prize: ", self.N_prize)
                             # print("------------------------")
-                            return total_reward, done, self.get_observation()
+                            return total_reward, done
 
 
                 # if self.visualization:
@@ -153,7 +153,7 @@ class AgentFormation(gym.Env):
                 
         total_reward = total_reward - np.sum(self.prize_exists) * 10.0
         #print("REWARD: ", total_reward)
-        return total_reward, done, self.get_observation()
+        return total_reward, done
 
     def get_observation(self):
         for i in range(self.N_prize):
@@ -162,7 +162,6 @@ class AgentFormation(gym.Env):
 
         self.observation[2,:,:] = np.copy(self.prize_map)
         self.observation[1,:,:] = np.copy(self.obstacle_map)
-
 
         return self.observation
 
@@ -201,7 +200,7 @@ class AgentFormation(gym.Env):
         for n in range(self.N_obstacle):
             self.obstacle_locations.append([obstacle_map[n][0],obstacle_map[n][1]])
 
-        return self.observation
+        # return self.observation
 
     def get_obstacle_locations(self):
         ds_map = Map(self.map_lim, self.map_lim)

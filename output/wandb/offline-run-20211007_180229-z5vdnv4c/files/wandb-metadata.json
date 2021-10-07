@@ -1,0 +1,24 @@
+{
+    "os": "Linux-5.4.0-87-generic-x86_64-with-debian-buster-sid",
+    "python": "3.7.0",
+    "heartbeatAt": "2021-10-07T15:02:35.167421",
+    "startedAt": "2021-10-07T15:02:29.250570",
+    "docker": null,
+    "gpu": "GeForce GT 540M",
+    "gpu_count": 1,
+    "cpu_count": 4,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "main.py",
+    "codePath": "main.py",
+    "git": {
+        "remote": "https://github.com/AkgunOnur/Multi-Agent-Allocation-with-Generative-Network.git",
+        "commit": "6f72f44bb110642c79ecad4c4988bd831643d005"
+    },
+    "email": "a.vanli2019@gmail.com",
+    "root": "/home/av/Desktop/Multi-Agent-Allocation-with-Generative-Network",
+    "host": "avsp",
+    "username": "av",
+    "executable": "/home/av/anaconda3/envs/gpn/bin/python"
+}

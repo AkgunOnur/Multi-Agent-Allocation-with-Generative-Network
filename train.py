@@ -105,7 +105,6 @@ class GAN:
                 rewards = []
 
                 for i in range(3):
-                    print(i)
                     reward = env.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
                     rewards.append(reward)
                 #Get actual best n_agents
