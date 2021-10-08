@@ -1,0 +1,17 @@
+input-dir input map_zero.txt
+[32m2021-10-08 16:03:51.209[39m | [1mINFO[22m | [90m/home/avsp/Masaüstü/ganner/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Library size increased: 1
+MODE: train
+  0%|                                                                                                                    | 0/15 [00:01<?, ?it/s]
+Traceback (most recent call last):
+  File "main.py", line 196, in <module>
+    main()
+  File "main.py", line 92, in main
+    generated_map = g.train(env, sample_map, classifier, opt)
+  File "/home/avsp/Masaüstü/ganner/train.py", line 118, in train
+    errG.backward()
+  File "/home/avsp/.local/lib/python3.6/site-packages/torch/tensor.py", line 198, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph)
+  File "/home/avsp/.local/lib/python3.6/site-packages/torch/autograd/__init__.py", line 100, in backward
+    allow_unreachable=True)  # allow_unreachable flag
+RuntimeError: element 0 of tensors does not require grad and does not have a grad_fn

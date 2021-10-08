@@ -1,0 +1,13 @@
+input-dir input map_zero.txt
+[32m2021-10-08 16:07:55.645[39m | [1mINFO[22m | [90m/home/avsp/Masaüstü/ganner/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Library size increased: 1
+MODE: train
+  0%|                                                                                                                    | 0/15 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "main.py", line 196, in <module>
+    main()
+  File "main.py", line 92, in main
+    generated_map = g.train(env, sample_map, classifier, opt)
+  File "/home/avsp/Masaüstü/ganner/train.py", line 117, in train
+    var_r = torch.Variable(rewards.data, requires_grad=True)
+AttributeError: module 'torch' has no attribute 'Variable'

@@ -1,0 +1,13 @@
+2021-10-08 16:47:18,724 INFO    MainThread:22658 [internal.py:wandb_internal():91] W&B internal server running at pid: 22658, started at: 2021-10-08 16:47:18.724608
+2021-10-08 16:47:18,728 INFO    WriterThread:22658 [datastore.py:open_for_write():80] open: output/wandb/offline-run-20211008_164717-x7zzyojn/run-x7zzyojn.wandb
+2021-10-08 16:47:18,731 DEBUG   HandlerThread:22658 [handler.py:handle_request():124] handle_request: run_start
+2021-10-08 16:47:19,633 DEBUG   HandlerThread:22658 [meta.py:__init__():39] meta init
+2021-10-08 16:47:19,634 DEBUG   HandlerThread:22658 [meta.py:__init__():53] meta init done
+2021-10-08 16:47:19,634 DEBUG   HandlerThread:22658 [meta.py:probe():210] probe
+2021-10-08 16:47:19,640 DEBUG   HandlerThread:22658 [meta.py:_setup_git():200] setup git
+2021-10-08 16:47:19,664 DEBUG   HandlerThread:22658 [meta.py:_setup_git():207] setup git done
+2021-10-08 16:47:19,664 DEBUG   HandlerThread:22658 [meta.py:_save_pip():57] save pip
+2021-10-08 16:47:19,665 DEBUG   HandlerThread:22658 [meta.py:_save_pip():71] save pip done
+2021-10-08 16:47:19,665 DEBUG   HandlerThread:22658 [meta.py:_save_conda():78] save conda
+2021-10-08 16:47:22,434 DEBUG   HandlerThread:22658 [meta.py:_save_conda():86] save conda done
+2021-10-08 16:47:22,435 DEBUG   HandlerThread:22658 [meta.py:probe():252] probe done

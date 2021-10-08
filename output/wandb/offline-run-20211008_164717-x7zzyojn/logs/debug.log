@@ -1,0 +1,18 @@
+2021-10-08 16:47:17,848 INFO    MainThread:22600 [wandb_setup.py:_flush():69] setting env: {}
+2021-10-08 16:47:17,849 INFO    MainThread:22600 [wandb_init.py:_log_setup():338] Logging user logs to output/wandb/offline-run-20211008_164717-x7zzyojn/logs/debug.log
+2021-10-08 16:47:17,849 INFO    MainThread:22600 [wandb_init.py:_log_setup():339] Logging internal logs to output/wandb/offline-run-20211008_164717-x7zzyojn/logs/debug-internal.log
+2021-10-08 16:47:17,849 INFO    MainThread:22600 [wandb_init.py:init():371] calling init triggers
+2021-10-08 16:47:17,849 INFO    MainThread:22600 [wandb_init.py:init():378] wandb.init called with sweep_config: {}
+config: {'game': 'environment', 'mode': 'train', 'testmode': 'test_random', 'test_type': 'gan', 'library_size': 25, 'not_cuda': 0, 'netG': '', 'netD': '', 'manualSeed': 1842, 'out': 'output', 'input_dir': 'input', 'input_name': 'map_zero.txt', 'test_dir': 'test_maps', 'nfc': 64, 'ker_size': 3, 'num_layer': 3, 'full_map_size': 20, 'noise_update': 0.1, 'pad_with_noise': False, 'niter': 15, 'gamma': 0.1, 'lr_g': 0.0005, 'lr_d': 0.0005, 'beta1': 0.5, 'Gsteps': 1, 'Dsteps': 1, 'lambda_grad': 0.1, 'alpha': 100, 'token_insert': -2, 'add_prev': False, 'device': device(type='cuda'), 'nc_current': 3, 'out_': 'output/map_zero/', 'seed_road': None, 'token_list': ['-', 'W', 'X'], 'ImgGen': []}
+2021-10-08 16:47:17,849 INFO    MainThread:22600 [wandb_init.py:init():420] starting backend
+2021-10-08 16:47:17,849 INFO    MainThread:22600 [backend.py:_multiprocessing_setup():72] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2021-10-08 16:47:17,859 INFO    MainThread:22600 [backend.py:ensure_launched():135] starting backend process...
+2021-10-08 16:47:17,864 INFO    MainThread:22600 [backend.py:ensure_launched():140] started backend process with pid: 22658
+2021-10-08 16:47:17,865 INFO    MainThread:22600 [wandb_init.py:init():425] backend started and connected
+2021-10-08 16:47:17,870 INFO    MainThread:22600 [wandb_init.py:init():473] updated telemetry
+2021-10-08 16:47:17,872 INFO    MainThread:22600 [wandb_init.py:init():530] starting run threads in backend
+2021-10-08 16:47:22,473 INFO    MainThread:22600 [wandb_run.py:_console_start():1625] atexit reg
+2021-10-08 16:47:22,473 INFO    MainThread:22600 [wandb_run.py:_redirect():1499] redirect: SettingsConsole.REDIRECT
+2021-10-08 16:47:22,477 INFO    MainThread:22600 [wandb_run.py:_redirect():1504] Redirecting console.
+2021-10-08 16:47:22,480 INFO    MainThread:22600 [wandb_run.py:_redirect():1560] Redirects installed.
+2021-10-08 16:47:22,480 INFO    MainThread:22600 [wandb_init.py:init():555] run started, returning control to user process

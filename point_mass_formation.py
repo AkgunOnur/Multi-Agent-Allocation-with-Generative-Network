@@ -53,6 +53,7 @@ class AgentFormation(gym.Env):
         # print("prize_exists: ", self.prize_exists)
         # print("N prize: ", self.N_prize)
         # print("------------------------")
+        r_coeff = 2.5
         done = False
         total_reward = 0
         N_iteration = 250
@@ -90,7 +91,7 @@ class AgentFormation(gym.Env):
                 #print("feasioble: ", feasible)
                 self.agents_action_list[agent_ind], pos_list, feasible = self.create_trajectory(agent_ind)
             if np.sum(self.infeasible_prizes) == self.N_prize:
-                total_reward = total_reward - np.sum(self.prize_exists) * 10.0
+                total_reward = total_reward - np.sum(self.prize_exists) * r_coeff
 
                 return total_reward, done
         for iteration in range(1, N_iteration + 1):
@@ -101,7 +102,7 @@ class AgentFormation(gym.Env):
                     while (feasible == False and np.sum(self.infeasible_prizes) < self.N_prize): # check if there are still accessible prizes
                         self.agents_action_list[agent_ind], pos_list, feasible = self.create_trajectory(agent_ind)
                     if np.sum(self.infeasible_prizes) == self.N_prize:
-                        total_reward = total_reward - np.sum(self.prize_exists) * 10.0
+                        total_reward = total_reward - np.sum(self.prize_exists) * r_coeff
                         return total_reward, done
 
                 current_action = (self.agents_action_list[agent_ind][0])
@@ -125,7 +126,7 @@ class AgentFormation(gym.Env):
                 if taken_prize_ind >= 0:
                     self.prize_exists[taken_prize_ind] = False
                     self.infeasible_prizes[taken_prize_ind] = True
-                    total_reward += 10.0
+                    total_reward += r_coeff
 
                     #Collected all prizes
                     if np.sum(self.prize_exists) == 0:
@@ -140,7 +141,7 @@ class AgentFormation(gym.Env):
                         while (feasible == False and np.sum(self.infeasible_prizes) < self.N_prize): # check if there are still accessible prizes
                             self.agents_action_list[agent_ind], pos_list, feasible = self.create_trajectory(agent_ind)
                         if np.sum(self.infeasible_prizes) == self.N_prize:
-                            total_reward = total_reward - np.sum(self.prize_exists) * 10.0
+                            total_reward = total_reward - np.sum(self.prize_exists) * r_coeff
                             # print("infeasible_prizes: ", self.infeasible_prizes)
                             # print("prize_exists: ", self.prize_exists)
                             # print("N prize: ", self.N_prize)
@@ -151,7 +152,7 @@ class AgentFormation(gym.Env):
                 # if self.visualization:
                 #     self.visualize()              
                 
-        total_reward = total_reward - np.sum(self.prize_exists) * 10.0
+        total_reward = total_reward - np.sum(self.prize_exists) * r_coeff
         #print("REWARD: ", total_reward)
         return total_reward, done
 

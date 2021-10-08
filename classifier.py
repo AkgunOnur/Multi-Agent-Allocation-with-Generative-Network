@@ -63,7 +63,7 @@ class LeNet(Module):
         #train lib : (nx3x40x40, n)
         X = np.squeeze(np.asarray(train_library[0]), axis=1)
         Y = np.asarray(train_library[1])
-        Y_c = np.zeros((len(Y), 6))
+        Y_c = np.zeros((len(Y), 3))
         for i, y in enumerate(Y):
             Y_c[i][y-1] = 1
         
