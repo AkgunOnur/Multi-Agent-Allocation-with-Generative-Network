@@ -1,0 +1,20 @@
+2021-10-07 18:14:09,135 INFO    MainThread:7975 [internal.py:wandb_internal():91] W&B internal server running at pid: 7975, started at: 2021-10-07 18:14:09.135254
+2021-10-07 18:14:09,138 INFO    WriterThread:7975 [datastore.py:open_for_write():80] open: output/wandb/offline-run-20211007_181408-2dizhwv0/run-2dizhwv0.wandb
+2021-10-07 18:14:09,141 DEBUG   HandlerThread:7975 [handler.py:handle_request():124] handle_request: run_start
+2021-10-07 18:14:10,085 DEBUG   HandlerThread:7975 [meta.py:__init__():39] meta init
+2021-10-07 18:14:10,085 DEBUG   HandlerThread:7975 [meta.py:__init__():53] meta init done
+2021-10-07 18:14:10,085 DEBUG   HandlerThread:7975 [meta.py:probe():210] probe
+2021-10-07 18:14:10,091 DEBUG   HandlerThread:7975 [meta.py:_setup_git():200] setup git
+2021-10-07 18:14:10,115 DEBUG   HandlerThread:7975 [meta.py:_setup_git():207] setup git done
+2021-10-07 18:14:10,115 DEBUG   HandlerThread:7975 [meta.py:_save_pip():57] save pip
+2021-10-07 18:14:10,116 DEBUG   HandlerThread:7975 [meta.py:_save_pip():71] save pip done
+2021-10-07 18:14:10,116 DEBUG   HandlerThread:7975 [meta.py:_save_conda():78] save conda
+2021-10-07 18:14:13,739 DEBUG   HandlerThread:7975 [meta.py:_save_conda():86] save conda done
+2021-10-07 18:14:13,739 DEBUG   HandlerThread:7975 [meta.py:probe():252] probe done
+2021-10-07 18:14:30,280 WARNING MainThread:7975 [internal.py:wandb_internal():147] Internal process interrupt: 1
+2021-10-07 18:14:30,455 WARNING MainThread:7975 [internal.py:wandb_internal():147] Internal process interrupt: 2
+2021-10-07 18:14:30,455 ERROR   MainThread:7975 [internal.py:wandb_internal():150] Internal process interrupted.
+2021-10-07 18:14:30,781 INFO    WriterThread:7975 [datastore.py:close():288] close: output/wandb/offline-run-20211007_181408-2dizhwv0/run-2dizhwv0.wandb
+2021-10-07 18:14:30,797 INFO    HandlerThread:7975 [handler.py:finish():658] shutting down handler
+2021-10-07 18:14:31,146 INFO    SenderThread:7975 [sender.py:finish():947] shutting down sender
+2021-10-07 18:14:31,147 INFO    MainThread:7975 [internal.py:handle_exit():78] Internal process exited

@@ -23,6 +23,7 @@ if __name__ == '__main__':
         names.sort()
         
         target_dir = '/home/deepdrone/Desktop/Multi-Agent-Allocation-with-Generative-Network/output/level_images/' + curr_gen #
+        # tasrget_dir = '/home/avsp/Masaüstü/ganner/output/level_images/' + curr_gen #
         os.makedirs(target_dir, exist_ok=True)
 
         for i in range(min(10, len(names))):

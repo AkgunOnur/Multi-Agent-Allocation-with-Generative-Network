@@ -77,7 +77,7 @@ class GAN:
 
                 # Then run the result through the discriminator
                 output_f = self.D(fake.detach())
-                errD_fake = torch.clamp(output_f.mean(),min=-5.0,max=5.0)
+                errD_fake = torch.clamp(output_f.mean(),min=-10.0,max=10.0)
 
                 # Backpropagation
                 errD_fake.backward(retain_graph=False)
