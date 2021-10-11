@@ -1,0 +1,15 @@
+input-dir input map_zero.txt
+[32m2021-10-11 17:06:11.545[39m | [1mINFO[22m | [90m/home/avsp/Masaüstü/ganner/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Library size increased: 0
+MODE: train
+Traceback (most recent call last):
+  File "main.py", line 195, in <module>
+    main()
+  File "main.py", line 81, in main
+    training_loss, trainc_labeled = classifier.trainer(L.train_library, optimizer)
+  File "/home/avsp/Masaüstü/ganner/classifier.py", line 64, in trainer
+    X = np.squeeze(np.asarray(train_library[0]), axis=1)
+  File "<__array_function__ internals>", line 6, in squeeze
+  File "/home/avsp/.local/lib/python3.6/site-packages/numpy/core/fromnumeric.py", line 1495, in squeeze
+    return squeeze(axis=axis)
+numpy.AxisError: axis 1 is out of bounds for array of dimension 1

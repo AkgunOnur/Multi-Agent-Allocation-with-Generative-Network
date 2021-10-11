@@ -11,3 +11,10 @@
 2021-10-08 16:47:19,665 DEBUG   HandlerThread:22658 [meta.py:_save_conda():78] save conda
 2021-10-08 16:47:22,434 DEBUG   HandlerThread:22658 [meta.py:_save_conda():86] save conda done
 2021-10-08 16:47:22,435 DEBUG   HandlerThread:22658 [meta.py:probe():252] probe done
+2021-10-09 08:40:34,846 WARNING MainThread:22658 [internal.py:wandb_internal():147] Internal process interrupt: 1
+2021-10-09 08:40:35,142 WARNING MainThread:22658 [internal.py:wandb_internal():147] Internal process interrupt: 2
+2021-10-09 08:40:35,142 ERROR   MainThread:22658 [internal.py:wandb_internal():150] Internal process interrupted.
+2021-10-09 08:40:35,625 INFO    SenderThread:22658 [sender.py:finish():947] shutting down sender
+2021-10-09 08:40:35,888 INFO    WriterThread:22658 [datastore.py:close():288] close: output/wandb/offline-run-20211008_164717-x7zzyojn/run-x7zzyojn.wandb
+2021-10-09 08:40:35,895 INFO    HandlerThread:22658 [handler.py:finish():658] shutting down handler
+2021-10-09 08:40:35,896 INFO    MainThread:22658 [internal.py:handle_exit():78] Internal process exited

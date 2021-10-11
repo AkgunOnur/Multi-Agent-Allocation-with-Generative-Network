@@ -54,9 +54,9 @@ def write_maps(map, index):
     txt_list = []
     for x in range(map.shape[1]): #row
         line = []
-        print(map[0][x])
-        print(map[1][x])
-        print(map[2][x])
+        # print(map[0][x])
+        # print(map[1][x])
+        # print(map[2][x])
         for y in range(map.shape[2]): #column
             if map[0][x][y] == 1:
                 line.append('-')
@@ -68,7 +68,7 @@ def write_maps(map, index):
                 line.append('-')
         # line.append('\n')
         lin = ''.join(line)
-        print(lin)
+        # print(lin)
         # print(line)
         txt_list.append(lin)
         # print(txt_list)

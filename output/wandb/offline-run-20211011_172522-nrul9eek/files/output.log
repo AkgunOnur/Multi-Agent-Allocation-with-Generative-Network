@@ -1,0 +1,14 @@
+input-dir input map_zero.txt
+[32m2021-10-11 17:25:27.403[39m | [1mINFO[22m | [90m/home/avsp/Masaüstü/ganner/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Library size increased: 0
+MODE: train
+Traceback (most recent call last):
+  File "main.py", line 196, in <module>
+    main()
+  File "main.py", line 82, in main
+    training_loss, trainc_labeled = classifier.trainer(L.get(), optimizer)
+  File "/home/avsp/Masaüstü/ganner/construct_library.py", line 25, in get
+    rindex = np.random.randint(0,len(self.train_library[0]))
+  File "mtrand.pyx", line 746, in numpy.random.mtrand.RandomState.randint
+  File "_bounded_integers.pyx", line 1254, in numpy.random._bounded_integers._rand_int64
+ValueError: low >= high

@@ -16,3 +16,5 @@ config: {'game': 'environment', 'mode': 'train', 'testmode': 'test_random', 'tes
 2021-10-08 16:47:22,477 INFO    MainThread:22600 [wandb_run.py:_redirect():1504] Redirecting console.
 2021-10-08 16:47:22,480 INFO    MainThread:22600 [wandb_run.py:_redirect():1560] Redirects installed.
 2021-10-08 16:47:22,480 INFO    MainThread:22600 [wandb_init.py:init():555] run started, returning control to user process
+2021-10-09 08:40:34,847 INFO    MainThread:22600 [wandb_run.py:_atexit_cleanup():1595] got exitcode: 255
+2021-10-09 08:40:34,847 INFO    MainThread:22600 [wandb_run.py:_restore():1567] restore

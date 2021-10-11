@@ -276,3 +276,46 @@ testc_labeled,train_loss,trainc_labeled,train_lib_size
 3,"tensor(0.4595, device='cuda:0', grad_fn=<DivBackward0>)",0.98,0
 3,0.0,0,0
 3,"tensor(0.5327, device='cuda:0', grad_fn=<DivBackward0>)",0.89,0
+0,0.0,0,0
+3,"tensor(0.4182, device='cuda:0', grad_fn=<DivBackward0>)",0.98,0
+3,0.0,0,0
+3,"tensor(0.3745, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+3,0.0,0,0
+3,"tensor(0.4959, device='cuda:0', grad_fn=<DivBackward0>)",0.94,0
+5,0.0,0,0
+3,"tensor(0.4614, device='cuda:0', grad_fn=<DivBackward0>)",0.98,0
+4,0.0,0,0
+3,"tensor(0.5004, device='cuda:0', grad_fn=<DivBackward0>)",0.97,0
+6,0.0,0,0
+3,"tensor(0.4654, device='cuda:0', grad_fn=<DivBackward0>)",0.91,0
+0,0.0,0,0
+3,"tensor(0.4965, device='cuda:0', grad_fn=<DivBackward0>)",0.94,0
+0,0.0,0,0
+3,"tensor(0.5287, device='cuda:0', grad_fn=<DivBackward0>)",0.84,0
+3,0.0,0,0
+3,"tensor(0.4164, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+1,0.0,0,0
+3,"tensor(0.4116, device='cuda:0', grad_fn=<DivBackward0>)",0.95,0
+1,0.0,0,0
+3,"tensor(0.3457, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+3,0.0,0,0
+3,"tensor(0.4710, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+0,0.0,0,0
+3,"tensor(0.4290, device='cuda:0', grad_fn=<DivBackward0>)",0.94,0
+6,0.0,0,0
+3,"tensor(0.5451, device='cuda:0', grad_fn=<DivBackward0>)",0.86,0
+5,0.0,0,0
+6,0.0,0,0
+6,0.0,0,0
+3,0.0,0,0
+0,0.0,0,0
+3,0.0,0,0
+3,0.0,0,0
+3,0.0,0,0
+3,"tensor(0.4286, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+6,0.0,0,0
+3,"tensor(0.4899, device='cuda:0', grad_fn=<DivBackward0>)",0.97,0
+3,0.0,0,0
+3,"tensor(0.4403, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+3,0.0,0,0
+3,"tensor(0.4404, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0

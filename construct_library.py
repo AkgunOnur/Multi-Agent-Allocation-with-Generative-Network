@@ -26,6 +26,5 @@ class Library():
         return self.train_library[0][rindex], self.train_library[1][rindex]
     
     def save_maps(self):
-        #print("self.train_library:", self.train_library)
         with open('training_map_library.pkl', 'wb') as f:
             pickle.dump(self.train_library, f)

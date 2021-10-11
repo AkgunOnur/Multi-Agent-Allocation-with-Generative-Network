@@ -61,6 +61,7 @@ class LeNet(Module):
 
     def trainer(self, train_library, optimizer):
         #train lib : (nx3x40x40, n)
+        print(np.asarray(train_library[0]).shape)
         X = np.squeeze(np.asarray(train_library[0]), axis=1)
         Y = np.asarray(train_library[1])
         Y_c = np.zeros((len(Y), 3))
