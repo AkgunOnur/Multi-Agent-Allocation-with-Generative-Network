@@ -1,0 +1,13 @@
+2021-10-12 17:55:41,844 INFO    MainThread:5338 [internal.py:wandb_internal():91] W&B internal server running at pid: 5338, started at: 2021-10-12 17:55:41.843829
+2021-10-12 17:55:41,847 DEBUG   HandlerThread:5338 [handler.py:handle_request():124] handle_request: run_start
+2021-10-12 17:55:41,848 INFO    WriterThread:5338 [datastore.py:open_for_write():80] open: output/wandb/offline-run-20211012_175540-b3doozie/run-b3doozie.wandb
+2021-10-12 17:55:42,739 DEBUG   HandlerThread:5338 [meta.py:__init__():39] meta init
+2021-10-12 17:55:42,739 DEBUG   HandlerThread:5338 [meta.py:__init__():53] meta init done
+2021-10-12 17:55:42,740 DEBUG   HandlerThread:5338 [meta.py:probe():210] probe
+2021-10-12 17:55:42,746 DEBUG   HandlerThread:5338 [meta.py:_setup_git():200] setup git
+2021-10-12 17:55:42,769 DEBUG   HandlerThread:5338 [meta.py:_setup_git():207] setup git done
+2021-10-12 17:55:42,769 DEBUG   HandlerThread:5338 [meta.py:_save_pip():57] save pip
+2021-10-12 17:55:42,770 DEBUG   HandlerThread:5338 [meta.py:_save_pip():71] save pip done
+2021-10-12 17:55:42,770 DEBUG   HandlerThread:5338 [meta.py:_save_conda():78] save conda
+2021-10-12 17:55:45,542 DEBUG   HandlerThread:5338 [meta.py:_save_conda():86] save conda done
+2021-10-12 17:55:45,542 DEBUG   HandlerThread:5338 [meta.py:probe():252] probe done

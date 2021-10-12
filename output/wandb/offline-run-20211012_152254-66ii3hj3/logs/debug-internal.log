@@ -1,0 +1,20 @@
+2021-10-12 15:22:55,041 INFO    MainThread:23162 [internal.py:wandb_internal():91] W&B internal server running at pid: 23162, started at: 2021-10-12 15:22:55.040909
+2021-10-12 15:22:55,044 INFO    WriterThread:23162 [datastore.py:open_for_write():80] open: output/wandb/offline-run-20211012_152254-66ii3hj3/run-66ii3hj3.wandb
+2021-10-12 15:22:55,047 DEBUG   HandlerThread:23162 [handler.py:handle_request():124] handle_request: run_start
+2021-10-12 15:22:55,928 DEBUG   HandlerThread:23162 [meta.py:__init__():39] meta init
+2021-10-12 15:22:55,928 DEBUG   HandlerThread:23162 [meta.py:__init__():53] meta init done
+2021-10-12 15:22:55,929 DEBUG   HandlerThread:23162 [meta.py:probe():210] probe
+2021-10-12 15:22:55,935 DEBUG   HandlerThread:23162 [meta.py:_setup_git():200] setup git
+2021-10-12 15:22:55,958 DEBUG   HandlerThread:23162 [meta.py:_setup_git():207] setup git done
+2021-10-12 15:22:55,958 DEBUG   HandlerThread:23162 [meta.py:_save_pip():57] save pip
+2021-10-12 15:22:55,959 DEBUG   HandlerThread:23162 [meta.py:_save_pip():71] save pip done
+2021-10-12 15:22:55,959 DEBUG   HandlerThread:23162 [meta.py:_save_conda():78] save conda
+2021-10-12 15:22:58,895 DEBUG   HandlerThread:23162 [meta.py:_save_conda():86] save conda done
+2021-10-12 15:22:58,895 DEBUG   HandlerThread:23162 [meta.py:probe():252] probe done
+2021-10-12 15:23:21,828 WARNING MainThread:23162 [internal.py:wandb_internal():147] Internal process interrupt: 1
+2021-10-12 15:23:22,000 WARNING MainThread:23162 [internal.py:wandb_internal():147] Internal process interrupt: 2
+2021-10-12 15:23:22,001 ERROR   MainThread:23162 [internal.py:wandb_internal():150] Internal process interrupted.
+2021-10-12 15:23:22,053 INFO    SenderThread:23162 [sender.py:finish():947] shutting down sender
+2021-10-12 15:23:22,951 INFO    WriterThread:23162 [datastore.py:close():288] close: output/wandb/offline-run-20211012_152254-66ii3hj3/run-66ii3hj3.wandb
+2021-10-12 15:23:22,971 INFO    HandlerThread:23162 [handler.py:finish():658] shutting down handler
+2021-10-12 15:23:22,972 INFO    MainThread:23162 [internal.py:handle_exit():78] Internal process exited

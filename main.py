@@ -95,6 +95,9 @@ def main():
 
                 coded_fake_map = one_hot_to_ascii_level(generated_map.detach(), opt.token_list)
                 ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
+
+                if len(prize_map) == 0:
+                    continue
                 
                 classifier.eval()
 
@@ -110,7 +113,6 @@ def main():
                 if (prediction==actual): #no need to add library
                   continue
                 else:
-                    pass
                     # L.add(agent_map, prediction.cpu(), opt) #add it to training library
                     gen_lib.add(agent_map, prediction.cpu(), opt) #add it to generator library
 

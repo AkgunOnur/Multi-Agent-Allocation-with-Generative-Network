@@ -319,3 +319,57 @@ testc_labeled,train_loss,trainc_labeled,train_lib_size
 3,"tensor(0.4403, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
 3,0.0,0,0
 3,"tensor(0.4404, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+3,0.0,0,0
+3,"tensor(0.3837, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+6,0.0,0,0
+3,"tensor(0.4904, device='cuda:0', grad_fn=<DivBackward0>)",0.92,0
+2,0.0,0,0
+3,"tensor(0.3401, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+6,0.0,0,0
+3,"tensor(0.4491, device='cuda:0', grad_fn=<DivBackward0>)",0.88,0
+0,0.0,0,0
+3,"tensor(0.4244, device='cuda:0', grad_fn=<DivBackward0>)",0.99,0
+7,0.0,0,0
+3,"tensor(0.3579, device='cuda:0', grad_fn=<DivBackward0>)",0.99,0
+6,0.0,0,0
+3,"tensor(0.3976, device='cuda:0', grad_fn=<DivBackward0>)",0.99,0
+1,0.0,0,0
+3,"tensor(0.3832, device='cuda:0', grad_fn=<DivBackward0>)",0.98,0
+0,0.0,0,0
+3,"tensor(0.3854, device='cuda:0', grad_fn=<DivBackward0>)",0.99,0
+6,0.0,0,0
+3,"tensor(0.4260, device='cuda:0', grad_fn=<DivBackward0>)",0.91,0
+1,0.0,0,0
+3,"tensor(0.4058, device='cuda:0', grad_fn=<DivBackward0>)",0.99,0
+6,0.0,0,0
+3,"tensor(0.5297, device='cuda:0', grad_fn=<DivBackward0>)",0.92,0
+0,0.0,0,0
+3,"tensor(0.4186, device='cuda:0', grad_fn=<DivBackward0>)",0.98,0
+6,0.0,0,0
+3,"tensor(0.3761, device='cuda:0', grad_fn=<DivBackward0>)",0.96,0
+3,0.0,0,0
+3,"tensor(0.3930, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+2,0.0,0,0
+3,"tensor(0.3959, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+0,0.0,0,0
+3,"tensor(0.4457, device='cuda:0', grad_fn=<DivBackward0>)",0.91,0
+0,0.0,0,0
+3,"tensor(0.3958, device='cuda:0', grad_fn=<DivBackward0>)",0.99,0
+3,0.0,0,0
+3,"tensor(0.3318, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+6,0.0,0,0
+3,"tensor(0.5114, device='cuda:0', grad_fn=<DivBackward0>)",0.84,0
+3,0.0,0,0
+3,"tensor(0.4039, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+3,0.0,0,0
+3,"tensor(0.3976, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+6,0.0,0,0
+3,"tensor(0.4932, device='cuda:0', grad_fn=<DivBackward0>)",0.94,0
+3,0.0,0,0
+3,"tensor(0.3427, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+3,0.0,0,0
+3,"tensor(0.3361, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+6,0.0,0,0
+3,"tensor(0.5597, device='cuda:0', grad_fn=<DivBackward0>)",0.86,0
+3,0.0,0,0
+3,"tensor(0.4414, device='cuda:0', grad_fn=<DivBackward0>)",0.93,0
