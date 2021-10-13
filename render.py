@@ -50,13 +50,10 @@ class Library():
                 # print("self.train_library[0]: ", self.train_library[1])
                 # armut
 
-def write_maps(map, index):
+def write_maps(map, index, lvl):
     txt_list = []
     for x in range(map.shape[1]): #row
         line = []
-        # print(map[0][x])
-        # print(map[1][x])
-        # print(map[2][x])
         for y in range(map.shape[2]): #column
             if map[0][x][y] == 1:
                 line.append('-')
@@ -66,14 +63,10 @@ def write_maps(map, index):
                 line.append('X')
             else:
                 line.append('-')
-        # line.append('\n')
         lin = ''.join(line)
-        # print(lin)
-        # print(line)
         txt_list.append(lin)
-        # print(txt_list)
 
-    with open(f"./output/generated_maps/hard/map-{index}.txt", "w+", encoding="latin-1") as output:
+    with open(f"./output/generated_maps/{lvl}/{lvl}-{index}.txt", "w+", encoding="latin-1") as output:
         for lne in txt_list:
             output.write(str(lne))
             output.write('\n')
@@ -83,7 +76,7 @@ def write():
     L = Library('test_gan')
     for idx in range(len(L.train_library[0])):
         #print("len(L.train_library): ", len(L.train_library[0]))
-        write_maps(np.asarray(L.train_library[0][idx]).squeeze(axis=0), idx)
+        write_maps(np.asarray(L.train_library[0][idx]).squeeze(axis=0), idx, L.train_library[2][idx])
 
 
 if __name__ == "__main__":

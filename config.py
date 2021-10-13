@@ -7,8 +7,6 @@ import torch
 from utils import set_seed
 
 
-
-
 def get_arguments():
     parser = argparse.ArgumentParser()
     # Game Type - Supports: environment

@@ -55,8 +55,8 @@ def main():
     replace_tokens = REPLACE_TOKENS
     #==================================================================================
 
-    L = Library(180)
-    gen_lib = Library(180)
+    L = Library(600)
+    gen_lib = Library(600)
     env = env_class()
 
     L.add(read_level(opt, None, replace_tokens),2,opt)
@@ -76,7 +76,18 @@ def main():
 
         g = GAN(opt)
 
-        for s in range(180):
+        for lvl in range(3):
+            
+            if lvl == 0:
+                opt.input_name = "easy_map.txt"
+            elif lvl == 1:
+                opt.input_name = "medium_map.txt"
+            elif lvl == 2:
+                opt.input_name = "hard_map.txt"
+
+            L.add(read_level(opt, None, replace_tokens),2,opt)
+            gen_lib.add(read_level(opt, None, replace_tokens),2,opt)
+
             classifier.load_state_dict(torch.load("./weights/classifier_init.pth"))
 
             classifier.train()
@@ -87,6 +98,7 @@ def main():
             
             write_tocsv([testc_labeled, training_loss, trainc_labeled, s])
 
+            idx = 0
             while(True):
                 sample_map, _ = L.get()
 
@@ -100,9 +112,9 @@ def main():
                     continue
                 
                 classifier.eval()
-
                 prediction = classifier.predict_label(torch.from_numpy((agent_map.reshape(1,3,opt.full_map_size,opt.full_map_size))).float())
                 # run D* for all possible n_agents and find best
+
                 rewards = []
                 for i in range(3):
                     reward = env.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
@@ -116,9 +128,15 @@ def main():
                     # L.add(agent_map, prediction.cpu(), opt) #add it to training library
                     gen_lib.add(agent_map, prediction.cpu(), opt) #add it to generator library
 
-                if gen_lib.library_size >= 200:
+                    classifier.train()
+                    training_loss, trainc_labeled = classifier.trainer(gen_lib.train_library, optimizer)
+                    write_tocsv([testc_labeled, training_loss, trainc_labeled, idx+1])
+
+                if len(gen_lib.train_library) >= 200:
                     g.better_save(s)
                     break
+
+                idx += 1
 
                     """
                     if (s%10==0 and s>0):
