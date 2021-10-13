@@ -11,3 +11,10 @@
 2021-10-12 17:55:42,770 DEBUG   HandlerThread:5338 [meta.py:_save_conda():78] save conda
 2021-10-12 17:55:45,542 DEBUG   HandlerThread:5338 [meta.py:_save_conda():86] save conda done
 2021-10-12 17:55:45,542 DEBUG   HandlerThread:5338 [meta.py:probe():252] probe done
+2021-10-12 20:05:01,318 WARNING MainThread:5338 [internal.py:wandb_internal():147] Internal process interrupt: 1
+2021-10-12 20:05:01,510 WARNING MainThread:5338 [internal.py:wandb_internal():147] Internal process interrupt: 2
+2021-10-12 20:05:01,510 ERROR   MainThread:5338 [internal.py:wandb_internal():150] Internal process interrupted.
+2021-10-12 20:05:01,772 INFO    WriterThread:5338 [datastore.py:close():288] close: output/wandb/offline-run-20211012_175540-b3doozie/run-b3doozie.wandb
+2021-10-12 20:05:01,773 INFO    HandlerThread:5338 [handler.py:finish():658] shutting down handler
+2021-10-12 20:05:02,047 INFO    SenderThread:5338 [sender.py:finish():947] shutting down sender
+2021-10-12 20:05:02,048 INFO    MainThread:5338 [internal.py:handle_exit():78] Internal process exited

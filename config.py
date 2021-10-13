@@ -29,7 +29,7 @@ def get_arguments():
     parser.add_argument("--manualSeed", type=int, help="manual seed")
     parser.add_argument("--out", help="output folder", default="output")
     parser.add_argument("--input-dir", help="input image dir", default="input")
-    parser.add_argument("--input-name", help="input image name", default="map_zero.txt")
+    parser.add_argument("--input-name", help="input image name", default="map_one.txt")
     parser.add_argument("--test_dir", help="test input map dir", default="test_maps")
 
     # networks hyper parameters:

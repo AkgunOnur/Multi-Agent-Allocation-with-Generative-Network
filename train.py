@@ -115,7 +115,7 @@ class GAN:
                     rewards.append(reward)
 
                 rew = rewards[prediction]
-                errDstar = torch.abs(torch.clamp(torch.tensor(rew, requires_grad=True),-5.,5.)).to(opt.device)
+                errDstar = torch.abs(torch.clamp(torch.tensor(rew, requires_grad=True),-1.,1.)).to(opt.device)
 
                 # else:
                 #     rew = 5.0

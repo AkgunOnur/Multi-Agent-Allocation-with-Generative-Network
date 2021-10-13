@@ -80,7 +80,7 @@ def main():
             classifier.load_state_dict(torch.load("./weights/classifier_init.pth"))
 
             classifier.train()
-            training_loss, trainc_labeled = classifier.trainer(L.train_library, optimizer)
+            training_loss, trainc_labeled = classifier.trainer(gen_lib.train_library, optimizer)
 
             classifier.eval()
             testc_labeled = classifier.predict(L.test_library)
@@ -116,9 +116,15 @@ def main():
                     # L.add(agent_map, prediction.cpu(), opt) #add it to training library
                     gen_lib.add(agent_map, prediction.cpu(), opt) #add it to generator library
 
+                if gen_lib.library_size >= 200:
+                    g.better_save(s)
+                    break
+
+                    """
                     if (s%10==0 and s>0):
                         g.better_save(s)
                         break
+                    """
 
     elif(opt.mode == 'random_without_gan'):
 

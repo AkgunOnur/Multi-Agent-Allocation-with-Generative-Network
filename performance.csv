@@ -373,3 +373,11 @@ testc_labeled,train_loss,trainc_labeled,train_lib_size
 3,"tensor(0.5597, device='cuda:0', grad_fn=<DivBackward0>)",0.86,0
 3,0.0,0,0
 3,"tensor(0.4414, device='cuda:0', grad_fn=<DivBackward0>)",0.93,0
+3,0.0,0,0
+3,"tensor(0.3743, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+0,0.0,0,0
+3,"tensor(0.4539, device='cuda:0', grad_fn=<DivBackward0>)",0.96,0
+3,0.0,0,0
+3,"tensor(0.3282, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
+3,0.0,0,0
+3,"tensor(0.2836, device='cuda:0', grad_fn=<DivBackward0>)",1.0,0
