@@ -59,18 +59,20 @@ class LeNet(Module):
         # return the output predictions
         return output
 
-    def trainer(self, train_library, optimizer):
+    def trainer(self, data, label, optimizer):
         #train lib : (nx3x40x40, n)
-        X = np.squeeze(np.asarray(train_library[0]), axis=1)
-        Y = np.asarray(train_library[1])
+        # data = np.squeeze(np.asarray(data), axis=1)
+        # Y = np.asarray(train_library[1])
+        # X = np.array(data)
+        Y = np.array([label])
         Y_c = np.zeros((len(Y), 3))
         for i, y in enumerate(Y):
             Y_c[i][y-1] = 1
         
         # send the input to the device
-        X = torch.FloatTensor(X)
-        Y_c = torch.FloatTensor(Y_c)#.float()
-        X, Y_c = X.to(self.device), Y_c.to(self.device)
+        data = torch.FloatTensor(data)
+        Y_c = torch.FloatTensor(Y_c)
+        X, Y_c = data.to(self.device), Y_c.to(self.device)
 
         meanTrainLoss = 0
         meanCorrect = 0

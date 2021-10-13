@@ -1,3 +1,4 @@
+from numpy.lib.shape_base import expand_dims
 import wandb
 import sys
 import torch
@@ -59,24 +60,24 @@ def main():
     gen_lib = Library(600)
     env = env_class()
 
-    L.add(read_level(opt, None, replace_tokens),2,opt)
-    gen_lib.add(read_level(opt, None, replace_tokens),2,opt)
+    # L.add(read_level(opt, None, replace_tokens),2,opt)
+    # gen_lib.add(read_level(opt, None, replace_tokens),2,opt)
 
     classifier = LeNet(numChannels=3, classes=3, args=opt).to(opt.device)
     torch.save(classifier.state_dict(),"./weights/classifier_init.pth")
 
     optimizer = Adam(classifier.parameters(), lr=1e-4)
     
-    classifier.eval()
-    testc_labeled = classifier.predict(L.test_library)
-    write_tocsv([testc_labeled, 0.0, 0,  0])
+    # classifier.eval()
+    # testc_labeled = classifier.predict(L.test_library)
+    # write_tocsv([testc_labeled, 0.0, 0,  0])
     
     print("MODE:", opt.mode)
     if(opt.mode == 'train'):
 
-        g = GAN(opt)
-
         for lvl in range(3):
+
+            g = GAN(opt)
             
             if lvl == 0:
                 opt.input_name = "easy_map.txt"
@@ -85,18 +86,30 @@ def main():
             elif lvl == 2:
                 opt.input_name = "hard_map.txt"
 
-            L.add(read_level(opt, None, replace_tokens),2,opt)
-            gen_lib.add(read_level(opt, None, replace_tokens),2,opt)
+            init_map = read_level(opt, None, replace_tokens)
+
+            init_fake_map = one_hot_to_ascii_level(init_map, opt.token_list)
+            ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(init_fake_map)
+
+            rewards = []
+            for i in range(3):
+                reward = env.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, 0)
+                rewards.append(reward)
+
+            init_label = np.argmax(rewards)+1
+
+            L.add(init_map, init_label, opt)
+            gen_lib.add(init_map, init_label, opt)
 
             classifier.load_state_dict(torch.load("./weights/classifier_init.pth"))
 
             classifier.train()
-            training_loss, trainc_labeled = classifier.trainer(gen_lib.train_library, optimizer)
+            training_loss, trainc_labeled = classifier.trainer(init_map, init_label, optimizer)
 
             classifier.eval()
-            testc_labeled = classifier.predict(L.test_library)
+            testc_labeled = classifier.predict(gen_lib.test_library)
             
-            write_tocsv([testc_labeled, training_loss, trainc_labeled, s])
+            write_tocsv([testc_labeled, training_loss, trainc_labeled, 0])
 
             idx = 0
             while(True):
@@ -112,7 +125,7 @@ def main():
                     continue
                 
                 classifier.eval()
-                prediction = classifier.predict_label(torch.from_numpy((agent_map.reshape(1,3,opt.full_map_size,opt.full_map_size))).float())
+                prediction = classifier.predict_label(torch.from_numpy((agent_map.reshape(1,3,opt.full_map_size,opt.full_map_size))).float()) + 1
                 # run D* for all possible n_agents and find best
 
                 rewards = []
@@ -120,29 +133,30 @@ def main():
                     reward = env.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
                     rewards.append(reward)
 
-                actual = np.argmax(rewards)
+                actual = np.argmax(rewards) + 1
 
-                if (prediction==actual): #no need to add library
+                if (prediction.item()==actual): #no need to add library
                   continue
                 else:
                     # L.add(agent_map, prediction.cpu(), opt) #add it to training library
                     gen_lib.add(agent_map, prediction.cpu(), opt) #add it to generator library
 
                     classifier.train()
-                    training_loss, trainc_labeled = classifier.trainer(gen_lib.train_library, optimizer)
+                    exp_agent_map = np.expand_dims(agent_map, axis=0)
+                    training_loss, trainc_labeled = classifier.trainer(exp_agent_map, prediction, optimizer)
                     write_tocsv([testc_labeled, training_loss, trainc_labeled, idx+1])
 
                 if len(gen_lib.train_library) >= 200:
-                    g.better_save(s)
+                    g.better_save(idx)
                     break
 
                 idx += 1
 
-                    """
-                    if (s%10==0 and s>0):
-                        g.better_save(s)
-                        break
-                    """
+                """
+                if (s%10==0 and s>0):
+                    g.better_save(s)
+                    break
+                """
 
     elif(opt.mode == 'random_without_gan'):
 

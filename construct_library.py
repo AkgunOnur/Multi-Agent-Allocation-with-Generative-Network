@@ -2,7 +2,6 @@ from argparse import ArgumentTypeError
 import numpy as np
 import os
 import pickle
-from generate_random_map import generate_random_map
 
 class Library():
     #Initialize library
@@ -24,8 +23,7 @@ class Library():
             lvl = "medium"
         elif opt.input_name == "hard_map.txt":
             lvl = "hard"
-
-        self.train_libary[2].append(lvl)
+        self.train_library[2].append(lvl)
 
         print("Library size increased:", len(self.train_library[0]))
         #Save training library maps

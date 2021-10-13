@@ -1,0 +1,15 @@
+MODE: train
+input-dir input easy_map.txt
+[32m2021-10-13 17:51:34.118[39m | [1mINFO[22m | [90m/home/avsp/Masaüstü/ganner/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Library size increased: 1
+input-dir input easy_map.txt
+[32m2021-10-13 17:51:34.123[39m | [1mINFO[22m | [90m/home/avsp/Masaüstü/ganner/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Library size increased: 1
+Traceback (most recent call last):
+  File "main.py", line 223, in <module>
+    main()
+  File "main.py", line 94, in main
+    training_loss, trainc_labeled = classifier.trainer(gen_lib.train_library, optimizer)
+  File "/home/avsp/Masaüstü/ganner/classifier.py", line 64, in trainer
+    print(train_library[0].shape)
+AttributeError: 'list' object has no attribute 'shape'

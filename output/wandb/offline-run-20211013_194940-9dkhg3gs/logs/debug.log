@@ -1,0 +1,30 @@
+2021-10-13 19:49:40,065 INFO    MainThread:9573 [wandb_setup.py:_flush():69] setting env: {}
+2021-10-13 19:49:40,065 INFO    MainThread:9573 [wandb_init.py:_log_setup():338] Logging user logs to output/wandb/offline-run-20211013_194940-9dkhg3gs/logs/debug.log
+2021-10-13 19:49:40,066 INFO    MainThread:9573 [wandb_init.py:_log_setup():339] Logging internal logs to output/wandb/offline-run-20211013_194940-9dkhg3gs/logs/debug-internal.log
+2021-10-13 19:49:40,066 INFO    MainThread:9573 [wandb_init.py:init():371] calling init triggers
+2021-10-13 19:49:40,066 INFO    MainThread:9573 [wandb_init.py:init():378] wandb.init called with sweep_config: {}
+config: {'game': 'environment', 'mode': 'train', 'testmode': 'test_random', 'test_type': 'gan', 'library_size': 25, 'not_cuda': 0, 'netG': '', 'netD': '', 'manualSeed': 4925, 'out': 'output', 'input_dir': 'input', 'input_name': 'map_one.txt', 'test_dir': 'test_maps', 'nfc': 64, 'ker_size': 3, 'num_layer': 3, 'full_map_size': 20, 'noise_update': 0.1, 'pad_with_noise': False, 'niter': 15, 'gamma': 0.1, 'lr_g': 0.0005, 'lr_d': 0.0005, 'beta1': 0.5, 'Gsteps': 1, 'Dsteps': 1, 'lambda_grad': 0.1, 'alpha': 100, 'token_insert': -2, 'add_prev': False, 'device': device(type='cuda'), 'nc_current': 3, 'out_': 'output/map_one/', 'seed_road': None, 'token_list': ['-', 'W', 'X'], 'ImgGen': []}
+2021-10-13 19:49:40,066 INFO    MainThread:9573 [wandb_init.py:init():420] starting backend
+2021-10-13 19:49:40,066 INFO    MainThread:9573 [backend.py:_multiprocessing_setup():72] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2021-10-13 19:49:40,076 INFO    MainThread:9573 [backend.py:ensure_launched():135] starting backend process...
+2021-10-13 19:49:40,080 INFO    MainThread:9573 [backend.py:ensure_launched():140] started backend process with pid: 9633
+2021-10-13 19:49:40,081 INFO    MainThread:9573 [wandb_init.py:init():425] backend started and connected
+2021-10-13 19:49:40,086 INFO    MainThread:9573 [wandb_init.py:init():473] updated telemetry
+2021-10-13 19:49:40,088 INFO    MainThread:9573 [wandb_init.py:init():530] starting run threads in backend
+2021-10-13 19:49:44,543 WARNING MainThread:9573 [wandb_init.py:init():782] interrupted
+Traceback (most recent call last):
+  File "/home/avsp/anaconda3/envs/gpn/lib/python3.6/site-packages/wandb/sdk/wandb_init.py", line 762, in init
+    run = wi.init()
+  File "/home/avsp/anaconda3/envs/gpn/lib/python3.6/site-packages/wandb/sdk/wandb_init.py", line 533, in init
+    _ = backend.interface.communicate_run_start(run_obj)
+  File "/home/avsp/anaconda3/envs/gpn/lib/python3.6/site-packages/wandb/sdk/interface/interface.py", line 806, in communicate_run_start
+    result = self._communicate(rec)
+  File "/home/avsp/anaconda3/envs/gpn/lib/python3.6/site-packages/wandb/sdk/interface/interface.py", line 544, in _communicate
+    return self._communicate_async(rec, local=local).get(timeout=timeout)
+  File "/home/avsp/anaconda3/envs/gpn/lib/python3.6/site-packages/wandb/sdk/interface/interface.py", line 82, in get
+    is_set = self._object_ready.wait(timeout)
+  File "/home/avsp/anaconda3/envs/gpn/lib/python3.6/threading.py", line 551, in wait
+    signaled = self._cond.wait(timeout)
+  File "/home/avsp/anaconda3/envs/gpn/lib/python3.6/threading.py", line 299, in wait
+    gotit = waiter.acquire(True, timeout)
+KeyboardInterrupt

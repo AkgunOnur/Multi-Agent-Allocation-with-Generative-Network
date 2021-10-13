@@ -1,0 +1,11 @@
+MODE: train
+input-dir input easy_map.txt
+[32m2021-10-13 17:31:47.966[39m | [1mINFO[22m | [90m/home/avsp/Masaüstü/ganner/environment/level_utils.py:75[39m | Tokens in level ['-', 'W', 'X']
+Traceback (most recent call last):
+  File "main.py", line 223, in <module>
+    main()
+  File "main.py", line 88, in main
+    L.add(read_level(opt, None, replace_tokens),2,opt)
+  File "/home/avsp/Masaüstü/ganner/construct_library.py", line 28, in add
+    self.train_libary[2].append(lvl)
+AttributeError: 'Library' object has no attribute 'train_libary'
