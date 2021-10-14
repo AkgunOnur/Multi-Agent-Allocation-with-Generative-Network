@@ -60,6 +60,7 @@ class LeNet(Module):
         return output
 
     def trainer(self, data, label, optimizer):
+        n_step = 30
         #train lib : (nx3x40x40, n)
         # data = np.squeeze(np.asarray(data), axis=1)
         # Y = np.asarray(train_library[1])
@@ -76,9 +77,7 @@ class LeNet(Module):
 
         meanTrainLoss = 0
         meanCorrect = 0
-        for _ in range(100):
-            totalTrainLoss = 0
-            trainCorrect = 0
+        for _ in range(n_step):
 
             pred = self.forward(X.float())
             loss = self.lossFn(pred, Y_c.argmax(1))
@@ -89,20 +88,18 @@ class LeNet(Module):
             optimizer.step()
             # add the loss to the total training loss so far and
             # calculate the number of correct predictions
-            totalTrainLoss = loss
-            meanTrainLoss += loss
-            
-            trainCorrect = (pred.cpu().argmax(1) == Y_c.cpu().argmax(1)).type(torch.float).sum().item()
+            meanTrainLoss += loss.item()
+            trainCorrect = (pred.cpu().argmax(1) == Y_c.cpu().argmax(1)).type(torch.float).mean().item()
             meanCorrect += trainCorrect
 
         # return  totalTrainLoss.item(), trainCorrect
-        return meanTrainLoss/100, meanCorrect/100
+        return meanTrainLoss/n_step, meanCorrect/n_step
 
     def predict(self, test_library):
         with torch.no_grad():
             X = np.asarray(test_library[0])
             Y = np.asarray(test_library[1])
-            Y_c = np.zeros((len(Y), 6))
+            Y_c = np.zeros((len(Y), 3))
             for i, y in enumerate(Y):
                 Y_c[i][y-1] = 1
 
@@ -110,12 +107,12 @@ class LeNet(Module):
             Y_c = torch.from_numpy(Y_c)
             X, Y_c = X.to(self.device), Y_c.to(self.device)
             pred = self.forward(X.float())
-            testCorrect = (np.array(pred.cpu()).argmax(1) == np.array(Y_c.cpu().argmax(1))).sum().item()
+            testCorrect = (np.array(pred.cpu()).argmax(1) == np.array(Y_c.cpu().argmax(1))).mean().item()
+
         return  testCorrect
     
     def predict_label(self, single_map):
-        # print("predict map[2]", single_map[:,2,:,:])
         with torch.no_grad():
-            X= single_map.to(self.device)
+            X = single_map.to(self.device)
             pred = self.forward(X.float())
         return  pred.argmax(1)

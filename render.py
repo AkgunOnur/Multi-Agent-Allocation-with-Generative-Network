@@ -47,8 +47,6 @@ class Library():
                 # to the value unpickled
                 self.train_library = unpickler.load()
                 self.train_library[1][0] = np.array(self.train_library[1][0] - 1)
-                # print("self.train_library[0]: ", self.train_library[1])
-                # armut
 
 def write_maps(map, index, lvl):
     txt_list = []
@@ -75,7 +73,6 @@ def write():
     #Initialize Library and environment
     L = Library('test_gan')
     for idx in range(len(L.train_library[0])):
-        #print("len(L.train_library): ", len(L.train_library[0]))
         write_maps(np.asarray(L.train_library[0][idx]).squeeze(axis=0), idx, L.train_library[2][idx])
 
 

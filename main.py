@@ -56,7 +56,7 @@ def main():
     replace_tokens = REPLACE_TOKENS
     #==================================================================================
 
-    L = Library(600)
+    
     gen_lib = Library(600)
     env = env_class()
 
@@ -98,7 +98,7 @@ def main():
 
             init_label = np.argmax(rewards)+1
 
-            L.add(init_map, init_label, opt)
+            # L.add(init_map, init_label, opt)
             gen_lib.add(init_map, init_label, opt)
 
             classifier.load_state_dict(torch.load("./weights/classifier_init.pth"))
@@ -113,10 +113,10 @@ def main():
 
             idx = 0
             while(True):
-                sample_map, _ = L.get()
+                # sample_map, _ = L.get()
 
                 #Train GAN and return fake map
-                generated_map = g.train(env, sample_map, classifier, opt)
+                generated_map = g.train(env, np.array(init_map), classifier, opt)
 
                 coded_fake_map = one_hot_to_ascii_level(generated_map.detach(), opt.token_list)
                 ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
@@ -136,7 +136,7 @@ def main():
                 actual = np.argmax(rewards) + 1
 
                 if (prediction.item()==actual): #no need to add library
-                  continue
+                    continue
                 else:
                     # L.add(agent_map, prediction.cpu(), opt) #add it to training library
                     gen_lib.add(agent_map, prediction.cpu(), opt) #add it to generator library
@@ -144,9 +144,9 @@ def main():
                     classifier.train()
                     exp_agent_map = np.expand_dims(agent_map, axis=0)
                     training_loss, trainc_labeled = classifier.trainer(exp_agent_map, prediction, optimizer)
-                    write_tocsv([testc_labeled, training_loss, trainc_labeled, idx+1])
+                    write_tocsv([None, training_loss, trainc_labeled, idx+1])
 
-                if len(gen_lib.train_library) >= 200:
+                if idx >= 198:
                     g.better_save(idx)
                     break
 
