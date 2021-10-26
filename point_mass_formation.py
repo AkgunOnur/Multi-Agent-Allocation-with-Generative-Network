@@ -49,10 +49,7 @@ class AgentFormation(gym.Env):
     def step(self, n_agents):
         #print("n_agents: ", n_agents)
         #time.sleep(0.3)
-        # print("infeasible_prizes: ", self.infeasible_prizes)
-        # print("prize_exists: ", self.prize_exists)
-        # print("N prize: ", self.N_prize)
-        # print("------------------------")
+
         r_coeff = 2.5
         done = False
         total_reward = 0
