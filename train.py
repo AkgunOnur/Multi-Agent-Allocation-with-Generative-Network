@@ -130,9 +130,9 @@ class GAN:
                 self.optimizerG.step()
             
             #======== log stats =============
-            writer.add_scalar("Loss", {'errD_real':errD_fake,
-                                       'errD_fake':errD_real,
-                                       'errG':errG}, step)
+            writer.add_scalar('errD_real', errD_fake, step)
+            writer.add_scalar('errD_real', errD_real, step)
+            writer.add_scalar('errG', errG, step)
             #================================
 
             # Learning Rate scheduler step

@@ -68,8 +68,8 @@ def main():
     trainc_labeled = classifier.predict(gen_lib.test_library)
 
     #logs using tensorboard 
-    writer.add_scalar("label_logs", {'trainc_labeled':trainc_labeled,
-                                    'testc_labeled':testc_labeled}, 0)
+    writer.add_scalar("trainc_labeled",trainc_labeled,0)
+    writer.add_scalar("testc_labeled",testc_labeled,0)
 
     #Initialize optimizer
     optimizer = Adam(classifier.parameters(), lr=1e-4)
@@ -112,9 +112,8 @@ def main():
         testc_labeled = classifier.predict(gen_lib.test_library)
         
         #logs using tensorboard 
-        writer.add_scalar("label_logs", {'trainc_labeled':trainc_labeled,
-                                        'testc_labeled':testc_labeled}, 1)
-        
+        writer.add_scalar("trainc_labeled",trainc_labeled,1)
+        writer.add_scalar("testc_labeled",testc_labeled,1)
         writer.add_scalar("training_loss", training_loss, 0)
 
         idx = 0
@@ -158,7 +157,8 @@ def main():
                 testc_labeled = classifier.predict(gen_lib.test_library)
 
                 #log loss via tensorboard
-                writer.add_scalar("label_logs", {'trainc_labeled':trainc_labeled, 'testc_labeled':testc_labeled}, idx+2)
+                writer.add_scalar("trainc_labeled",trainc_labeled,idx+2)
+                writer.add_scalar("testc_labeled",testc_labeled,idx+2)
                 writer.add_scalar("training_loss", training_loss, idx+1)
 
                 if idx >= 47:
