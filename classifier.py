@@ -11,7 +11,7 @@ from torch.nn import ReLU
 from torch.nn import LogSoftmax
 from torch import flatten
 class LeNet(Module):
-    def __init__(self, numChannels, classes):
+    def __init__(self, numChannels, classes, args):
         # call the parent constructor
         super(LeNet, self).__init__()
         # initialize first set of CONV => RELU => POOL layers
@@ -25,15 +25,16 @@ class LeNet(Module):
         self.relu2 = ReLU()
         self.maxpool2 = MaxPool2d(kernel_size=(2, 2), stride=(2, 2))
         # initialize first (and only) set of FC => RELU layers
-        self.fc1 = Linear(in_features=2450, out_features=500)
+        self.fc1 = Linear(in_features=200, out_features=100)
         self.relu3 = ReLU()
         # initialize our softmax classifier
-        self.fc2 = Linear(in_features=500, out_features=classes)
+        self.fc2 = Linear(in_features=100, out_features=classes)
         self.logSoftmax = LogSoftmax(dim=1)
 
         self.lossFn = nn.NLLLoss()
         # set the device we will be using to train the model
-        self.device = torch.device("cpu")
+        # self.device = torch.device("cpu")
+        self.device = args.device
         
     def forward(self, x):
         # pass the input through our first set of CONV => RELU =>
@@ -54,31 +55,30 @@ class LeNet(Module):
         # pass the output to our softmax classifier to get our output
         # predictions
         x = self.fc2(x)
-        output = self.logSoftmax(x)#.argmax(1)
+        output = self.logSoftmax(x)
         # return the output predictions
         return output
 
-    def trainer(self, train_library, optimizer):
+    def trainer(self, data, label, optimizer):
+        n_step = 30
         #train lib : (nx3x40x40, n)
-        X = np.squeeze(np.asarray(train_library[0]), axis=1)
-        Y = np.asarray(train_library[1])
-        # print("Y.shape: ", Y.shape)
-        Y_c = np.zeros((len(Y), 6))
+        # data = np.squeeze(np.asarray(data), axis=1)
+        # Y = np.asarray(train_library[1])
+        # X = np.array(data)
+        Y = np.array([label])
+        Y_c = np.zeros((len(Y), 3))
         for i, y in enumerate(Y):
             Y_c[i][y-1] = 1
         
         # send the input to the device
-        X = torch.FloatTensor(X)
-        Y_c = torch.FloatTensor(Y_c)#.float()
-        X, Y_c = X.to(self.device), Y_c.to(self.device)
+        data = torch.FloatTensor(data)
+        Y_c = torch.FloatTensor(Y_c)
+        X, Y_c = data.to(self.device), Y_c.to(self.device)
 
-        for e in range(100):
-            # initialize the total training and validation loss
-            totalTrainLoss = 0
-            # initialize the number of correct predictions in the training
-            trainCorrect = 0
+        meanTrainLoss = 0
+        meanCorrect = 0
+        for _ in range(n_step):
 
-            # perform a forward pass and calculate the training loss
             pred = self.forward(X.float())
             loss = self.lossFn(pred, Y_c.argmax(1))
             # zero out the gradients, perform the backpropagation step,
@@ -88,36 +88,29 @@ class LeNet(Module):
             optimizer.step()
             # add the loss to the total training loss so far and
             # calculate the number of correct predictions
-            totalTrainLoss = loss
-            
-            #print("Yc.argmax(1): ", Y_c.argmax(1))
-            trainCorrect = (pred.argmax(1) == Y_c.argmax(1)).type(torch.float).sum().item()
-            
-        # calculate the average training and validation loss
-        return  totalTrainLoss.item(), trainCorrect#/len((np.asarray([train_library[1][:]][0])))
-        
+            meanTrainLoss += loss.item()
+            trainCorrect = (pred.cpu().argmax(1) == Y_c.cpu().argmax(1)).type(torch.float).mean().item()
+            meanCorrect += trainCorrect
+        # return  totalTrainLoss.item(), trainCorrect
+        return meanTrainLoss/n_step, meanCorrect/n_step
 
     def predict(self, test_library):
         with torch.no_grad():
             X = np.asarray(test_library[0])
-            #print("X test .shape: ", X.shape)
             Y = np.asarray(test_library[1])
-            Y_c = np.zeros((len(Y), 6))
+            Y_c = np.zeros((len(Y), 3))
             for i, y in enumerate(Y):
                 Y_c[i][y-1] = 1
 
-            # send the input to the device
             X = torch.from_numpy(X)
             Y_c = torch.from_numpy(Y_c)
             X, Y_c = X.to(self.device), Y_c.to(self.device)
-            # perform a forward pass and calculate the training loss
             pred = self.forward(X.float())
-            testCorrect = (np.array(pred).argmax(1) == np.array(Y_c.argmax(1))).sum().item()
-        return  testCorrect#/len((np.asarray([test_library[1][:]][0])))
+            testCorrect = (np.array(pred.cpu()).argmax(1) == np.array(Y_c.cpu().argmax(1))).mean().item()
+        return  testCorrect
     
-    def predict2(self, single_map):
+    def predict_label(self, single_map):
         with torch.no_grad():
-            X= single_map.to(self.device)
-            # perform a forward pass and calculate the training loss
+            X = single_map.to(self.device)
             pred = self.forward(X.float())
         return  pred.argmax(1)

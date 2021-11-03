@@ -36,7 +36,7 @@ def ff_regenate(file_name):
 #Construct map from text array
 def fa_regenate(array):
     array = [item.replace("\n", "") for item in array]
-
+    # print("array", array)
     prize_locations = []
     obstacle_locations = []
     obs_x_list = []
@@ -45,8 +45,7 @@ def fa_regenate(array):
     map_lim = len(array[0])
 
     matrix_map = np.zeros((3,len(array), len(array[0])))
-    # print('len(array[0]): ', len(array[0]))
-    # print('len(array[1]): ', len(array[1]))
+    
     for x in range(len(array[0])): #row
         for y in range(len(array[1])): #column
             if array[x][y] == 'W':
@@ -64,6 +63,7 @@ def fa_regenate(array):
             else: #if array[x][y] == '-':
                 matrix_map[0,x,y] = 1
 
+    # print("matrix map[2]", matrix_map[2])
     ds_map.set_obstacle([(i, j) for i, j in zip(obs_y_list, obs_x_list)])
     return ds_map, obstacle_locations, prize_locations, matrix_map, map_lim, obs_y_list, obs_x_list
 
