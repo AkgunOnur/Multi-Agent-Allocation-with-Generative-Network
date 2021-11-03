@@ -1,7 +1,7 @@
 import torch
 from loguru import logger
 
-from environment.tokens import TOKEN_GROUPS, REPLACE_TOKENS #environment.tokens
+from tokens import TOKEN_GROUPS, REPLACE_TOKENS #environment.tokens
 
 
 # Miscellaneous functions to deal with ascii-token-based levels.
@@ -35,6 +35,7 @@ def token_to_group(tensor, tokens, token_groups=TOKEN_GROUPS):
 
 def load_level_from_text(path_to_level_txt, replace_tokens=REPLACE_TOKENS):
     """ Loads an ascii level from a text file. """
+    print(path_to_level_txt)
     with open(path_to_level_txt, "r") as f:
         ascii_level = []
         for line in f:
