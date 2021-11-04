@@ -35,6 +35,14 @@ def ff_regenate(file_name):
 
 #Construct map from text array
 def fa_regenate(array):
+    """
+    # RETURN: 
+    Matrix Map, Shape = 3,20,20: 
+
+    matrix_map[0] -> Path
+    matrix_map[1] -> Wall
+    matrix_map[2] -> Reward
+    """
     array = [item.replace("\n", "") for item in array]
     # print("array", array)
     prize_locations = []
