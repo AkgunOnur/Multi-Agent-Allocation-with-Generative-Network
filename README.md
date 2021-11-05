@@ -1,7 +1,5 @@
 # Multi Agent Allocation with Generative Network
 
-![Teaser](images/hard3.png) 
-
 ## Recommended system
 Recommended system (tested):
 - Windows

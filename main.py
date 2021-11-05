@@ -1,23 +1,16 @@
-import os
 import torch
 import time
 import argparse
-import glob
-import re
-import pickle
 import numpy as np
-import csv
 
-from dqn_model import *
-
-from point_mass_formation import AgentFormation
+from point_mass_env import AgentFormation
 
 
 def main():
-    model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/saved_models'
-    load_model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/models'
-    # model_dir = './saved_models'
-    # load_model_dir = './models'
+    # model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/saved_models'
+    # load_model_dir = '/okyanus/users/deepdrone/Multi-Agent-Allocation-with-Generative-Network/models'
+    model_dir = './saved_models'
+    load_model_dir = './models'
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     device = "cpu"
@@ -58,150 +51,24 @@ def main():
 
 
     args = parser.parse_args()
+
     
+    print ("Train Mode!")
+    agent_obs = env.reset()
+    episode_reward = 0
+    for i_episode in range(1, args.num_episodes + 1):
+        action = np.random.choice(8) # output is between 0 and 7
+        reward, done, agent_next_obs = env.step(action)
 
-    dqn = DQN(args)
+        episode_reward += reward
+        time.sleep(0.1)
 
-    model_reward_list = {}
+        if i_episode % 1 == 0:
+            print('Train - ',' | Episode: ', i_episode, '| Episode reward: ', round(episode_reward, 2))
 
-    level_list = ["easy", "medium", "hard"]
-    train_rewards = {"easy":-100, "medium":-100, "hard":-100}
-    eval_rewards = {"easy":-100, "medium":-100, "hard":-100}
-    fields = ["Model", "Level", "Mean Reward", "Total Episodes"]
-    filename = "test_results.txt"
-    test_info = []
-    if args.test:
-        print ("Test Mode!")
-        # time.sleep(0.5)
-        # np.random.seed(args.seed)
-
-        if int(args.test_model_no) > 0:
-            model_path = dqn.load_models(load_model_dir, args.test_model_level, args.test_model_no)
-        elif int(args.test_model_no) == 0:
-            print ("Random policy")
-            model_path = "Random"
-        else:
-            print ("Wrong input!")
-            return 
-
-        for level in level_list:
-            mean_reward = 0
-            index = 0
-
-            for i_iter in range(1, args.test_iteration + 1):
-
-                if level == "medium":
-                    index = np.random.choice(6)
-                elif level == "hard":
-                    index = np.random.choice(3)
-                
-                agent_obs = env.reset(level, index)
-                episode_reward = 0
-                action = dqn.choose_action(agent_obs) # output is between 0 and 7
-                n_agents = action + 1 # number of allowable agents is 1 to 8
-                episode_reward, done, agent_next_obs = env.step(n_agents)
-                print('Test - ', level,' | Episode: ', i_iter, '| Episode reward: ', round(episode_reward, 2))
-
-                if visualization:
-                    env.close()
-
-                mean_reward += episode_reward
-
-            mean_reward = mean_reward / args.test_iteration
-            eval_rewards[level] = mean_reward
-            print('Test - ', level, ' | Model: ', model_path, ' | Mean reward: ', round(mean_reward, 2))
-            test_info.append([model_path, level, round(mean_reward, 2), args.test_iteration])
-
-        mean_levels = np.array(list(eval_rewards.values())).mean()
-        test_info.append([model_path, "Mean", round(mean_levels, 2), args.test_iteration])
-        with open(filename, 'a', newline='') as csvfile:
-            csvwriter = csv.writer(csvfile, delimiter='|')
-            # csvwriter.writerow(fields) 
-            csvwriter.writerows(test_info)
-            
-    else:
-        print ("Train Mode!")
-        level = "easy"
-        previous_mode = False
-        # time.sleep(0.5)
-        last_episode = 0
-        if args.resume:
-            with open('variables.pickle', 'rb') as handle:
-                last_episode, level_actual, train_rewards, eval_rewards = pickle.load(handle)
-                model_path = dqn.load_models(model_dir + "/eval", level_actual, last_episode)
-                print ("Training is resumed on ", level_actual, " mode and ", last_episode, "th model.")
-        for i_episode in range(last_episode + 1, args.num_episodes + 1):
-            if i_episode % 5 == 0 and level != "easy":
-                previous_mode = True
-
-            if previous_mode == False:
-                if i_episode <= 50000:
-                    level = "easy"
-                    # index = 0
-                elif i_episode > 50000 and i_episode <= 150000:
-                    level = "medium"
-                    # index = np.random.choice(6)
-                else:
-                    level = "hard"
-                    # index = np.random.choice(3)
-                level_actual = level
-            else:
-                ind = np.random.randint(level_list.index(level))
-                level = level_list[ind]
-                previous_mode = False
-
-            agent_obs = env.reset(level)
-            episode_reward = 0
-
-            action = dqn.choose_action(agent_obs) # output is between 0 and 7
-            n_agents = action + 1 # number of allowable agents is 1 to 8
-            episode_reward, done, agent_next_obs = env.step(n_agents)
-
-            if visualization:
-                env.close()
-
-            dqn.memory.append(agent_obs, action, episode_reward, agent_next_obs, done)
-
-            if i_episode > args.start_step and i_episode % args.update_interval == 0:
-                dqn.learn()
-
-            if episode_reward > train_rewards[level] and previous_mode == False:
-                train_rewards[level] = episode_reward
-                dqn.save_models(os.path.join(args.model_dir, 'train'), level, 1)
-            
-            if i_episode % 1 == 0:
-                print('Train - ', level,' | Episode: ', i_episode, '| Episode reward: ', round(episode_reward, 2))
-
-            if i_episode % args.eval_interval == 0 and i_episode > args.start_step and previous_mode == False:
-                mean_reward = 0
-                for i_iter in range(args.test_iteration):
-                    # manual curriculum
-                    # index = 0
-                    # if level == "medium":
-                    #     index = np.random.choice(6)
-                    # elif level == "hard":
-                    #     index = np.random.choice(3)
-
-                    agent_obs = env.reset(level_actual)
-                    episode_reward = 0
-
-                    action = dqn.choose_action(agent_obs) # output is between 0 and 7
-                    n_agents = action + 1 # number of allowable agents is 1 to 8
-                    episode_reward, done, agent_next_obs = env.step(n_agents)
-
-                    if visualization:
-                        env.close()
-
-                    mean_reward += episode_reward
-
-                mean_reward = mean_reward / args.test_iteration
-                print('Eval - ', level_actual,' | Episode: ', i_episode, '| Evaluation reward: ', round(mean_reward, 2), '\n')
-                if mean_reward > eval_rewards[level_actual]:
-                    eval_rewards[level_actual] = mean_reward
-                    dqn.save_models(os.path.join(args.model_dir, 'eval'), level_actual, i_episode)
-
-                    with open('variables.pickle', 'wb') as handle:
-                        pickle.dump([i_episode, level_actual, train_rewards, eval_rewards], handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if done:
+            print ("Mission completed!")
+            break
 
     if visualization:
         env.close()
