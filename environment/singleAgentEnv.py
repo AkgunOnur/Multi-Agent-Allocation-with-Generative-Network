@@ -1,3 +1,4 @@
+from numpy.core.arrayprint import dtype_short_repr
 import gym
 import pickle
 import os
@@ -14,7 +15,8 @@ from PIL import Image
 
 class QuadrotorFormation(gym.Env):
 
-    def __init__(self, visualization=True):
+    def __init__(self, map_type, visualization=False):
+        super(QuadrotorFormation, self).__init__()
 
         self.seed()
         self.n_action = 8
@@ -24,13 +26,15 @@ class QuadrotorFormation(gym.Env):
         self.viewer = None
         self.rewPos_list = []
         self.wallPos_list = []
+        self.map_type = map_type
         
         self.action_space = spaces.Discrete(self.n_action)
-        self.observation_space = spaces.Box(low=0, high=1,
-                                        shape=(4, 20, 20), dtype=np.uint8)
+        self.observation_space = spaces.Box(low=0, high=255,
+                                        shape=(20, 20, 4), dtype=np.uint8)
 
-        self.x_lim = 19  # grid x limit
-        self.y_lim = 19  # grid y limit
+        self.x_lim = 19
+        self.y_lim = 19
+        self.iteration = 0
 
         self.wall_map = np.zeros((self.y_lim, self.x_lim))
         self.reward_map = np.zeros((self.y_lim, self.x_lim))
@@ -43,38 +47,38 @@ class QuadrotorFormation(gym.Env):
         return [seed]
 
     def step(self, action):
-        # Environment Step
         done = False
-        reward = -0.02
-        info = {}
+        reward = -0.01
+        self.iteration += 1
 
         self.update_agent_pos(action)
 
         if int(self.reward_map[int(self.agent.y), int(self.agent.x)]) == 1:
             self.reward_map[int(self.agent.y),int( self.agent.x)] = 0
-            reward += 0.5
-        
-        if np.all(self.reward_map == 0):
-            done = True
+            reward += 0.8
+
+        self.reward_wall_num()
+        state = self.get_observation()
 
         if self.visualization:
             self.render()
 
-        self.reward_wall_num()
-        state = self.get_observation()
-        print(reward)
+        if np.all(self.reward_map == 0) or self.iteration >= 600:
+            done = True
+            self.close()
+        info = {"is_success": done}
         return state, reward, done, info
 
     def get_observation(self):
 
-        state = np.zeros((4,20,20))
+        state = np.zeros((20,20,4))
 
-        state[0] = self.path_map
-        state[1] = self.wall_map
-        state[2] = self.reward_map
-        state[3] = self.agent.state
+        state[:,:,0] = self.path_map*255.0
+        state[:,:,1] = self.wall_map*255.0
+        state[:,:,2] = self.reward_map*255.0
+        state[:,:,3] = self.agent.state*255.0
 
-        return state
+        return np.array(state, dtype=np.uint8)
 
 
     def generate_agent_position(self, agentY, agentX):
@@ -87,8 +91,14 @@ class QuadrotorFormation(gym.Env):
         self.agent.y = agentY
 
     def get_init_map(self, index):
-        with open('training_map_library.pkl', 'rb') as f:
-            map_dataset = pickle.load(f)
+
+        if self.map_type == "gan":
+            with open('training_map_library.pkl', 'rb') as f:
+                map_dataset = pickle.load(f)
+
+        elif self.map_type == "random":
+            with open('training_maps_random_without_gan.pkl', 'rb') as f:
+                map_dataset = pickle.load(f)
 
         map_dataset = np.array(map_dataset[0]).squeeze(1)   
 
@@ -108,8 +118,10 @@ class QuadrotorFormation(gym.Env):
 
     def reset(self):
 
+        self.iteration = 0
         init_map = self.get_init_map(self.map_index)
         self.map_index += 1
+        self.map_index %= 600
 
         agent_initX = 2
         agent_initY = 2
@@ -120,7 +132,6 @@ class QuadrotorFormation(gym.Env):
         self.reward_wall_num()
 
         self.generate_agent_position(agent_initY, agent_initX)
-        self.iteration = 1
 
         state = self.get_observation()
 
@@ -189,8 +200,7 @@ class QuadrotorFormation(gym.Env):
     def render(self, mode='human'):
         if self.viewer is None:
             self.viewer = rendering.Viewer(500, 500)
-            self.viewer.set_bounds(0,
-                                   self.x_lim, 0, self.y_lim)
+            self.viewer.set_bounds(0, self.x_lim, 0, self.y_lim)
             # fname = path.join(path.dirname(__file__), "sprites/drone.png")
             mapsheet = Image.open(os.path.join(path.dirname(__file__), 'sprites/mapsheet.png'))
 
@@ -228,9 +238,8 @@ class QuadrotorFormation(gym.Env):
                 self.reward_transform.append(rendering.Transform())
                 self.render_rew.append(rendering.Image(reward_path, 1., 1.))
                 self.render_rew[i].add_attr(self.reward_transform[i])
-
+            
             for i in range(len(self.wallPos_list)):
-                
                 self.wall_transform.append(rendering.Transform())
                 self.render_wall.append(rendering.Image(wall_path, 1., 1.))
                 self.render_wall[i].add_attr(self.wall_transform[i])
@@ -239,14 +248,18 @@ class QuadrotorFormation(gym.Env):
             self.viewer.add_onetime(self.drones[i])
             self.drone_transforms[i].set_translation(self.agent.x, self.y_lim-self.agent.y) 
         
-        # print(self.wallPos_list)
         for i in range(len(self.wallPos_list)):
-                self.viewer.add_onetime(self.render_wall[i])
-                self.wall_transform[i].set_translation(self.wallPos_list[i][1], self.y_lim-self.wallPos_list[i][0])
-
+            self.viewer.add_onetime(self.render_wall[i])
+            self.wall_transform[i].set_translation(self.wallPos_list[i][1], self.y_lim-self.wallPos_list[i][0])
+        
         for i in range(len(self.rewPos_list)):
             if not len(self.rewPos_list)==0:
                 self.viewer.add_onetime(self.render_rew[i])
                 self.reward_transform[i].set_translation(self.rewPos_list[i][1], self.y_lim-self.rewPos_list[i][0])
             
         return self.viewer.render(return_rgb_array=mode == 'rgb_array')
+
+    def close(self):
+        if self.viewer is not None:
+            self.viewer.close()
+            self.viewer = None

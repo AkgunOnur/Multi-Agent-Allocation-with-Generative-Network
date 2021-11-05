@@ -10,8 +10,10 @@ from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 from environment.singleAgentEnv import QuadrotorFormation
 from environment.level_utils import read_level
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 
-max_steps = 1000000
+
+max_steps = 36e5
 
 
 class CustomCNN(BaseFeaturesExtractor):
@@ -48,28 +50,29 @@ class CustomCNN(BaseFeaturesExtractor):
 
 policy_kwargs = dict(
     features_extractor_class=CustomCNN,
-    features_extractor_kwargs=dict(features_dim=128),
-)
-
-with open('training_map_library.pkl', 'rb') as f:
-            map_dataset = pickle.load(f)
-
-map_dataset = np.array(map_dataset[0]).squeeze(1)
+    features_extractor_kwargs=dict(features_dim=128),)
 
 
-env = QuadrotorFormation()
-check_env(env)
+# Train with GAN Generated Maps
+def main():
+    vecenv = make_vec_env(lambda: QuadrotorFormation(map_type="gan"), n_envs=16, vec_env_cls=SubprocVecEnv)
+    model = A2C('CnnPolicy', vecenv, n_steps=1, policy_kwargs=policy_kwargs, verbose=1, tensorboard_log="./a2c_gan_tensorboard/")
 
-model = A2C('CnnPolicy', env, n_steps=1, policy_kwargs=policy_kwargs, verbose=1)
+    model.learn(total_timesteps=max_steps)
+    model.save("./weights/a2c_gan")
 
-# for init_map in range(len(map_dataset)):
+    # Train with GAN Random Maps
+    vecenv = make_vec_env(lambda: QuadrotorFormation("random"), n_envs=16, vec_env_cls=SubprocVecEnv)
+    model = A2C('CnnPolicy', vecenv, n_steps=1, policy_kwargs=policy_kwargs, verbose=1, tensorboard_log="./a2c_random_tensorboard/")
 
-model.learn(total_timesteps=max_steps)
-model.save("./weights/a2c_single")
-    
-# model.load("./weights/a2c_single")
+    model.learn(total_timesteps=max_steps)
+    model.save("./weights/a2c_random")
 
-while True:
-    action, _states = model.predict(obs)
-    obs, rewards, dones, info = env.step(action)
-    env.render()
+if __name__ == '__main__':
+    main()
+
+# obs = env.reset()
+# while True:
+#     action, _states = model.predict(obs)
+#     obs, rewards, dones, info = env.step(action)
+#     # env.render()
