@@ -5,24 +5,23 @@ import pickle
 
 class Library():
     #Initialize library
-    def __init__(self,library_size=180):
+    def __init__(self,library_size=50):
         self.library_size = library_size
         self.train_library = [[],[]]
         #Load test maps and add it to test_library
-        test_libfile = open('./test_dataset.pickle', 'rb')
+        test_libfile = open('./test_maps/test_map_library.pkl', 'rb')
         self.test_library = pickle.load(test_libfile)
-        self.test_library[1] = [x-1 for x in self.test_library[1]]
 
     def add(self, map, label,opt):
-        self.train_library[0].append(np.array(map).reshape((1,3,opt.full_map_size,opt.full_map_size)))
+        self.train_library[0].append(np.array(map).reshape((3,opt.full_map_size,opt.full_map_size)))
         self.train_library[1].append(np.array(label))
         print("Library size increased:", len(self.train_library[0]))
-        self.save_maps()
+        self.save_maps(opt.mode)
 
     def get(self):
-        rindex = np.random.randint(0,len(self.train_library[0]))
+        rindex = np.random.randint(0,3)#len(self.train_library[0])
         return self.train_library[0][rindex], self.train_library[1][rindex]
     
-    def save_maps(self):
-        with open('training_map_library.pkl', 'wb') as f:
+    def save_maps(self,name):
+        with open(f'./generated_maps/{name}/training_map_library.pkl', 'wb') as f:
             pickle.dump(self.train_library, f)

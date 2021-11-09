@@ -2,7 +2,6 @@ import wandb
 import sys
 import torch
 import os
-# import pandas as pd
 
 from loguru import logger
 from classifier import LeNet
@@ -19,8 +18,6 @@ from environment.level_image_gen import LevelImageGen as LevelGen
 from environment.level_utils import read_level, one_hot_to_ascii_level
 
 from torch.utils.tensorboard import SummaryWriter
-
-
 
 def get_tags(opt):
     """ Get Tags for logging from input name. Helpful for wandb. """
@@ -52,7 +49,7 @@ def main():
     replace_tokens = REPLACE_TOKENS
     #==================================================================================
     #Initialize library and environment
-    gen_lib = Library(50)
+    gen_lib = Library(opt.library_size)
     env = env_class()
 
     #Initialize tensorboard logger
@@ -60,78 +57,81 @@ def main():
 
     #Initialize classifier and save initial weights
     classifier = LeNet(numChannels=3, classes=3, args=opt).to(opt.device)
-    torch.save(classifier.state_dict(),"./weights/classifier_init.pth")
+    #ACHTUNG!!! - >>> Comment Time to TIME when neccessary
+    #torch.save(classifier.state_dict(),"./weights/classifier_init.pth")
+
+    classifier.load_state_dict(torch.load("./weights/classifier_init.pth"))
 
     #Predictions with initial logs
     classifier.eval()
+    #Test classifier perf on test library
     testc_labeled = classifier.predict(gen_lib.test_library)
-    trainc_labeled = classifier.predict(gen_lib.test_library)
 
-    #logs using tensorboard 
-    writer.add_scalar("trainc_labeled",trainc_labeled,0)
+    #logs using tensorboard
     writer.add_scalar("testc_labeled",testc_labeled,0)
 
     #Initialize optimizer
     optimizer = Adam(classifier.parameters(), lr=1e-4)
+
+    ########################################################
+    #Add initial maps and their labels to training library
+    for lvl in range(3):
+        if lvl == 0:
+            opt.input_name = "easy_map.txt"
+        elif lvl == 1:
+            opt.input_name = "medium_map.txt"
+        elif lvl == 2:
+            opt.input_name = "hard_map.txt"
+
+        #Find labels of initial maps
+        init_map = read_level(opt, None, replace_tokens)
+        init_ascii_map = one_hot_to_ascii_level(init_map, opt.token_list)
+        ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(init_ascii_map)
+        rewards = []
+        for i in range(3):
+            reward = env.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
+            rewards.append(reward)
+        #Add best nagent as label
+        gen_lib.add(init_map,np.argmax(rewards),opt)
+
+    
+    #Reset classifier weights to initial and switch to train mode
+    classifier.train()
+
+    #Train classifier with only in the training library maps
+    training_loss, trainc_labeled = classifier.trainer(gen_lib.train_library[0], gen_lib.train_library[1], optimizer)
+
+    #Test classifier perf on test library
+    classifier.eval()
+    testc_labeled = classifier.predict(gen_lib.test_library)
+
+    #logs using tensorboard 
+    writer.add_scalar("trainc_labeled",trainc_labeled,0)
+    writer.add_scalar("testc_labeled",testc_labeled,1)
+    writer.add_scalar("training_loss", training_loss, 0)
+    ########################################################
     #Write selected mode
     print("MODE:", opt.mode)
-
+    idx = 0
+    
     #Train loop
     if(opt.mode == 'GAN' or opt.mode == 'gan'):
         #Initialize GAN
         g = GAN(opt)
-        #Add initial maps and their labels to training library
-        for lvl in range(3):
-            if lvl == 0:
-                opt.input_name = "easy_map.txt"
-            elif lvl == 1:
-                opt.input_name = "medium_map.txt"
-            elif lvl == 2:
-                opt.input_name = "hard_map.txt"
-
-            #Find labels of initial maps
-            init_map = read_level(opt, None, replace_tokens)
-            init_ascii_map = one_hot_to_ascii_level(init_map, opt.token_list)
-            ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(init_ascii_map)
-            rewards = []
-            for i in range(3):
-                reward = env.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
-                rewards.append(reward)
-            init_label = np.argmax(rewards)
-            gen_lib.add(init_map,init_label,opt)
-
-        #Reset classifier weights to initial and switch to train mode
-        classifier.load_state_dict(torch.load("./weights/classifier_init.pth"))
-        classifier.train()
-
-        #Train classifier with only in the training library maps
-        training_loss, trainc_labeled = classifier.trainer(gen_lib.train_library[0], gen_lib.train_library[1], optimizer)
-
-        #Load test library and log loss
-        classifier.eval()
-        testc_labeled = classifier.predict(gen_lib.test_library)
-        
-        #logs using tensorboard 
-        writer.add_scalar("trainc_labeled",trainc_labeled,1)
-        writer.add_scalar("testc_labeled",testc_labeled,1)
-        writer.add_scalar("training_loss", training_loss, 0)
-
-        idx = 0
         while(True):
             #Get a sample map from training library
-            sample_map, sample_maps_label = gen_lib.get()
+            sample_map, _ = gen_lib.get()
 
             #Train GAN and generate a fake map
-            generated_map = g.train(env, np.array(sample_map), classifier, opt, writer)
+            generated_map = g.train(env, np.array(sample_map), classifier, opt, writer, idx)
             coded_fake_map = one_hot_to_ascii_level(generated_map.detach(), opt.token_list)
             ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(coded_fake_map)
 
             #Skip if there is no reward in the map
-            if len(prize_map) == 0:
-                continue
+            # if len(prize_map) == 0 or len(obs_x_list)>200:
+            #     continue
             
-            #Switch classifier to evaluation mode and make prediction
-            # classifier.eval()
+            #Classifier makes prediction
             prediction = classifier.predict_label(torch.from_numpy((agent_map.reshape(1,3,opt.full_map_size,opt.full_map_size))).float())
 
             #Find best label for generated fake map
@@ -145,102 +145,122 @@ def main():
             if (prediction.item()==actual): #If classifier is correct - no need to add library
                 continue
             else:
-                gen_lib.add(agent_map, prediction.cpu(),opt) #if classifier is wrong - add it to library
+                #classifier is wrong - add it to library
+                gen_lib.add(agent_map, actual, opt) 
 
                 #Switch classifier into train mode and train with library(added with new map)
                 classifier.train()
-                exp_agent_map = np.expand_dims(agent_map, axis=0)
-                training_loss, trainc_labeled = classifier.trainer(exp_agent_map, prediction, optimizer)
+
+                #Retrained classifier with new updated library
+                training_loss, trainc_labeled = classifier.trainer(gen_lib.train_library[0], gen_lib.train_library[1], optimizer)
+
+                #Test classifier perf on test library
+                classifier.eval()
+                testc_labeled = classifier.predict(gen_lib.test_library)
+
+                #log loss via tensorboard
+                writer.add_scalar("trainc_labeled",trainc_labeled,idx+1)
+                writer.add_scalar("testc_labeled",testc_labeled,idx+2)
+                writer.add_scalar("training_loss", training_loss, idx+1)
+
+                if len(gen_lib.train_library[0]) == opt.library_size:
+                    g.better_save(len(gen_lib.train_library[0]))
+                    break
+                idx += 1
+        #Close tensorboard logger    
+        writer.close()
+    
+    elif(opt.mode == 'ganstyle_random'):        
+        while(True):
+            #Generate Random Map and add it to training library
+            generated_map = generate_random_map(opt.full_map_size)
+            ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate2(generated_map)
+
+            ##Classifier makes prediction
+            prediction = classifier.predict_label(torch.from_numpy((agent_map.reshape(1,3,opt.full_map_size,opt.full_map_size))).float())
+
+            #Find best label for generated fake map
+            rewards = []
+            for i in range(3):
+                reward = env.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
+                rewards.append(reward)
+            actual = np.argmax(rewards)
+
+            #Skip if there is no reward in the map
+            # if len(prize_map) == 0 or len(obs_x_list)>200:
+            #     continue
+            
+            #Decide to add generated fake map into library
+            if (prediction.item()==actual): #If classifier is correct - no need to add library
+                continue
+            else:
+                #classifier is wrong - add it to library
+                gen_lib.add(agent_map, actual, opt) 
+
+                #Switch classifier into train mode and train with library(added with new map)
+                classifier.train()
+
+                #Retrained classifier with new updated library
+                training_loss, trainc_labeled = classifier.trainer(gen_lib.train_library[0], gen_lib.train_library[1], optimizer)
 
                 #Load test library and log loss
                 classifier.eval()
                 testc_labeled = classifier.predict(gen_lib.test_library)
 
                 #log loss via tensorboard
-                writer.add_scalar("trainc_labeled",trainc_labeled,idx+2)
+                writer.add_scalar("trainc_labeled",trainc_labeled,idx+1)
                 writer.add_scalar("testc_labeled",testc_labeled,idx+2)
                 writer.add_scalar("training_loss", training_loss, idx+1)
 
-                if idx >= 47:
-                    g.better_save(idx+3)
+                if len(gen_lib.train_library[0]) == opt.library_size:
                     break
                 idx += 1
-        
         #Close tensorboard logger    
         writer.close()
 
-    elif(opt.mode == 'random_without_gan'):
-
-        for s in range(opt.library_size):
-            #Reset classifier
-            classifier.load_state_dict(torch.load("./weights/classifier_init.pth"))
-
-            #train classifier with training library
-            classifier.train()
-            training_loss, trainc_labeled = classifier.trainer(L.train_library, optimizer)
-
-            #Test classifier perf on test library
-            classifier.eval()
-            testc_labeled = classifier.predict(L.test_library)
-
-            #Log Data
-            # write_tocsv([testc_labeled, training_loss, trainc_labeled, s], file_name ='rwg_performance.csv')
-
-            # while condition to repeat training until training lib expand
-            while(True):
-                #Generate Random Map and add it to training library
-                generated_map = generate_random_map(40)
-                ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate2(generated_map)
-
-                #Decide whether place the generated map in the training lib
-                classifier.eval()
-                prediction =  classifier.predict_label(torch.from_numpy((agent_map.reshape(1,3,40,40))).float())
-
-                rewards = []
-                for i in range(6):
-                    reward = env.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
-                    rewards.append(reward)
-                #Get actual best n_agents
-                actual = np.argmax(rewards)
-
-                
-                #Decide whether place the generated map in the training lib
-                if(prediction==actual): #no need to add library
-                  continue
-                else:
-                    agent_map = agent_map.cpu()
-                    prediction = prediction.cpu()
-                    L.add(agent_map, prediction) #add it to training library
-                    break
-        os.rename('./training_map_library.pkl', './training_maps_random_without_gan.pkl')
-
-    elif(opt.mode == 'random_train'):
-        for s in range(opt.library_size):
+    elif(opt.mode == 'random'):
+        while(True):
             #Generate Random Map and add it to training library
-            generated_map = generate_random_map(40)
+            generated_map = generate_random_map(opt.full_map_size)
             ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate2(generated_map)
 
+            #Classifier makes prediction
+            prediction = classifier.predict_label(torch.from_numpy((agent_map.reshape(1,3,opt.full_map_size,opt.full_map_size))).float())
+
+            #Find best label for generated fake map
             rewards = []
-            for i in range(6):
+            for i in range(3):
                 reward = env.reset_and_step(ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list, i+1)
                 rewards.append(reward)
-            #Get actual best n_agents
             actual = np.argmax(rewards)
-            L.add(agent_map,actual)
-        
-        #Reset classifier
-        classifier.load_state_dict(torch.load("./weights/classifier_init.pth"))
 
-        #train classifier with training library
-        classifier.train()
-        training_loss, trainc_labeled = classifier.trainer(L.train_library, optimizer)
+            #Skip if there is no reward in the map
+            # if len(prize_map) == 0 or len(obs_x_list)>200:
+            #     continue
 
-        #Test trained classifier perf on test library and log perf.
-        classifier.eval()
-        testc_labeled = classifier.predict(L.test_library)
-        print("testc_labeled:", testc_labeled, "training_loss:", training_loss, "trainc_labeled:", trainc_labeled,  "s:", s)
-        #write_tocsv([testc_labeled, training_loss, trainc_labeled,  s],file_name='random_performance.csv')
-        os.rename('./training_map_library.pkl', './training_maps_random.pkl')
+            #add random map to library
+            gen_lib.add(agent_map, actual, opt)
+            
+            #Switch classifier into train mode and train with library(added with new map)
+            classifier.train()
+
+            #Retrained classifier with new updated library
+            training_loss, trainc_labeled = classifier.trainer(gen_lib.train_library[0], gen_lib.train_library[1], optimizer)
+
+            #Load test library and log loss
+            classifier.eval()
+            testc_labeled = classifier.predict(gen_lib.test_library)
+
+            #log loss via tensorboard
+            writer.add_scalar("trainc_labeled",trainc_labeled,idx+1)
+            writer.add_scalar("testc_labeled",testc_labeled,idx+2)
+            writer.add_scalar("training_loss", training_loss, idx+1)
+
+            if len(gen_lib.train_library[0]) == opt.library_size:
+                break
+            idx += 1
+        #Close tensorboard logger    
+        writer.close()
     else:
         print("Unnoticeable Working Mode")
 

@@ -101,8 +101,12 @@ class AgentFormation(gym.Env):
                     if np.sum(self.infeasible_prizes) == self.N_prize:
                         total_reward = total_reward - np.sum(self.prize_exists) * r_coeff
                         return total_reward, done
-
-                current_action = (self.agents_action_list[agent_ind][0])
+                # print("agent_ind: ", agent_ind)
+                # print("self.agents_action_list[agent_ind]: ", self.agents_action_list[agent_ind])
+                if len(self.agents_action_list[agent_ind]) > 0:
+                    current_action = (self.agents_action_list[agent_ind][0])
+                else:
+                    current_action = -1
 
                 total_reward -= 0.75
                 prev_pos, current_pos = self.get_agent_desired_loc(agent_ind, current_action)
@@ -115,8 +119,8 @@ class AgentFormation(gym.Env):
                     # self.ds_map.get_map(self.prize_locations, self.agents_locations)
                     self.agents[agent_ind].state = np.copy(prev_pos)
                     continue
-
-                del(self.agents_action_list[agent_ind][0])
+                if len(self.agents_action_list[agent_ind]) > 0:
+                    del(self.agents_action_list[agent_ind][0])
 
                 taken_prize_ind = next((index for index, prize in enumerate(self.prize_locations) if list(prize) == list(self.agents_locations[agent_ind])), -1)
 

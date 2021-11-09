@@ -12,10 +12,10 @@ def get_arguments():
     parser.add_argument("--game", default="environment", help="Which game is to be used?")
 
     #Working mode - Supports: train and test
-    parser.add_argument("--mode", default="GAN", help="working train mode selection")
+    parser.add_argument("--mode", default="gan", help="working train mode selection")
     parser.add_argument("--testmode", default="test_random", help="working test mode selection")
     parser.add_argument("--test_type", default="gan", help="Testing with test library maps or gan generated maps")
-    parser.add_argument("--library_size", type=int, default=50, help=" final training library size")
+    parser.add_argument("--library_size", type=int, default=100, help=" final training library size")
 
     # workspace:
     parser.add_argument("--not_cuda", action="store_true", help="disables cuda", default=0)
@@ -30,7 +30,7 @@ def get_arguments():
     parser.add_argument("--test_dir", help="test input map dir", default="test_maps")
 
     # networks hyper parameters:
-    parser.add_argument("--nfc", type=int, help="number of filters for conv layers", default=64)
+    parser.add_argument("--nfc", type=int, help="number of filters for conv layers", default=20)
     parser.add_argument("--ker_size", type=int, help="kernel size", default=3)
     parser.add_argument("--num_layer", type=int, help="number of layers", default=3)
 
@@ -41,13 +41,13 @@ def get_arguments():
                         default=False)
 
     # optimization hyper parameters:
-    parser.add_argument("--niter", type=int, default=15, help="number of epochs to train")
+    parser.add_argument("--niter", type=int, default=25, help="number of epochs to train")
     parser.add_argument("--gamma", type=float, help="scheduler gamma", default=0.1)
     parser.add_argument("--lr_g", type=float, default=0.0003, help="learning rate, default=0.0005")
-    parser.add_argument("--lr_d", type=float, default=0.0005, help="learning rate, default=0.0005")
+    parser.add_argument("--lr_d", type=float, default=0.0004, help="learning rate, default=0.0005")
     parser.add_argument("--beta1", type=float, default=0.5, help="beta1 for adam. default=0.5")
-    parser.add_argument("--Gsteps", type=int, help="Generator inner steps", default=1)
-    parser.add_argument("--Dsteps", type=int, help="Discriminator inner steps", default=1)
+    parser.add_argument("--Gsteps", type=int, help="Generator inner steps", default=3)
+    parser.add_argument("--Dsteps", type=int, help="Discriminator inner steps", default=3)
     parser.add_argument("--lambda_grad", type=float, help="gradient penalty weight", default=0.1)
     # alpha controls how much the reconstruction factors into the training. 0 = No reconstruction.
     parser.add_argument("--alpha", type=float, help="reconstruction loss weight", default=100)

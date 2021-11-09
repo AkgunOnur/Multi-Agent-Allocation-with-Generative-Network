@@ -10,26 +10,33 @@ SPRITE_PATH = "./sprites"
 if __name__ == '__main__':
     ImgGen = LevelImageGen(SPRITE_PATH)
 
-    directory = '../input/'
+    directory = '../generated_maps/'
     dir_names = os.listdir(directory)
     dir_names.sort()
     if 'README.md' in dir_names:  # Ignore readme for default input folder
         dir_names.remove('README.md')
+    if 'DS_Store' in dir_names:  # Ignore readme for default input folder
+        dir_names.remove('README.md')
 
     for curr_gen in dir_names:
-        directory_gen = directory #+ curr_gen
+        directory_gen = directory + curr_gen
         print("dirgen: ", directory_gen)
         names = os.listdir(directory_gen)
         names.sort()
-        
-        target_dir = '/home/deepdrone/Desktop/Multi-Agent-Allocation-with-Generative-Network/output/level_images/' + curr_gen #
+
+        # print("names:", names)
+        # dur
+
+        target_dir = f'/home/deepdrone/Desktop/Multi-Agent-Allocation-with-Generative-Network/generated_maps/{curr_gen}/rendered' #
         # tasrget_dir = '/home/avsp/Masaüstü/ganner/output/level_images/' + curr_gen #
         os.makedirs(target_dir, exist_ok=True)
 
-        for i in range(min(10, len(names))):
+        for i in range(min(100, len(names))):
+            print("names:", names[i])
+            # if names[i]=='.DS_Store' or '._.DS_Store':
+            #     continue
             lvl = load_level_from_text(os.path.join(directory_gen, names[i]))
-            print("lvl: ", lvl)
-            armut
+            #print("lvl: ", lvl)
             if lvl[-1][-1] == '\n':
                 lvl[-1] = lvl[-1][0:-1]
             lvl_img = ImgGen.render(lvl)

@@ -72,11 +72,11 @@ def fa_regenate2(matrix_map):
     obstacle_locations = []
     obs_x_list = []
     obs_y_list = []
-    ds_map = Map(40, 40)
-    map_lim = 40
+    ds_map = Map(20, 20)
+    map_lim = 20
 
-    for x in range(40): #row
-        for y in range(40): #column
+    for x in range(20): #row
+        for y in range(20): #column
             if matrix_map[1,x,y] == 1:
                 obs_x_list.append(x)
                 obs_y_list.append(y)

@@ -32,12 +32,12 @@ class Library():
         self.test_library[1] = [x-1 for x in self.test_library[1]]
 
         #Load training maps
-        if(mode=='test_gan'):
-            target = './training_map_library.pkl'
-        elif(mode=='test_wo_gan'):
-            target = './Training_Libs/training_maps_random_without_gan.pkl'
-        elif(mode=='test_random'):
-            target = './Training_Libs/training_maps_random.pkl'
+        if(mode=='gan' or mode=='GAN'):
+            target = f'./generated_maps/{mode}/training_map_library.pkl'
+        elif(mode=='ganstyle_random'):
+            target = f'./generated_maps/{mode}/training_map_library.pkl'
+        elif(mode=='random'):
+            target = f'./generated_maps/{mode}/training_map_library.pkl'
         else:
             print("WARNING: Failed to select test maps!!!!")
         if os.path.getsize(target) > 0:      
@@ -46,9 +46,9 @@ class Library():
                 # if file is not empty scores will be equal
                 # to the value unpickled
                 self.train_library = unpickler.load()
-                self.train_library[1][0] = np.array(self.train_library[1][0] - 1)
+                #self.train_library[1][0] = np.array(self.train_library[1][0] - 1)
 
-def write_maps(map, index, lvl):
+def write_maps(map, index, mode):
     txt_list = []
     for x in range(map.shape[1]): #row
         line = []
@@ -64,17 +64,19 @@ def write_maps(map, index, lvl):
         lin = ''.join(line)
         txt_list.append(lin)
 
-    with open(f"./output/generated_maps/{lvl}/{lvl}-{index}.txt", "w+", encoding="latin-1") as output:
+    with open(f"./generated_maps/{mode}/map-{index+1}.txt", "w+", encoding="latin-1") as output:
         for lne in txt_list:
             output.write(str(lne))
             output.write('\n')
         
-def write():
+def write(mode):
     #Initialize Library and environment
-    L = Library('test_gan')
+    L = Library(mode)
     for idx in range(len(L.train_library[0])):
-        write_maps(np.asarray(L.train_library[0][idx]).squeeze(axis=0), idx, L.train_library[2][idx])
+        #print("np.asarray(L.train_library[0][idx]): ", np.asarray(L.train_library[0][idx]).shape)
+        write_maps(np.asarray(L.train_library[0][idx]), idx, mode)#L.train_library[2][idx]
 
 
 if __name__ == "__main__":
-    write()
+    mode = 'random'
+    write(mode)

@@ -60,37 +60,43 @@ class LeNet(Module):
         return output
 
     def trainer(self, data, label, optimizer):
-        n_step = 30
-        #train lib : (nx3x40x40, n)
-        # data = np.squeeze(np.asarray(data), axis=1)
-        # Y = np.asarray(train_library[1])
-        # X = np.array(data)
-        Y = np.array([label])
+        n_step = 10
+        #data shape : (nx3x20x20)
+        #label shape: (n, )
+        Y = np.array(label)
         Y_c = np.zeros((len(Y), 3))
         for i, y in enumerate(Y):
-            Y_c[i][y-1] = 1
+            Y_c[i][y] = 1
+        
         
         # send the input to the device
         data = torch.FloatTensor(data)
+        #print("test lib shape: ", data.shape)
         Y_c = torch.FloatTensor(Y_c)
         X, Y_c = data.to(self.device), Y_c.to(self.device)
 
         meanTrainLoss = 0
         meanCorrect = 0
         for _ in range(n_step):
-
             pred = self.forward(X.float())
+            # print("pred: ", pred)
+            # print("Y_c: ", Y_c.argmax(1))
+            # print("Y_c: ", Y_c)
+            #Y_c = Y_c.reshape(3,1)
             loss = self.lossFn(pred, Y_c.argmax(1))
+
             # zero out the gradients, perform the backpropagation step,
             # and update the weights
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
             # add the loss to the total training loss so far and
             # calculate the number of correct predictions
             meanTrainLoss += loss.item()
             trainCorrect = (pred.cpu().argmax(1) == Y_c.cpu().argmax(1)).type(torch.float).mean().item()
             meanCorrect += trainCorrect
+
         # return  totalTrainLoss.item(), trainCorrect
         return meanTrainLoss/n_step, meanCorrect/n_step
 
@@ -99,6 +105,7 @@ class LeNet(Module):
             X = np.asarray(test_library[0])
             Y = np.asarray(test_library[1])
             Y_c = np.zeros((len(Y), 3))
+
             for i, y in enumerate(Y):
                 Y_c[i][y-1] = 1
 

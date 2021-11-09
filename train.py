@@ -41,10 +41,11 @@ class GAN:
         self.schedulerD = torch.optim.lr_scheduler.MultiStepLR(optimizer=self.optimizerD, milestones=[1500, 2500], gamma=opt.gamma)
         self.schedulerG = torch.optim.lr_scheduler.MultiStepLR(optimizer=self.optimizerG, milestones=[1500, 2500], gamma=opt.gamma)
 
-    def train(self, env, real, classifier, opt, writer):
+    def train(self, env, real, classifier, opt, writer,idx):
         """ Train one scale. D and G are the discriminator and generator, real is the original map and its label.
         opt is a namespace that holds all necessary parameters. """
-        real = torch.FloatTensor(real) # 1x3x20x20
+        real = torch.unsqueeze(torch.FloatTensor(real),0) # 1x3x20x20
+        #print("real shape: ", real.shape)
         nzx = real.shape[2]  # Noise size x
         nzy = real.shape[3]  # Noise size y
 
@@ -120,7 +121,7 @@ class GAN:
                 # rew = rewards[prediction]
                 # errDstar = torch.abs(torch.clamp(torch.tensor(rew, requires_grad=True),-1.,1.)).to(opt.device)
 
-                errDstar = torch.abs(torch.clamp(torch.tensor(prediction-actual, requires_grad=True),-2.,2.)).to(opt.device)
+                errDstar = torch.abs(torch.clamp(torch.tensor(prediction-actual),-2.,2.)).to(opt.device)
 
                 #Compute generator error
                 errG = -output.mean() + errDstar
@@ -128,12 +129,6 @@ class GAN:
 
                 #Call optimizer
                 self.optimizerG.step()
-            
-            #======== log stats =============
-            writer.add_scalar('errD_real', errD_fake, step)
-            writer.add_scalar('errD_real', errD_real, step)
-            writer.add_scalar('errG', errG, step)
-            #================================
 
             # Learning Rate scheduler step
             self.schedulerD.step()
@@ -142,6 +137,12 @@ class GAN:
         # self.G = reset_grads(self.G, True)
         # self.D = reset_grads(self.D, True)
         
+        #======== log stats =============
+        writer.add_scalar('errD_fake', errD_fake, idx)
+        writer.add_scalar('errD_real', errD_real, idx)
+        writer.add_scalar('errG', errG, idx)
+        #================================
+
         with torch.no_grad():
             self.G.eval()
             generated_map = self.G(noise.detach(), prev.detach(), temperature=1).to(opt.device)
