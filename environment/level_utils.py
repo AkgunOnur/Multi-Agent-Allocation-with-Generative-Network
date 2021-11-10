@@ -1,7 +1,7 @@
 import torch
 from loguru import logger
 
-from environment.tokens import TOKEN_GROUPS, REPLACE_TOKENS #environment.tokens
+from tokens import TOKEN_GROUPS, REPLACE_TOKENS #environment.tokens
 
 
 # Miscellaneous functions to deal with ascii-token-based levels.

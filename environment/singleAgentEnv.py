@@ -30,17 +30,18 @@ class QuadrotorFormation(gym.Env):
         
         self.action_space = spaces.Discrete(self.n_action)
         self.observation_space = spaces.Box(low=0, high=255,
-                                        shape=(20, 20, 4), dtype=np.uint8)
+                                        shape=(20, 20, 3), dtype=np.uint8)
 
         self.x_lim = 19
         self.y_lim = 19
         self.iteration = 0
+        self.map_index = 0
+        self.map_iter = 0
+        self.reward = 0
 
         self.wall_map = np.zeros((self.y_lim, self.x_lim))
         self.reward_map = np.zeros((self.y_lim, self.x_lim))
         self.path_map = np.zeros((self.y_lim, self.x_lim))
-
-        self.map_index = 0
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -48,14 +49,14 @@ class QuadrotorFormation(gym.Env):
 
     def step(self, action):
         done = False
-        reward = -0.01
+        self.reward = -0.1
         self.iteration += 1
 
         self.update_agent_pos(action)
 
         if int(self.reward_map[int(self.agent.y), int(self.agent.x)]) == 1:
             self.reward_map[int(self.agent.y),int( self.agent.x)] = 0
-            reward += 0.8
+            self.reward += 8
 
         self.reward_wall_num()
         state = self.get_observation()
@@ -65,18 +66,20 @@ class QuadrotorFormation(gym.Env):
 
         if np.all(self.reward_map == 0) or self.iteration >= 600:
             done = True
+            self.map_iter += 1
             self.close()
-        info = {"is_success": done}
-        return state, reward, done, info
+        info = {"map_index": self.map_index}
+        
+        return state, self.reward, done, info
 
     def get_observation(self):
 
-        state = np.zeros((20,20,4))
+        state = np.zeros((20,20,3))
 
-        state[:,:,0] = self.path_map*255.0
-        state[:,:,1] = self.wall_map*255.0
-        state[:,:,2] = self.reward_map*255.0
-        state[:,:,3] = self.agent.state*255.0
+        #state[:,:,0] = self.path_map*255.0
+        state[:,:,0] = self.wall_map*255.0
+        state[:,:,1] = self.reward_map*255.0
+        state[:,:,2] = self.agent.state*255.0
 
         return np.array(state, dtype=np.uint8)
 
@@ -119,7 +122,9 @@ class QuadrotorFormation(gym.Env):
     def reset(self):
 
         self.iteration = 0
+        self.reward = 0
         init_map = self.get_init_map(self.map_index)
+        #if self.map_iter % 300 == 0:
         self.map_index += 1
         self.map_index %= 600
 
@@ -194,12 +199,11 @@ class QuadrotorFormation(gym.Env):
             self.agent.y = prev_y
         else:
             self.agent.state[int(self.agent.y),int(self.agent.x)] = 1.0
-
         # time.sleep(1)
 
     def render(self, mode='human'):
         if self.viewer is None:
-            self.viewer = rendering.Viewer(500, 500)
+            self.viewer = rendering.Viewer(400, 400)
             self.viewer.set_bounds(0, self.x_lim, 0, self.y_lim)
             # fname = path.join(path.dirname(__file__), "sprites/drone.png")
             mapsheet = Image.open(os.path.join(path.dirname(__file__), 'sprites/mapsheet.png'))

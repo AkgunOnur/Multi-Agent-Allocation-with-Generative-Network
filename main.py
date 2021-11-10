@@ -139,7 +139,7 @@ def main():
                     continue
                 else:
                     # L.add(agent_map, prediction.cpu(), opt) #add it to training library
-                    gen_lib.add(agent_map, prediction.cpu(), opt) #add it to generator library
+                    gen_lib.add(agent_map, actual.cpu(), opt) #add it to generator library
 
                     classifier.train()
                     exp_agent_map = np.expand_dims(agent_map, axis=0)

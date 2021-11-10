@@ -162,6 +162,23 @@ class AgentFormation(gym.Env):
         self.observation[1,:,:] = np.copy(self.obstacle_map)
 
         return self.observation
+    
+    def check_map(self, ds_map, reward_location, obstacle_map):
+        dstar = Dstar(ds_map)
+        agent_loc = [2, 2]
+        for loc in reward_location:
+            #ds_map, reward_location = self.get_obstacle_locations()
+            start = ds_map.map[int(agent_loc[0])][int(agent_loc[1])]
+            end = ds_map.map[int(loc[0])][int(loc[1])]
+            feasible, pos_list, action_list = dstar.run(start, end)
+            if feasible == True:
+                feasible = self.feasibility(pos_list, obstacle_map)
+                if feasible == False:
+                    return 0
+            else:
+                return 0
+
+        return 1
 
     def reset(self, ds_map, obstacle_map, prize_map, agent_obs, map_lim, obs_y_list, obs_x_list):
         self.agents = []
@@ -249,6 +266,15 @@ class AgentFormation(gym.Env):
             self.infeasible_prizes[target_prize] = True # prize is not accessible
 
         return action_list, pos_list, feasible
+
+    def feasibility(self, pos_list, obs_locations):
+        # print("pos_list: ", pos_list)
+        # print("self.obstacle_locations: ", self.obstacle_locations)
+        for pos in pos_list:
+            if list(pos) in obs_locations:
+                return False
+        return True
+
 
     def check_feasibility(self, pos_list):
         # print("pos_list: ", pos_list)

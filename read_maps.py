@@ -33,64 +33,23 @@ def ff_regenate(file_name):
     #print("file_name: ", str(file_name), " prize_locations : ", prize_locations)
     return ds_map, obstacle_locations, prize_locations, matrix_map, map_lim
 
-#Construct map from text array
-def fa_regenate(array):
-    """
-    # RETURN: 
-    Matrix Map, Shape = 3,20,20: 
 
-    matrix_map[0] -> Path
-    matrix_map[1] -> Wall
-    matrix_map[2] -> Reward
-    """
-    array = [item.replace("\n", "") for item in array]
-    # print("array", array)
+def fa_regenate(matrix_map):
     prize_locations = []
     obstacle_locations = []
     obs_x_list = []
     obs_y_list = []
-    ds_map = Map(len(array), len(array[0]))
-    map_lim = len(array[0])
+    ds_map = Map(20, 20)
+    map_lim = 20
 
-    matrix_map = np.zeros((3,len(array), len(array[0])))
-    
-    for x in range(len(array[0])): #row
-        for y in range(len(array[1])): #column
-            if array[x][y] == 'W':
-                if(1<= x <=4 and 1<= y <=4):
-                    continue
-                obs_x_list.append(x)
-                obs_y_list.append(y)
-                obstacle_locations.append([x, y])
-                matrix_map[1,x,y] = 1
-            elif array[x][y] == 'X':
-                if(1<= x <=4 and 1<= y <=4):
-                    continue
-                prize_locations.append([x, y])
-                matrix_map[2,x,y] = 1
-            else: #if array[x][y] == '-':
-                matrix_map[0,x,y] = 1
-
-    # print("matrix map[2]", matrix_map[2])
-    ds_map.set_obstacle([(i, j) for i, j in zip(obs_y_list, obs_x_list)])
-    return ds_map, obstacle_locations, prize_locations, matrix_map, map_lim, obs_y_list, obs_x_list
-
-def fa_regenate2(matrix_map):
-    prize_locations = []
-    obstacle_locations = []
-    obs_x_list = []
-    obs_y_list = []
-    ds_map = Map(40, 40)
-    map_lim = 40
-
-    for x in range(40): #row
-        for y in range(40): #column
+    for x in range(20): #row
+        for y in range(20): #column
             if matrix_map[1,x,y] == 1:
                 obs_x_list.append(x)
                 obs_y_list.append(y)
-                obstacle_locations.append([x, y])
+                obstacle_locations.append([y, x])
             if matrix_map[2,x,y] == 1:
-                prize_locations.append([x, y])
+                prize_locations.append([y, x])
 
     ds_map.set_obstacle([(i, j) for i, j in zip(obs_y_list, obs_x_list)])
     return ds_map, obstacle_locations, prize_locations, matrix_map, map_lim, obs_y_list, obs_x_list
