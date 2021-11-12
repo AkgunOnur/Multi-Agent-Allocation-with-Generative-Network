@@ -12,7 +12,8 @@ class TXT_Library():
     #Initialize library
     def __init__(self):
 
-        target = f'/home/avsp/Masaüstü/ganner/training_libs/training_map_random.pickle'
+        #target = f'/home/avsp/Masaüstü/ganner/training_libs/training_map_random.pickle'
+        target = f'/home/avsp/Masaüstü/ganner/training_libs/random_map_library.pkl'
         
         if os.path.getsize(target) > 0:      
             with open(target, "rb") as f:
