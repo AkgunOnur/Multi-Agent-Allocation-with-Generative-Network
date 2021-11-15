@@ -23,7 +23,7 @@ from utils import *
 
 
 def generate_maps(seed = 7, N_SAMPLES=250):
-    np.random.seed(seed)
+    # np.random.seed(seed)
     N_SAMPLES = N_SAMPLES
     gen_map_list = []
     for i in range(N_SAMPLES):
@@ -51,8 +51,11 @@ def main():
     new_graph = {}
 
     gen_map_list = generate_maps(seed=args.seed, N_SAMPLES=args.n_samples)
+    with open('generated_maps.pickle', 'wb') as handle:
+        pickle.dump(gen_map_list, handle, protocol=pickle.HIGHEST_PROTOCOL) 
 
     for index1 in range(args.n_samples):
+        new_graph[index1] = {}
         gen_map = gen_map_list[index1]
         N_prize = np.sum(gen_map==2)
         total_procs += args.n_procs
@@ -71,33 +74,35 @@ def main():
 
         train_env.close()
         mean_reward1, _  = evaluate_policy(model, eval_env, n_eval_episodes=args.eval_episodes)
-        # mean_reward1 = 10.0
+        # mean_reward1 = np.random.uniform(-80, 20)
         elapsed_time = time.time() - start
         print ("\nT/Index: {0}, Mean Reward: {1:.4}, N.Prize: {2} Elapsed time: {3:.5}" \
             .format(index1, mean_reward1, N_prize, elapsed_time))
-        
-        if mean_reward1 < -40.0:
-            continue
-        else:
-            new_graph[index1] = {}
-            with open('nodes_to_train.pickle', 'wb') as handle:
-                pickle.dump(new_graph, handle, protocol=pickle.HIGHEST_PROTOCOL) 
+            
         
     #     for j, index2 in enumerate(sorted_indices[::-1]):
         for index2 in range(args.n_samples):
             if index1 != index2:
-                gen_map2 = gen_map_list[index2]
-                N_prize2 = np.sum(gen_map2==2)
-                start = time.time()
-                # eval_env = SubprocVecEnv([make_env(total_procs, gen_map2, max_steps=1000) for j in range(args.n_procs)])
-                # eval_env = VecMonitor(eval_env, filename = model_dir)
-                eval_env = AgentFormation(generated_map=gen_map2, max_steps=1000)
-                mean_reward2, _  = evaluate_policy(model, eval_env, n_eval_episodes=args.eval_episodes)
-                elapsed_time = time.time() - start
-                print ("E/Index: {0}, Mean Reward: {1:.4}, N.Prize: {2} Elapsed time: {3:.5}" \
-                .format(index2, mean_reward2, N_prize2, elapsed_time))
-                if mean_reward1 > mean_reward2:
-                    new_graph[index1][index2] = mean_reward1 - mean_reward2
+                if mean_reward1 < -40.0:
+                    cost = 1e6
+                    new_graph[index1][index2] = cost
+                    print ("Cost of the edge from {0} to {1} is {2:.3}".format(index1, index2, cost))
+                else:
+                    gen_map2 = gen_map_list[index2]
+                    N_prize2 = np.sum(gen_map2==2)
+                    start = time.time()
+                    # eval_env = SubprocVecEnv([make_env(total_procs, gen_map2, max_steps=1000) for j in range(args.n_procs)])
+                    # eval_env = VecMonitor(eval_env, filename = model_dir)
+                    eval_env = AgentFormation(generated_map=gen_map2, max_steps=1000)
+                    mean_reward2, _  = evaluate_policy(model, eval_env, n_eval_episodes=args.eval_episodes)
+                    elapsed_time = time.time() - start
+                    print ("E/Index: {0}, Mean Reward: {1:.4}, N.Prize: {2} Elapsed time: {3:.5}" \
+                    .format(index2, mean_reward2, N_prize2, elapsed_time))
+                    if mean_reward1 > mean_reward2:
+                        new_graph[index1][index2] = mean_reward1 - mean_reward2
+
+        with open('nodes_to_train.pickle', 'wb') as handle:
+            pickle.dump(new_graph, handle, protocol=pickle.HIGHEST_PROTOCOL) 
 
 
 if __name__ == "__main__":
