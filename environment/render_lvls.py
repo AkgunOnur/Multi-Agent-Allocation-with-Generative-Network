@@ -11,8 +11,8 @@ if __name__ == '__main__':
     ImgGen = LevelImageGen(SPRITE_PATH)
 
     #directory = "../output/generated_maps/"
-    #directory = "../test_bench/"
-    directory = "../output/random_maps/"
+    directory = "../test_bench/"
+    #directory = "../output/random_maps/"
     dir_names = os.listdir(directory)
     dir_names.sort()
     if 'README.md' in dir_names:  # Ignore readme for default input folder
@@ -24,8 +24,8 @@ if __name__ == '__main__':
         names.sort()
         
         #target_dir = '/home/avsp/Masaüstü/ganner/output/level_images/' + curr_gen 
-        #target_dir = '/home/avsp/Masaüstü/ganner/test_bench/' + curr_gen 
-        target_dir = '/home/avsp/Masaüstü/ganner/output/random_images/' + curr_gen 
+        target_dir = '/home/avsp/Masaüstü/ganner/test_bench/' + curr_gen 
+        #target_dir = '/home/avsp/Masaüstü/ganner/output/random_images/' + curr_gen 
         os.makedirs(target_dir, exist_ok=True)
 
         for i in range(min(10000, len(names))):

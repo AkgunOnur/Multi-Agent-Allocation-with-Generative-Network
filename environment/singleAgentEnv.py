@@ -96,15 +96,17 @@ class QuadrotorFormation(gym.Env):
     def get_init_map(self, index):
 
         if self.map_type == "gan":
-            with open('training_map_library.pkl', 'rb') as f:
+            with open('./train_lib/training_map_library.pkl', 'rb') as f:
                 map_dataset = pickle.load(f)
+                map_dataset = np.array(map_dataset[0]).squeeze(1) 
 
         elif self.map_type == "random":
-            with open('training_maps_random_without_gan.pkl', 'rb') as f:
+            with open('./train_lib/random_map_library.pkl', 'rb') as f:
                 map_dataset = pickle.load(f)
+                # print(np.array(map_dataset).shape)
+                # print(np.array(map_dataset[0]).squeeze(1).shape
 
-        map_dataset = np.array(map_dataset[0]).squeeze(1)   
-
+        #map_dataset = np.array(map_dataset[0]).squeeze(1)   
         return map_dataset[index]
 
     def reward_wall_num(self):

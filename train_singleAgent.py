@@ -55,21 +55,20 @@ policy_kwargs = dict(
 
 # Train with GAN Generated Maps
 def main():
-    vecenv = make_vec_env(lambda: QuadrotorFormation(map_type="gan"), n_envs=1, vec_env_cls=SubprocVecEnv)
-    model = DQN('CnnPolicy', vecenv, policy_kwargs=policy_kwargs, exploration_fraction = 0.8, verbose=1, tensorboard_log="./dqn_tensorboard/")
+    #vecenv = make_vec_env(lambda: QuadrotorFormation(map_type="gan"), n_envs=1, vec_env_cls=SubprocVecEnv)
+    #model = DQN('CnnPolicy', vecenv, policy_kwargs=policy_kwargs, exploration_fraction = 0.8, verbose=1, tensorboard_log="./dqn_tensorboard/")
     #model = A2C('CnnPolicy', vecenv, policy_kwargs=policy_kwargs, verbose=1, tensorboard_log="./dqn_tensorboard/")
 
-    model.learn(total_timesteps=max_steps)
-    model.save("./weights/dqn_gan")
+    #model.learn(total_timesteps=max_steps)
+    #model.save("./weights/dqn_gan")
 
     # Train with GAN Random Maps
-    vecenv = make_vec_env(lambda: QuadrotorFormation("random"), n_envs=1, vec_env_cls=SubprocVecEnv)
-    model = DQN('CnnPolicy', vecenv, policy_kwargs=policy_kwargs, verbose=1, tensorboard_log="./dqn_tensorboard/")
-    
+    vecenv = make_vec_env(lambda: QuadrotorFormation(map_type="random"), n_envs=1, vec_env_cls=SubprocVecEnv)
+    model = DQN('CnnPolicy', vecenv, policy_kwargs=policy_kwargs, exploration_fraction = 0.8, verbose=1, tensorboard_log="./dqn_tensorboard/")
 
     model.learn(total_timesteps=max_steps)
-    model.save("./weights/a2c_random")
-
+    model.save("./weights/dqn_random")
+    
 if __name__ == '__main__':
     main()
 

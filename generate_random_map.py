@@ -101,24 +101,24 @@ def construct_test_maps(N_maps, map_dir='./test_maps', map_size = 20):
 # This function creates test maps in matrix form and saves to folder in txt format
 def construct_test_maps_fromtxt(mapx):
     env = AgentFormation()
-    random_library = []
-    ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(mapx)
-    validation = env.check_map(ds_map, prize_map, obstacle_map)
     
-    if validation == True:
-        random_library.append(np.array(agent_map).reshape((3,20,20)))
-        print(len(random_library))
-        
+    ds_map, obstacle_map, prize_map, agent_map, map_lim, obs_y_list, obs_x_list = fa_regenate(mapx)
+    #validation = env.check_map(prize_map, mapx)
+
+    #if validation == True:
+    random_library.append(np.array(agent_map).reshape((3,20,20)))
+    
     return len(random_library), random_library
 
 
 if __name__ == "__main__":
     total_maps = 0
     n_maps = 0
+    random_library = []
 
-    while total_maps <= 600:
+    while total_maps <= 599:
         mapx = generate_random_map(map_size=20)
         total_maps, random_library = construct_test_maps_fromtxt(mapx)
 
-    with open(f'./train_libs/random_map_library.pkl', 'wb') as f:
+    with open(f'./train_lib/random_map_library.pkl', 'wb') as f:
             pickle.dump(random_library, f)

@@ -575,7 +575,6 @@ class BaseAlgorithm(ABC):
         :param kwargs: extra arguments to change the model when loading
         """
         data, params, pytorch_variables = load_from_zip_file(path, device=device)
-
         # Remove stored device information and replace with ours
         if "policy_kwargs" in data:
             if "device" in data["policy_kwargs"]:

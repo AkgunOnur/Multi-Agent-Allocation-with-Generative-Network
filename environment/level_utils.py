@@ -1,7 +1,7 @@
 import torch
 from loguru import logger
 
-from tokens import TOKEN_GROUPS, REPLACE_TOKENS #environment.tokens
+from environment.tokens import TOKEN_GROUPS, REPLACE_TOKENS #environment.tokens
 
 
 # Miscellaneous functions to deal with ascii-token-based levels.
@@ -81,7 +81,6 @@ def read_level(opt, tokens=None, replace_tokens=REPLACE_TOKENS):
 def read_level_from_file(input_dir, input_name, tokens=None, replace_tokens=REPLACE_TOKENS):
     """ Returns a full token level tensor from a .txt file. Also returns the unique tokens found in this level.
     Token. """
-    print("input-dir", input_dir, input_name)
     txt_level = load_level_from_text("%s/%s" % (input_dir, input_name), replace_tokens)
     uniques = set()
     for line in txt_level:

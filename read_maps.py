@@ -20,10 +20,10 @@ def ff_regenate(file_name):
             if txt_data[x][y] == 'W':
                 obs_x_list.append(x)
                 obs_y_list.append(y)
-                obstacle_locations.append([y, x])
+                obstacle_locations.append([x, y])
                 matrix_map[1,x,y] = 1
             elif txt_data[x][y] == 'X':
-                prize_locations.append([y, x])
+                prize_locations.append([x, y])
                 matrix_map[2,x,y] = 1
             else: #if txt_data[x][y] == '-':
                 matrix_map[0,x,y] = 1
@@ -47,11 +47,11 @@ def fa_regenate(matrix_map):
             if matrix_map[1,x,y] == 1:
                 obs_x_list.append(x)
                 obs_y_list.append(y)
-                obstacle_locations.append([y, x])
+                obstacle_locations.append([x, y])
             if matrix_map[2,x,y] == 1:
-                prize_locations.append([y, x])
+                prize_locations.append([x, y])
 
-    ds_map.set_obstacle([(i, j) for i, j in zip(obs_y_list, obs_x_list)])
+    ds_map.set_obstacle([(i, j) for i, j in zip(obs_x_list, obs_y_list)])
     return ds_map, obstacle_locations, prize_locations, matrix_map, map_lim, obs_y_list, obs_x_list
 
 #Construct map from numpy array

@@ -296,7 +296,6 @@ class BasePolicy(BaseModel):
                 # Actions could be on arbitrary scale, so clip the actions to avoid
                 # out of bound error (e.g. if sampling from a Gaussian distribution)
                 actions = np.clip(actions, self.action_space.low, self.action_space.high)
-
         if not vectorized_env:
             if state is not None:
                 raise ValueError("Error: The environment must be vectorized when using recurrent policies.")
