@@ -94,9 +94,13 @@ class TestQuadrotorFormation(gym.Env):
 
     def get_init_map(self, index):
 
-        with open('./test_map_library.pkl', 'rb') as f:
+        # with open('./test_map_library.pkl', 'rb') as f:
+        #     map_dataset = pickle.load(f)
+        #     map_dataset = np.array(map_dataset)
+
+        with open('./train_lib/training_map_library.pkl', 'rb') as f:
             map_dataset = pickle.load(f)
-            map_dataset = np.array(map_dataset)
+            map_dataset = np.array(map_dataset[0]).squeeze(1) 
             
         print(map_dataset.shape)
             

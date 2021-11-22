@@ -27,36 +27,42 @@ test_lib = Test_Library()
 
 def main(opt):
 
-    #vecenv = make_vec_env(lambda: TestQuadrotorFormation(), n_envs=1, vec_env_cls=SubprocVecEnv)
-    env = TestQuadrotorFormation()
-    model = DQN.load("./weights/dqn_gan", env = env)
+    vecenv = make_vec_env(lambda: TestQuadrotorFormation(), n_envs=1, vec_env_cls=SubprocVecEnv)
+    #env = TestQuadrotorFormation()
+    model = A2C.load("./weights/a2c_gan", env = vecenv)
 
-    for i in range(15):
-        opt.input_dir = "test_bench"
-        opt.input_name = f"test{i+1}.txt"
-        #opt.input_dir = "./test_bench"
-        #opt.input_name = "test4.txt"
-        #opt.input_dir = "./input/"
-        #opt.input_name = "easy_map.txt"
-        #opt.input_dir = "./output/generated_maps/hard"
-        #opt.input_name = "hard-400.txt"
+    # with open('./train_lib/training_map_library.pkl', 'rb') as f:
+    #     map_dataset = pickle.load(f)
+    #     map_dataset = np.array(map_dataset[0]).squeeze(1) 
+
+    # for i in range(15):
+    #     opt.input_dir = "test_bench"
+    #     opt.input_name = f"test{i+1}.txt"
+    #     #opt.input_dir = "./test_bench"
+    #     #opt.input_name = "test4.txt"
+    #     #opt.input_dir = "./input/"
+    #     #opt.input_name = "medium_map.txt"
+    #     #opt.input_dir = "./output/generated_maps/hard"
+    #     #opt.input_name = "hard-400.txt"
         
 
-        test_map = read_level(opt, None, replace_tokens)
-        test_lib.add(test_map)
+    #     test_map = read_level(opt, None, replace_tokens)
+    #     test_lib.add(test_map)
         
-    test_lib.save_maps()
+    # test_lib.save_maps()
 
     total_rew = 0
     
     for i in range(15):
 
         done = False
-        obs = env.reset()
+        obs = vecenv.reset()
+        print(obs.shape)
 
         while not done:
             action, _states = model.predict(obs, deterministic=True)
-            obs, rewards, done, info = env.step(action)
+            print(action)
+            obs, rewards, done, info = vecenv.step(action)
             total_rew += rewards
             time.sleep(0.05)
     print(total_rew)
