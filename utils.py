@@ -7,7 +7,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.utils import set_random_seed
 from point_mass_env import AgentFormation
 
-def make_env(rank: int, gen_map: np.array,  seed: int = 0, max_steps = 5000):
+def make_env(gen_map: np.array, max_steps = 5000):
     """
     Utility function for multiprocessed env.
     
@@ -19,9 +19,8 @@ def make_env(rank: int, gen_map: np.array,  seed: int = 0, max_steps = 5000):
     """
     def _init():
         env = AgentFormation(generated_map=gen_map, max_steps = max_steps)
-        env.seed(seed + rank)
         return env
-    set_random_seed(seed)
+    # set_random_seed(seed)
     return _init
 
 class SaveOnBestTrainingRewardCallback(BaseCallback):
@@ -53,9 +52,10 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
           x, y = ts2xy(load_results(self.log_dir), 'timesteps')
           if len(x) > 0:
               # Mean training reward over the last 100 episodes
-              mean_reward = np.mean(y[-100:])
+              mean_reward = np.mean(y[-1000:])
+              self.logger.record('mean_reward', mean_reward)
               if self.verbose > 0:
-                print(f"Num timesteps: {self.num_timesteps}")
+                print(f"Num timesteps: {self.num_timesteps}, Length of y: {len(y)}")
                 print(f"Best mean reward: {self.best_mean_reward:.2f} - Last mean reward per episode: {mean_reward:.2f}")
 
               # New best model, you could save the agent here

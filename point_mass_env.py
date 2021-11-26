@@ -1,4 +1,5 @@
 import gym
+import pickle
 from gym import spaces, error, utils
 from gym.utils import seeding
 from gym.envs.classic_control import rendering
@@ -49,7 +50,9 @@ class AgentFormation(gym.Env):
         
         self.action_space = spaces.Discrete(self.n_action)
         self.observation_space = spaces.Box(low=0, high=1,
-                                        shape=(3, self.out_shape, self.out_shape), dtype=np.uint8)
+                                            shape=(3, self.out_shape, self.out_shape), dtype=np.uint8)
+        # self.observation_space = spaces.Box(low=0, high=1,
+        #                                 shape=(3, self.out_shape, self.out_shape), dtype=np.uint8)
         self.current_steps = 0
         self.max_steps = max_steps
 
@@ -100,21 +103,25 @@ class AgentFormation(gym.Env):
     def get_observation(self):
         self.observation_map = np.zeros((3,self.out_shape, self.out_shape))
         self.neighbor_grids = np.array([[0,0],[-1,0],[1,0],[0,1],[0,-1]])
+        image_const = 1.0
 
         for i in range(self.n_agents):
             for neighbor_grid in self.neighbor_grids:
                 current_grid = np.clip(self.agents[i].state + neighbor_grid, 0, self.map_lim)
-                self.observation_map[0, current_grid[0], current_grid[1]] = 1
+                self.observation_map[0, current_grid[0], current_grid[1]] = 1 * image_const
 
         
         for obs_point in self.obstacle_locations:
             x,y = obs_point[0], obs_point[1]
-            self.observation_map[1,x,y] = 1
+            self.observation_map[1,x,y] = 1 * image_const
 
         for i, prize_loc in enumerate(self.prize_locations):
             if self.prize_exists[i] == True:
                 x,y = prize_loc[0], prize_loc[1]
-                self.observation_map[2,x,y] = 1
+                self.observation_map[2,x,y] = 1 * image_const
+
+
+        
 
 
         # print ("agent_loc: ", self.agents[0].state)
@@ -172,14 +179,14 @@ class AgentFormation(gym.Env):
             self.grid_points.append(grid)
         
         # Initialization points of agents
-        x_list = np.arange(1, 3, self.grid_res)
-        y_list = np.arange(1, 3, self.grid_res)
-        self.init_list = []
+        # x_list = np.arange(1, 3, self.grid_res)
+        # y_list = np.arange(1, 3, self.grid_res)
+        # self.init_list = []
 
-        for x in x_list:
-            for y in y_list:
-                grid0 = [x, y]
-                self.init_list.append(grid0)     
+        # for x in x_list:
+        #     for y in y_list:
+        #         grid0 = [x, y]
+        #         self.init_list.append(grid0)     
 
         # agent_ind = 0
         # while (agent_ind != self.n_agents):
@@ -199,7 +206,7 @@ class AgentFormation(gym.Env):
 
         self.obstacle_locations, self.prize_locations = self.get_obstacle_locations()
         self.N_prize = len(self.prize_locations)
-        self.prize_exists = np.ones(self.N_prize, dtype=bool) 
+        self.prize_exists = np.ones(self.N_prize, dtype=bool)
 
         return self.get_observation()
 
