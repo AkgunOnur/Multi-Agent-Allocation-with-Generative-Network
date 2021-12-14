@@ -2,7 +2,7 @@ import gym
 import pickle
 from gym import spaces, error, utils
 from gym.utils import seeding
-from gym.envs.classic_control import rendering
+# from gym.envs.classic_control import rendering
 # import rendering
 import numpy as np
 import configparser
@@ -26,7 +26,7 @@ class Agent:
         self.state = np.array(state0)
 
 class AgentFormation(gym.Env):
-    def __init__(self, generated_map, max_steps=5000, visualization=False):
+    def __init__(self, generated_map, map_lim, max_steps=1000, visualization=False):
         super().__init__()
         np.set_printoptions(precision=4)
         warnings.filterwarnings('ignore')
@@ -41,7 +41,7 @@ class AgentFormation(gym.Env):
         self.viewer = None
 
         # intitialize grid information
-        self.map_lim = 10
+        self.map_lim = map_lim
         self.grid_res = 1.0  # resolution for grids
         self.out_shape = self.map_lim  # width and height for uncertainty matrix
         self.N_prize = None
@@ -50,10 +50,10 @@ class AgentFormation(gym.Env):
         
         
         self.action_space = spaces.Discrete(self.n_action)
-        self.observation_space = spaces.Box(low=0, high=255,
-                                            shape=(3, self.out_shape, self.out_shape), dtype=np.uint8)
+        self.observation_space = spaces.Box(low=0, high=1,
+                                            shape=(self.out_shape, self.out_shape), dtype=np.uint8)
         # self.observation_space = spaces.Box(low=0, high=1,
-        #                                 shape=(3, self.out_shape, self.out_shape), dtype=np.uint8)
+        #                                     shape=(3, self.out_shape, self.out_shape), dtype=np.uint8)
         self.current_step = 0
         self.map_index = 0 # in case, we have more maps to train
         self.max_steps = max_steps
@@ -68,8 +68,8 @@ class AgentFormation(gym.Env):
     def get_indices(self, numbers):
         index = []
         for number in numbers:
-            x = number // 10
-            y = number % 10
+            x = number // self.map_lim
+            y = number % self.map_lim
             index.append([x,y])
         return np.array(index)
 
@@ -86,6 +86,7 @@ class AgentFormation(gym.Env):
         if self.current_step >= self.max_steps:
             # print ("Time's up!")
             done = True
+            self.current_step = 0
             info['time_limit_reached'] = True
 
         self.get_agent_desired_loc(action)
@@ -96,13 +97,14 @@ class AgentFormation(gym.Env):
                 # print ("Reward!, ", self.agents[self.map_index][0].state, "--", prize_loc)
                 if np.sum(self.prize_exists[self.map_index]) == 0:
                     done = True
+                    self.current_step = 0
         
 
-        if done:
+        # if done:
             # print (self.prize_exists[self.map_index])
             # print ("Change the map!")
-            self.current_step = 0
-            self.map_index = (self.map_index + 1) % self.N_maps 
+            # self.current_step = 0
+            # self.map_index = (self.map_index + 1) % self.N_maps 
             # print (self.map_index)
             # print (self.gen_map[self.map_index])
             # print (self.prize_exists[self.map_index])
@@ -115,24 +117,28 @@ class AgentFormation(gym.Env):
         return self.get_observation(), reward, done, info
 
     def get_observation(self):
-        self.observation_map = np.zeros((3,self.out_shape, self.out_shape))
+        # self.observation_map = np.zeros((3,self.out_shape, self.out_shape))
+        self.observation_map = np.zeros((self.out_shape, self.out_shape))
         self.neighbor_grids = np.array([[0,0],[-1,0],[1,0],[0,1],[0,-1]])
-        image_const = 255
 
         for i in range(self.n_agents):
-            for neighbor_grid in self.neighbor_grids:
-                current_grid = np.clip(self.agents[self.map_index][i].state + neighbor_grid, 0, self.map_lim)
-                self.observation_map[0, current_grid[0], current_grid[1]] = 1 * image_const
-
-        
-        for obs_point in self.obstacle_locations[self.map_index]:
-            x,y = obs_point[0], obs_point[1]
-            self.observation_map[1,x,y] = 1 * image_const
+            self.observation_map[self.agents[self.map_index][i].state[0], self.agents[self.map_index][i].state[1]] = 1
 
         for i, prize_loc in enumerate(self.prize_locations[self.map_index]):
             if self.prize_exists[self.map_index][i] == True:
                 x,y = prize_loc[0], prize_loc[1]
-                self.observation_map[2,x,y] = 1 * image_const
+                self.observation_map[x,y] = 1
+
+        # for i in range(self.n_agents):
+        #     for neighbor_grid in self.neighbor_grids:
+        #         current_grid = np.clip(self.agents[self.map_index][i].state + neighbor_grid, 0, self.map_lim)
+        #         self.observation_map[0, current_grid[0], current_grid[1]] = 1
+
+        
+        # for obs_point in self.obstacle_locations[self.map_index]:
+        #     x,y = obs_point[0], obs_point[1]
+        #     self.observation_map[1,x,y] = 1
+
         
         return self.observation_map
 

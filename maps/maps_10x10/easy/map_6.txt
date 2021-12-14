@@ -1,0 +1,10 @@
+WWWWWWWWWW
+W--------W
+W---X----W
+W---XX---W
+W-------WW
+W--------W
+W----X---W
+W--------W
+WW---XX--W
+WWWWWWWWWW
