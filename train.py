@@ -26,6 +26,20 @@ from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 from utils import *
 
 
+# terminal colors #
+class terminal_colors:
+    FAIL      = '\033[91m'  # Red
+    ENDC      = '\033[0m'   # White
+    BOLD      = '\033[1m'   # Bold White
+    HEADER    = '\033[95m'  # Purple
+    OKBLUE    = '\033[94m'  # Blue
+    OKCYAN    = '\033[96m'  # Cyan
+    OKGREEN   = '\033[92m'  # Green
+    WARNING   = '\033[93m'  # Yellow
+    UNDERLINE = '\033[4m'   # Underlined White
+#*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*#
+
+
 def generate_maps(N_maps=1, map_lim=10):
     gen_map_list = []
     
@@ -100,6 +114,8 @@ def curriculum_design(gen_map_list, rng, level = "easy"):
         
 
 def main(args):
+    print(f"\n{terminal_colors.FAIL}[ARGS]{terminal_colors.ENDC}", *args.__dict__.items(), sep='\n')
+
     np.random.seed(args.seed)
     rng = default_rng(args.seed)
 
@@ -118,39 +134,56 @@ def main(args):
     
 
     for map_ind in range(args.n_maps):
-        print ("\nCurrent map index: ", map_ind)
+        print (f"{terminal_colors.OKBLUE} \nCurrent map index: {map_ind} {terminal_colors.ENDC}")
 
         gen_map = gen_list[map_ind]
         easy_map = easy_list[map_ind]
         medium_map = medium_list[map_ind]
 
         if args.nocurriculum:
-            print ("No Curriculum")
+            print (f"{terminal_colors.HEADER}/!\ No Curriculum {terminal_colors.ENDC}\n")
             level = "target"
 
             current_folder = args.out + "/model_outputs_" + level + str(map_ind)
             if not os.path.exists(current_folder):
                 os.makedirs(current_folder)
 
-            train_env = make_vec_env(lambda: AgentFormation(generated_map=gen_map, map_lim=args.map_lim), n_envs=args.n_procs, monitor_dir=current_folder, vec_env_cls=SubprocVecEnv)
+            train_env = make_vec_env(lambda: AgentFormation(generated_map=gen_map, 
+                                                            map_lim=args.map_lim), 
+                                                            n_envs=args.n_procs, 
+                                                            monitor_dir=current_folder, 
+                                                            vec_env_cls=SubprocVecEnv)
+            
             # train_env = AgentFormation(generated_map=gen_map, map_lim=args.map_lim, max_steps=1000)
             # train_env = Monitor(train_env, current_folder + "/monitor.csv")
             train_env.reset()
-            model = model_def('MlpPolicy', train_env, verbose=0, policy_kwargs=dict(net_arch=[256, 256]), tensorboard_log="./" + args.out + "/" + model_name + "_tensorboard/")
+            model = model_def('MlpPolicy', 
+                              train_env, 
+                              verbose=0, 
+                              policy_kwargs=dict(net_arch=[256, 256]), 
+                              tensorboard_log=f"./{args.out}/{model_name}_tensorboard/")
+
             eval_env = AgentFormation(generated_map=gen_map, map_lim=args.map_lim,  max_steps=1000)
-            callback = EvalCallback(eval_env=eval_env, eval_freq = N_eval // args.n_procs, log_path  = args.out + "/" + model_name + "_" + level + str(map_ind) +"_log",
-                                    best_model_save_path = model_dir + "/best_model_" + level + str(map_ind), deterministic=False, verbose=1)
+
+            callback = EvalCallback(eval_env=eval_env, eval_freq = (N_eval//args.n_procs), 
+                                    log_path=f"{args.out}/{model_name}_{level}{map_ind}_log",
+                                    best_model_save_path=f"{model_dir}/best_model_{level}{map_ind}", 
+                                    deterministic=False, verbose=1)
 
             start = time.time()
             nocurriculum_train_steps = int(3*args.train_steps)
             model.learn(total_timesteps=nocurriculum_train_steps, tb_log_name=model_name + "_run_" + level, callback=callback)
-            model.save(model_dir + "/last_model_" + level + str(map_ind))
+            
+            save_file = f"{model_dir}/last_model_{level}{map_ind}"
+            model.save(save_file)
+            print(f"{terminal_colors.OKCYAN} \n[SAVED --nocurriculum] {terminal_colors.ENDC} <{save_file}>")
+            
             elapsed_time = time.time() - start
             print (f"Elapsed time: {elapsed_time:.5}")
 
         else:
             for level in curriculum_list:
-                print (f"\nCurriculum Level: {level}")
+                print(f"{terminal_colors.HEADER} \nCurriculum Level: {level} {terminal_colors.ENDC} \n")
                 if level == "easy":
                     current_map = np.copy(easy_map)
                 elif level == "medium":
@@ -163,36 +196,56 @@ def main(args):
                     os.makedirs(current_folder)
 
                 
-                train_env = make_vec_env(lambda: AgentFormation(generated_map=current_map, map_lim=args.map_lim), n_envs=args.n_procs, monitor_dir=current_folder, vec_env_cls=SubprocVecEnv)
+                train_env = make_vec_env(lambda: AgentFormation(generated_map=current_map, map_lim=args.map_lim), 
+                                            n_envs=args.n_procs, monitor_dir=current_folder, vec_env_cls=SubprocVecEnv)
                 # train_env = AgentFormation(generated_map=current_map, map_lim=args.map_lim, max_steps=1000)
                 # train_env = Monitor(train_env, current_folder + "/monitor.csv")
                 # train_env = SubprocVecEnv([make_env(current_map) for i in range(args.n_procs)])
+                
                 train_env.reset()
-                model = model_def('MlpPolicy', train_env, verbose=0, policy_kwargs=dict(net_arch=[256, 256]), tensorboard_log="./" + args.out + "/" + model_name + "_tensorboard/")
+
+
+                model = model_def('MlpPolicy', 
+                              train_env, 
+                              verbose=0, 
+                              policy_kwargs=dict(net_arch=[256, 256]), 
+                              tensorboard_log=f"./{args.out}/{model_name}_tensorboard/")
                 # model = model_def('CnnPolicy', train_env, policy_kwargs=policy_kwargs, verbose=0, tensorboard_log="./" + model_name + "_tensorboard/")
-                eval_env = AgentFormation(generated_map=current_map, map_lim=args.map_lim, max_steps=1000)
-                callback = EvalCallback(eval_env=eval_env, eval_freq = N_eval // args.n_procs, log_path  = args.out + "/" + model_name + "_" + level + str(map_ind) +"_log",
-                                        best_model_save_path = model_dir + "/best_model_" + level + str(map_ind), deterministic=False, verbose=1)
+                
+                eval_env = AgentFormation(generated_map=current_map, 
+                                          map_lim=args.map_lim, 
+                                          max_steps=1000)
+
+                callback = EvalCallback(eval_env=eval_env, eval_freq=(N_eval // args.n_procs),
+                                        log_path = f"{args.out}/{model_name}_{level}{map_ind}_log",
+                                        best_model_save_path = f"{model_dir}/best_model_{level}{map_ind}", 
+                                        deterministic=False, verbose=1)
 
                 if level == "medium":
+                    print(terminal_colors.WARNING + "Loading Easy Model..." + terminal_colors.ENDC, end=2*'\n')
                     # model.load(model_dir + "/last_model_easy" + str(map_ind) +".zip", verbose=1)
                     model.load(model_dir + "/best_model_easy" + str(map_ind) + "/best_model.zip", verbose=1)
                     model.set_env(train_env)
                 elif level == "target":
+                    print(terminal_colors.WARNING + "Loading Medium Model..." + terminal_colors.ENDC, end=2*'\n')
                     # model.load(model_dir + "/last_model_medium" + str(map_ind) +".zip", verbose=1)
                     model.load(model_dir + "/best_model_medium" + str(map_ind) + "/best_model.zip", verbose=1)
                     model.set_env(train_env)
                 
                 start = time.time()
                 model.learn(total_timesteps=args.train_steps, tb_log_name=model_name + "_run_" + level, callback=callback)
-                model.save(model_dir + "/last_model_" + level + str(map_ind))
+                
+                save_file = f"{model_dir}/last_model_{level}{map_ind}"
+                model.save(save_file)
+                print(f"{terminal_colors.WARNING} \n[SAVED] {terminal_colors.ENDC} <{save_file}>")
+
                 # train_reward = np.mean(y)
                 # eval_reward, _  = evaluate_policy(model, eval_env, n_eval_episodes=args.eval_episodes)
                 elapsed_time = time.time() - start
                 print (f"Elapsed time: {elapsed_time:.5}")
             
-
         train_env.close()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='RL trainer')
