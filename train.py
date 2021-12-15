@@ -55,6 +55,7 @@ def generate_maps(N_maps=1, map_lim=10):
 def curriculum_design(gen_map_list, rng, level = "easy"):
     modified_map_list = []
     coeff = 1.0
+
     if level == "easy":
         coeff = 0.1
     elif level == "medium":
@@ -65,8 +66,10 @@ def curriculum_design(gen_map_list, rng, level = "easy"):
         rewards = np.argwhere(gen_map == 2)
         modified_map = np.copy(gen_map)
 
-        n_samples = len(obstacles) - int(len(obstacles) * coeff)
+        # if coeff is big, less obstacles removed
+        n_samples = int(len(obstacles) * (1 - coeff))
         obstacle_to_remove = rng.choice(obstacles, size=(n_samples,), replace=False)
+
         for obs_loc in obstacle_to_remove:
             modified_map[obs_loc[0], obs_loc[1]] = 0
         modified_map_list.append(modified_map)
@@ -206,19 +209,20 @@ def main(args):
 
 
                 model = model_def('MlpPolicy', 
-                              train_env, 
-                              verbose=0, 
-                              policy_kwargs=dict(net_arch=[256, 256]), 
-                              tensorboard_log=f"./{args.out}/{model_name}_tensorboard/")
+                                   train_env, 
+                                   verbose=0, 
+                                   policy_kwargs=dict(net_arch=[256, 256]), 
+                                   tensorboard_log=f"./{args.out}/{model_name}_tensorboard/")
                 # model = model_def('CnnPolicy', train_env, policy_kwargs=policy_kwargs, verbose=0, tensorboard_log="./" + model_name + "_tensorboard/")
                 
-                eval_env = AgentFormation(generated_map=current_map, 
-                                          map_lim=args.map_lim, 
+                eval_env = AgentFormation(generated_map=current_map,
+                                          map_lim=args.map_lim,
                                           max_steps=1000)
 
-                callback = EvalCallback(eval_env=eval_env, eval_freq=(N_eval // args.n_procs),
+                callback = EvalCallback(eval_env = eval_env,
+                                        eval_freq = (N_eval // args.n_procs),
                                         log_path = f"{args.out}/{model_name}_{level}{map_ind}_log",
-                                        best_model_save_path = f"{model_dir}/best_model_{level}{map_ind}", 
+                                        best_model_save_path = f"{model_dir}/best_model_{level}{map_ind}",
                                         deterministic=False, verbose=1)
 
                 if level == "medium":
@@ -233,7 +237,7 @@ def main(args):
                     model.set_env(train_env)
                 
                 start = time.time()
-                model.learn(total_timesteps=args.train_steps, tb_log_name=model_name + "_run_" + level, callback=callback)
+                model.learn(total_timesteps=args.train_steps, tb_log_name=(model_name + "_run_" + level), callback=callback)
                 
                 save_file = f"{model_dir}/last_model_{level}{map_ind}"
                 model.save(save_file)
@@ -259,8 +263,14 @@ if __name__ == "__main__":
     parser.add_argument('--seed', default=7, type=int, help='seed number for test')
     parser.add_argument('--out', default="output", type=str, help='the output folder')
     parser.add_argument('--nocurriculum', default = False, action='store_true', help='train on only the target map')
+    parser.add_argument('--cuda', default=0, type=int, help='assign 1 to train on gpu')
     args = parser.parse_args()
     
+    if not args.cuda:
+        os.environ["CUDA_VISIBLE_DEVICES"] = ""
+    else:
+        os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
     args.out = "output_cur_10"
     main(args)
 
