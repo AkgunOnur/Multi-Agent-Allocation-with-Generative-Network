@@ -3,9 +3,11 @@ import os
 import torch
 import gym
 import time
+import json
 import pickle
 import argparse
 import numpy as np
+from pathlib import Path
 from matplotlib import pyplot as plt
 from numpy.random import default_rng
 from graph import *
@@ -117,8 +119,6 @@ def curriculum_design(gen_map_list, rng, level = "easy"):
         
 
 def main(args):
-    print(f"\n{terminal_colors.FAIL}[ARGS]{terminal_colors.ENDC}", *args.__dict__.items(), sep='\n')
-
     np.random.seed(args.seed)
     rng = default_rng(args.seed)
 
@@ -131,6 +131,7 @@ def main(args):
     model_name = "PPO"
     model_def = PPO
     N_eval = 1000
+
 
     with open('saved_maps_' + str(args.map_lim) + '.pickle', 'rb') as handle:
         easy_list, medium_list, gen_list = pickle.load(handle)
@@ -160,12 +161,14 @@ def main(args):
             # train_env = AgentFormation(generated_map=gen_map, map_lim=args.map_lim, max_steps=1000)
             # train_env = Monitor(train_env, current_folder + "/monitor.csv")
             train_env.reset()
-            model = model_def('MlpPolicy', 
-                              train_env, 
-                              verbose=0, 
-                              policy_kwargs=dict(net_arch=[256, 256]), 
-                              tensorboard_log=f"./{args.out}/{model_name}_tensorboard/")
+            model = model_def('MlpPolicy',
+                              train_env,
+                              verbose=0,
+                              tensorboard_log=f"./{args.out}/{model_name}_tensorboard/",
+                              **model_params) # unpacking parameters, if given via json
 
+
+            # ? max_steps overrides PPO(..., n_steps=int, ...) ?
             eval_env = AgentFormation(generated_map=gen_map, map_lim=args.map_lim,  max_steps=1000)
 
             callback = EvalCallback(eval_env=eval_env, eval_freq = (N_eval//args.n_procs), 
@@ -174,6 +177,8 @@ def main(args):
                                     deterministic=False, verbose=1)
 
             start = time.time()
+
+            # train steps multiplied with 3 to match number of training steps with curriculumed training
             nocurriculum_train_steps = int(3*args.train_steps)
             model.learn(total_timesteps=nocurriculum_train_steps, tb_log_name=model_name + "_run_" + level, callback=callback)
             
@@ -211,8 +216,8 @@ def main(args):
                 model = model_def('MlpPolicy', 
                                    train_env, 
                                    verbose=0, 
-                                   policy_kwargs=dict(net_arch=[256, 256]), 
-                                   tensorboard_log=f"./{args.out}/{model_name}_tensorboard/")
+                                   tensorboard_log=f"./{args.out}/{model_name}_tensorboard/"
+                                   **model_params)
                 # model = model_def('CnnPolicy', train_env, policy_kwargs=policy_kwargs, verbose=0, tensorboard_log="./" + model_name + "_tensorboard/")
                 
                 eval_env = AgentFormation(generated_map=current_map,
@@ -253,7 +258,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='RL trainer')
-    # test
+
     parser.add_argument('--train_steps', default=10000, type=int, help='number of test iterations')
     # parser.add_argument('--eval_episodes', default=3, type=int, help='number of test iterations')
     # parser.add_argument('--train_episodes', default=1, type=int, help='number of test iterations')
@@ -262,19 +267,40 @@ if __name__ == "__main__":
     parser.add_argument('--n_maps', default=10, type=int, help='number of maps to train')
     parser.add_argument('--seed', default=7, type=int, help='seed number for test')
     parser.add_argument('--out', default="output", type=str, help='the output folder')
-    parser.add_argument('--nocurriculum', default = False, action='store_true', help='train on only the target map')
+    parser.add_argument('--nocurriculum', default = True, action='store_true', help='train on only the target map')
     parser.add_argument('--cuda', default=0, type=int, help='assign 1 to train on gpu')
+    parser.add_argument('--hyperparameters', default=None, type=Path, help='assign json path to set custom hyperparameters')
+    
     args = parser.parse_args()
     
+    if args.hyperparameters:
+        with open(args.hyperparameters) as json_file:
+            model_params = json.load(json_file)
+
+            print(f"{terminal_colors.WARNING}\nJSON PARAMETERS\n{terminal_colors.ENDC}")
+            print(model_params, end=2*'\n')
+            time.sleep(0.5)
+    else:
+        model_params = { 'policy_kwargs': {'net_arch': [256, 512, 256, 512, 256, 512, 256]} }
+
     if not args.cuda:
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
     else:
         os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-    args.out = "output_cur_10"
-    main(args)
+    training_mode = "No Curriculum" if args.nocurriculum else "Curriculum"
+    print(terminal_colors.OKGREEN + f"Mode: {training_mode}" + terminal_colors.ENDC)
+    print(f"\n{terminal_colors.FAIL}[ARGS]{terminal_colors.ENDC}",
+            *args.__dict__.items(), sep='\n')
 
-    args.nocurriculum = True
-    args.out = "output_nocur_10"
-    main(args)
+    if args.nocurriculum is False:
+        args.out = "output_cur_10"
+        main(args)
+    elif args.nocurriculum is True:
+        args.out = "output_nocur_10"
+        main(args)
+    else:
+        print("Missing curriculum information")
 
+
+#eof
