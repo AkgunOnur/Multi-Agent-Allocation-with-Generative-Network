@@ -32,7 +32,7 @@ for json_file in $(ls hyperparameters)
 do
     # cpu training is louder, cuda is pretty silent
     # training speeds are close
-    python3 train.py --hyperparameters="hyperparameters/${json_file}" --cuda=1 --train_steps=100
+    python3 train.py --hyperparameters="hyperparameters/${json_file}" --cuda=1 --train_steps=10000
     sleep 1
 
     # mode:={0 => nocur, 1 => cur}
@@ -57,7 +57,7 @@ do
     mv results_*cur*.pickle    "${FILE}"
 
     printf "\n\ndone ${index}th step\n\n"
-    index+=1
+    index=$index+1
     sleep 2
 done
 
