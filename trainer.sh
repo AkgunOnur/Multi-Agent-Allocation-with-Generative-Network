@@ -39,10 +39,11 @@ do
     python3 test.py --mode=0
 
     FILE="seko_models/model${index}"
-    mkdir "${FILE}"
+    mkdir "${FILE}" -p
     touch info.txt
 
-
+	
+	echo "$json_file" >> info.txt
     echo "$typ" >> info.txt
     echo "$model" >> info.txt
     echo $(jq -r '.policy_kwargs' "hyperparameters/${json_file}") >> info.txt
@@ -57,7 +58,7 @@ do
     mv results_*cur*.pickle    "${FILE}"
 
     printf "\n\ndone ${index}th step\n\n"
-    index=$index+1
+	index=$index+1
     sleep 2
 done
 
