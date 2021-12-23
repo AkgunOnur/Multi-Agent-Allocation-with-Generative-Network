@@ -2,6 +2,7 @@ sac_discrete/__pycache__/
 sac_discrete/agent/__pycache__/
 sac_discrete/memory/__pycache__/
 __pycache__/
+outputs/
 .ipynb_checkpoints/*.ipynb
 *.pyc
 .vs/

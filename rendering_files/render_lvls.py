@@ -54,7 +54,7 @@ def create_map_files(level = "target", map_lim = 10):
 
 if __name__ == '__main__':
     SPRITE_PATH = "./sprites"
-    map_lim = 20
+    map_lim = 10
     output_folder = "rendered_" + str(map_lim) + "x" + str(map_lim)
     level_list = ["easy", "medium", "target"]
     # create_map_files(level = level, map_lim = map_lim)

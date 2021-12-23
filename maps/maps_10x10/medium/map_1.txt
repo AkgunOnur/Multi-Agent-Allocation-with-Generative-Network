@@ -1,10 +1,10 @@
 WWWWWWWWWW
-W-------WW
-WW-------W
-W---XX---W
-W--W-----W
-W--W-----W
-W---W---WW
 W--------W
-W---W----W
+W--W-----W
+W-X-----XW
+W-W------W
+W--X-X---W
+WW--W----W
+W--------W
+W----X-X-W
 WWWWWWWWWW

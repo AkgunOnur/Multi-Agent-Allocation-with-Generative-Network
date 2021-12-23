@@ -26,7 +26,7 @@ class Agent:
         self.state = np.array(state0)
 
 class AgentFormation(gym.Env):
-    def __init__(self, generated_map, map_lim, max_steps=1000, visualization=False):
+    def __init__(self, generated_map, map_lim, max_steps=200, visualization=False):
         super().__init__()
         np.set_printoptions(precision=4)
         warnings.filterwarnings('ignore')
@@ -37,6 +37,7 @@ class AgentFormation(gym.Env):
         self.visualization = visualization
         self.gen_map = generated_map
         self.N_maps = len(generated_map)
+        # self.spec.id = 1
 
         self.viewer = None
 
@@ -89,7 +90,13 @@ class AgentFormation(gym.Env):
             self.current_step = 0
             info['time_limit_reached'] = True
 
-        self.get_agent_desired_loc(action)
+        fail_check = self.get_agent_desired_loc(action)
+
+        if fail_check:
+            done = True
+            reward = -0.1*self.max_steps
+            self.current_step = 0
+
         for i, prize_loc in enumerate(self.prize_locations[self.map_index]):
             if np.array_equal(self.agents[self.map_index][0].state, prize_loc) and self.prize_exists[self.map_index][i] == True:
                 self.prize_exists[self.map_index][i] = False
@@ -112,6 +119,9 @@ class AgentFormation(gym.Env):
 
         if self.visualization:
             self.visualize()  
+            # time.sleep(0.2)
+            if done:
+                self.close()
 
 
         return self.get_observation(), reward, done, info
@@ -273,8 +283,11 @@ class AgentFormation(gym.Env):
 
         if self.check_collision(self.agents[self.map_index][agent_index].state):
             self.agents[self.map_index][agent_index].state = np.copy(agent_prev_state)
+            return True
             # print ("Collision detected!")
             # time.sleep(0.1)
+
+        return False
 
     def visualize(self, mode='human'):
         grids = []
@@ -282,7 +295,7 @@ class AgentFormation(gym.Env):
         self.N_prize = len(self.prize_locations[self.map_index])
 
         if self.viewer is None:
-            self.viewer = rendering.Viewer(200, 200)
+            self.viewer = rendering.Viewer(400, 400)
             self.viewer.set_bounds(0, self.map_lim - 1, 0, self.map_lim - 1)
             fname = path.join(path.dirname(__file__), "assets/drone.png")
             fname_prize = path.join(path.dirname(__file__), "assets/prize.jpg")

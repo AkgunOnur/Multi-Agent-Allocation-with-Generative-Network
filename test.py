@@ -21,8 +21,8 @@ from utils import *
 def main():
     map_lim = 20
     typ = "nocur"
-    model_dir = 'output_' + typ + '_' + str(map_lim) + '/saved_models'
-    visualization = False
+    model_dir = 'output_' + typ + '_' + str(map_lim) + '_30k/saved_models'
+    visualization = True
 
     parser = argparse.ArgumentParser(description='RL trainer')
     parser.add_argument('--eval_episodes', default=10, type=int, help='number of test iterations')
@@ -39,7 +39,7 @@ def main():
 
     total_reward_list = []
     for index in range(10):
-        model = PPO.load(model_dir + "/last_model_" + "target" + str(index), verbose=1) # + "/best_model"
+        model = PPO.load(model_dir + "/best_model_" + "target" + str(index) + "/best_model", verbose=1) # + "/best_model"
         env = AgentFormation(generated_map=gen_list[index], map_lim=map_lim, visualization=visualization, max_steps=1000)
         print ("\nBest model for map ", index, " is loaded!")
         map_reward_list = []
@@ -59,7 +59,7 @@ def main():
                 action, _states = model.predict(obs)
                 obs, reward, done, info = env.step(action)
                 # print ("reward: ", reward)
-                # time.sleep(0.1)
+                time.sleep(0.25)
                 map_reward += reward
                 iteration += 1
             
