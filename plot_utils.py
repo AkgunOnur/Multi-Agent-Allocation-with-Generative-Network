@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 from stable_baselines3.common import results_plotter
@@ -83,6 +84,108 @@ def show_both_approaches(curriculum_folder = "output_cur_10", nocurriculum_folde
     plt.savefig(cur_directory + '/map_' +str(index) + '.png')
     plt.show()
 
+def show_curriculum(curriculum_folder = "output_cur_10",  index=0):
+    cur_directory = "saved_figs/" + curriculum_folder
+    if not os.path.exists(cur_directory):
+        os.makedirs(cur_directory)
+    
+
+    fig = plt.figure()
+    fig = plt.figure(figsize=(15, 5))
+    # fig.add_subplot(1, 2, 1)
+    pd_frame0 = load_results(curriculum_folder + "/model_outputs_" + "easy" + str(index))
+    pd_frame1 = load_results(curriculum_folder + "/model_outputs_" + "medium" + str(index))
+    pd_frame2 = load_results(curriculum_folder + "/model_outputs_" + "target" + str(index))
+
+    pd_frame1['index'] += np.max(pd_frame0['index'].values)
+    pd_frame2['index'] += np.max(pd_frame1['index'].values)
+
+    sns.lineplot(x='index', y='r', data=pd_frame0, color='b')
+    sns.lineplot(x='index', y='r', data=pd_frame1, color='c')
+    sns.lineplot(x='index', y='r', data=pd_frame2, color='g')
+    plt.legend(labels=['Easy', 'Medium', 'Target'])
+    plt.title('Curriculum Learning Curve for the Map ' + str(index))
+    plt.xlabel('Episode')
+    plt.ylabel('Reward')
+    
+    
+    plt.savefig(cur_directory + '/map_' +str(index) + '.png')
+    plt.show()
+
+
+def show_figures(curriculum_folder = "output_cur_10", nocurriculum_folder = "output_nocur_10",  index=0, N_range = 20):
+    cur_directory = "saved_figs/" + curriculum_folder
+    if not os.path.exists(cur_directory):
+        os.makedirs(cur_directory)
+
+    pd_frame0_updated = []
+    pd_frame1_updated = []
+    pd_frame2_updated = []
+    pd_frame_updated = []
+
+    pd_frame0 = load_results(curriculum_folder + "/model_outputs_" + "easy" + str(index))
+    pd_frame1 = load_results(curriculum_folder + "/model_outputs_" + "medium" + str(index))
+    pd_frame2 = load_results(curriculum_folder + "/model_outputs_" + "target" + str(index))
+    pd_frame1['index'] += np.max(pd_frame0['index'].values)
+    pd_frame2['index'] += np.max(pd_frame1['index'].values)
+
+    N_max0 = np.max(pd_frame0['index'].values)
+    N_max1 = np.max(pd_frame1['index'].values)
+    N_max2 = np.max(pd_frame2['index'].values)
+    
+    for i in range(0, N_max0, N_range):
+        rows = pd_frame0[pd_frame0['index'] == i]
+        for ind, rew in zip(rows['index'].values, rows['r'].values):
+            pd_frame0_updated.append([ind, rew])
+
+    for i in range(0, N_max1, N_range):
+        rows = pd_frame1[pd_frame1['index'] == i]
+        for ind, rew in zip(rows['index'].values, rows['r'].values):
+            pd_frame1_updated.append([ind, rew])
+
+    for i in range(0, N_max2, N_range):
+        rows = pd_frame2[pd_frame2['index'] == i]
+        for ind, rew in zip(rows['index'].values, rows['r'].values):
+            pd_frame2_updated.append([ind, rew])
+
+    fig = plt.figure()
+    fig = plt.figure(figsize=(15, 5))
+    fig.add_subplot(1, 2, 1)
+    
+    pd_frame0 = pd.DataFrame(pd_frame0_updated, columns=['index', 'r'])
+    pd_frame1 = pd.DataFrame(pd_frame1_updated, columns=['index', 'r'])
+    pd_frame2 = pd.DataFrame(pd_frame2_updated, columns=['index', 'r'])
+
+    sns.lineplot(x='index', y='r', data=pd_frame0, color='b')
+    sns.lineplot(x='index', y='r', data=pd_frame1, color='c')
+    sns.lineplot(x='index', y='r', data=pd_frame2, color='g')
+    plt.legend(labels=['Easy', 'Medium', 'Target'])
+    plt.title('Curriculum Learning Curve for the Map ' + str(index))
+    plt.xlabel('Episode')
+    plt.ylabel('Reward')
+
+
+    fig.add_subplot(1, 2, 2)
+    pd_frame = load_results(nocurriculum_folder + "/model_outputs_" + "target" + str(index))
+    N_max = np.max(pd_frame['index'].values)
+    
+    for i in range(0, N_max, N_range):
+        rows = pd_frame[pd_frame['index'] == i]
+        for ind, rew in zip(rows['index'].values, rows['r'].values):
+            pd_frame_updated.append([ind, rew])
+
+    pd_frame = pd.DataFrame(pd_frame_updated, columns=['index', 'r'])
+
+    sns.lineplot(x='index', y='r', data=pd_frame, color='g')
+    plt.legend(labels=['Target'])
+    plt.title('No-Curriculum Learning Curve for the Map ' + str(index))
+
+    plt.xlabel('Episode')
+    plt.ylabel('Reward')
+    
+    plt.savefig(cur_directory + '/map_' +str(index) + '.png')
+    plt.show()
+
 
 def create_maps(seed = 7, map_lim=30, N_maps = 10):
     np.random.seed(seed)
@@ -133,6 +236,25 @@ def plot_results(folder="output_nocur", index=0, title='No-Curriculum Learning C
     plt.title(title + " for the Map " + str(index))
     plt.show()
 
+
+def plot_nocurr( folder ="output_nocur", index=0, title='No-Curriculum Learning Curve'):
+
+    folder = folder + "/model_outputs_target" + str(index)
+    cur_directory = "saved_figs/" + folder
+    if not os.path.exists(cur_directory):
+        os.makedirs(cur_directory)
+    x, y = ts2xy(load_results(folder), 'timesteps')
+    plt.plot(x, y)
+
+    plt.xlabel('Number of Timesteps')
+    plt.ylabel('Rewards')
+    plt.title("No curriculum curve For the Map " + str(index))
+    plt.xlabel('Episode')
+    plt.ylabel('Reward')
+
+
+    plt.savefig(cur_directory + '/map_' +str(index) + '.png')
+
 def plot_curriculum_results(folder="output_cur", map_lim=20000, index=0, title='Curriculum Learning Curve'):
     """
     plot the results
@@ -179,7 +301,8 @@ def plot_curriculum_results(folder="output_cur", map_lim=20000, index=0, title='
     plt.show()
 
 
-def plot_both_approaches(folder="output_cur", index=0, title='Curriculum Learning Curve', folder2="output_nocur", title2='No-Curriculum Learning Curve', limit=30000):
+def plot_both_approaches(folder="output_cur", index=0, title='Curriculum Learning Curve', 
+                            folder2="output_nocur", title2='No-Curriculum Learning Curve', limit=30000):
     fig = plt.figure(figsize=(15, 5))
     fig.add_subplot(1, 2, 1)
 
