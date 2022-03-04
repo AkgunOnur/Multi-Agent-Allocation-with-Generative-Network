@@ -1,9 +1,10 @@
+import sys
 import gym
 import pickle
 from gym import spaces, error, utils
 from gym.utils import seeding
 # from gym.envs.classic_control import rendering
-# import rendering
+from torch import nn
 import numpy as np
 import configparser
 from os import path
@@ -21,14 +22,20 @@ font = {'family': 'sans-serif',
         'weight': 'bold',
         'size': 14}
 
+def init(module, weight_init, bias_init, gain=1):
+    weight_init(module.weight.data, gain=gain)
+    bias_init(module.bias.data)
+    return module
+
 class Agent:
     def __init__(self, state0):
         self.state = np.array(state0)
 
 class AgentFormation(gym.Env):
-    def __init__(self, generated_map, map_lim, max_steps=200, visualization=False):
+    def __init__(self, generated_map, map_lim, target_lim, max_reward, max_steps=200, obs_type = 0, visualization=False):
         super().__init__()
-        np.set_printoptions(precision=4)
+        # np.set_printoptions(precision=4)
+        np.set_printoptions(threshold=sys.maxsize)
         warnings.filterwarnings('ignore')
         # number of actions per agent which are desired positions and yaw angle
         self.n_action = 8
@@ -37,24 +44,33 @@ class AgentFormation(gym.Env):
         self.visualization = visualization
         self.gen_map = generated_map
         self.N_maps = len(generated_map)
+        self.num_envs = 1
         # self.spec.id = 1
 
         self.viewer = None
 
         # intitialize grid information
         self.map_lim = map_lim
+        self.target_lim = target_lim
         self.grid_res = 1.0  # resolution for grids
         self.out_shape = self.map_lim  # width and height for uncertainty matrix
         self.N_prize = None
         self.agent_locations = [1,1]
         self.agents = None
+        self.max_reward = max_reward
+        self.min_reward = -0.1*max_steps
         
-        
+        self.obs_type = obs_type
         self.action_space = spaces.Discrete(self.n_action)
         self.observation_space = spaces.Box(low=0, high=1,
-                                            shape=(self.out_shape, self.out_shape), dtype=np.uint8)
-        # self.observation_space = spaces.Box(low=0, high=1,
-        #                                     shape=(3, self.out_shape, self.out_shape), dtype=np.uint8)
+                                            shape=(2, self.target_lim, self.target_lim), dtype=np.float32)
+        # if self.obs_type % 2 == 0:
+        #     self.observation_space = spaces.Box(low=0, high=1,
+        #                                         shape=(1, self.out_shape, self.out_shape), dtype=np.uint8)
+        # elif self.obs_type % 2 == 1:
+        #     self.observation_space = spaces.Box(low=0, high=1,
+        #                                         shape=(2, self.out_shape, self.out_shape), dtype=np.uint8)
+
         self.current_step = 0
         self.map_index = 0 # in case, we have more maps to train
         self.max_steps = max_steps
@@ -63,6 +79,9 @@ class AgentFormation(gym.Env):
                                                                                         or i // self.map_lim == 0 or i // self.map_lim == self.map_lim - 1])
         self.obstacle_locations = None
         self.prize_locations = None
+
+        
+        
 
             
 
@@ -78,34 +97,42 @@ class AgentFormation(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
+    def normalize_reward(self, reward):
+        normalized_reward = (reward - self.min_reward) / (self.max_reward - self.min_reward)
+        normalized_reward = 2 * normalized_reward - 1.0
+        # print ("Prev: ", reward, " After: ", normalized_reward)
+
+        return normalized_reward
+
     def step(self, action):
         done = False
-        reward = -0.1
+        # reward = self.normalize_reward(-0.1)
+        reward = -0.01
         info = dict()
-
-        self.current_step += 1
-        if self.current_step >= self.max_steps:
-            # print ("Time's up!")
-            done = True
-            self.current_step = 0
-            info['time_limit_reached'] = True
 
         fail_check = self.get_agent_desired_loc(action)
 
-        if fail_check:
+        if fail_check: # collision with the wall
             done = True
-            reward = -0.1*self.max_steps
-            self.current_step = 0
+            reward = -10.0
 
         for i, prize_loc in enumerate(self.prize_locations[self.map_index]):
             if np.array_equal(self.agents[self.map_index][0].state, prize_loc) and self.prize_exists[self.map_index][i] == True:
                 self.prize_exists[self.map_index][i] = False
-                reward = 10.0
+                reward = 1.0
+                # reward = self.normalize_reward(10.0)
                 # print ("Reward!, ", self.agents[self.map_index][0].state, "--", prize_loc)
                 if np.sum(self.prize_exists[self.map_index]) == 0:
                     done = True
                     self.current_step = 0
         
+        self.current_step += 1
+        if self.current_step >= self.max_steps and done == False:
+            done = True
+            reward = -1.0
+            # print ("Time's up!")
+            self.current_step = 0
+            info['time_limit_reached'] = True
 
         # if done:
             # print (self.prize_exists[self.map_index])
@@ -117,39 +144,113 @@ class AgentFormation(gym.Env):
             # print (self.prize_exists[self.map_index])
             # print ("\n")
 
+        # print (f"reward: {reward:.4}, action: {action}")
+        observation_map = self.get_observation()
+
         if self.visualization:
             self.visualize()  
-            # time.sleep(0.2)
+            time.sleep(0.01)
             if done:
                 self.close()
 
 
-        return self.get_observation(), reward, done, info
+        return observation_map, reward, done, info
 
     def get_observation(self):
-        # self.observation_map = np.zeros((3,self.out_shape, self.out_shape))
-        self.observation_map = np.zeros((self.out_shape, self.out_shape))
-        self.neighbor_grids = np.array([[0,0],[-1,0],[1,0],[0,1],[0,-1]])
+        self.observation_map = np.zeros((2,self.target_lim, self.target_lim))
+        self.neighbor_grids = np.array([[-1,0],[1,0],[0,1],[0,-1],[-1,-1],[1,1],[-1,1],[1,-1]])
 
         for i in range(self.n_agents):
-            self.observation_map[self.agents[self.map_index][i].state[0], self.agents[self.map_index][i].state[1]] = 1
+            #neighbor grids of agent's location will be 0.5
+            for neighbor_grid in self.neighbor_grids:
+                current_grid = np.clip(self.agents[self.map_index][i].state + neighbor_grid, 0, self.map_lim - 1)
+                self.observation_map[0, current_grid[0], current_grid[1]] = 0.5
 
+             #agent's current location will be 1
+            self.observation_map[0, self.agents[self.map_index][i].state[0], self.agents[self.map_index][i].state[1]] = 1.0
+
+        
+        #neighbor grids of prize locations will be 0.5
         for i, prize_loc in enumerate(self.prize_locations[self.map_index]):
             if self.prize_exists[self.map_index][i] == True:
-                x,y = prize_loc[0], prize_loc[1]
-                self.observation_map[x,y] = 1
+                for neighbor_grid in self.neighbor_grids:
+                    current_grid = np.clip(prize_loc + neighbor_grid, 0, self.map_lim - 1)
+                    self.observation_map[0, current_grid[0], current_grid[1]] = 0.5
 
-        # for i in range(self.n_agents):
-        #     for neighbor_grid in self.neighbor_grids:
-        #         current_grid = np.clip(self.agents[self.map_index][i].state + neighbor_grid, 0, self.map_lim)
-        #         self.observation_map[0, current_grid[0], current_grid[1]] = 1
+
+        #prize locations will be 1.0
+        for i, prize_loc in enumerate(self.prize_locations[self.map_index]):
+            x,y = prize_loc[0], prize_loc[1]
+            if self.prize_exists[self.map_index][i] == True:
+                self.observation_map[0,x,y] = 1.0
+            else:
+                self.observation_map[0,x,y] = 0
+
+        #neighbor grids of obstacle locations will be 0.5
+        for obs_point in self.obstacle_locations[self.map_index]:
+            for neighbor_grid in self.neighbor_grids:
+                current_grid = np.clip(obs_point + neighbor_grid, 0, self.map_lim - 1)
+                self.observation_map[1, current_grid[0], current_grid[1]] = 0.5
+
+
+        #obstacle locations will be 1.0
+        for obs_point in self.obstacle_locations[self.map_index]:
+            self.observation_map[1,obs_point[0],obs_point[1]] = 1.0
+
+        # if self.obs_type % 2 == 0:
+        #     self.observation_map = np.zeros((1, self.out_shape, self.out_shape))
+            
+
+        #     for i in range(self.n_agents):
+        #         self.observation_map[0, self.agents[self.map_index][i].state[0], self.agents[self.map_index][i].state[1]] = 1
+
+            
+        #     for i in range(self.n_agents):
+        #         for neighbor_grid in self.neighbor_grids:
+        #             current_grid = np.clip(self.agents[self.map_index][i].state + neighbor_grid, 0, self.map_lim)
+        #             self.observation_map[0, current_grid[0], current_grid[1]] = 0.5
+
+        #     for i, prize_loc in enumerate(self.prize_locations[self.map_index]):
+        #         x,y = prize_loc[0], prize_loc[1]
+        #         if self.prize_exists[self.map_index][i] == True:
+        #             self.observation_map[0,x,y] = 1
+        #         else:
+        #             self.observation_map[0,x,y] = 0.1
+        # elif self.obs_type % 2 == 1:
+        #     self.observation_map = np.zeros((2, self.out_shape, self.out_shape))
+
+        #     for i in range(self.n_agents):
+        #         for neighbor_grid in self.neighbor_grids:
+        #             current_grid = np.clip(self.agents[self.map_index][i].state + neighbor_grid, 0, self.map_lim)
+        #             self.observation_map[0, current_grid[0], current_grid[1]] = 0.5
+
+        #     for i, prize_loc in enumerate(self.prize_locations[self.map_index]):
+        #         if self.prize_exists[self.map_index][i] == True:
+        #             for neighbor_grid in self.neighbor_grids:
+        #                 current_grid = np.clip(prize_loc + neighbor_grid, 0, self.map_lim)
+        #                 self.observation_map[1, current_grid[0], current_grid[1]] = 0.5
+
+
+        #     for i in range(self.n_agents):
+        #         self.observation_map[0, self.agents[self.map_index][i].state[0], self.agents[self.map_index][i].state[1]] = 1
+
+
+        #     for i, prize_loc in enumerate(self.prize_locations[self.map_index]):
+        #         x,y = prize_loc[0], prize_loc[1]
+        #         if self.prize_exists[self.map_index][i] == True:
+        #             self.observation_map[1,x,y] = 1
+        #         else:
+        #             self.observation_map[1,x,y] = 0.1
 
         
         # for obs_point in self.obstacle_locations[self.map_index]:
         #     x,y = obs_point[0], obs_point[1]
         #     self.observation_map[1,x,y] = 1
 
-        
+        # print ("\nagent: \n", self.observation_map[0,:,:])
+        # print ("\nwall: \n", self.observation_map[1,:,:])
+        # print ("\nwall: \n", self.observation_map[2,:,:])
+
         return self.observation_map
 
 
@@ -216,8 +317,8 @@ class AgentFormation(gym.Env):
         prize_exists_list = []
 
         for k in range(self.N_maps):
-            self.gen_map[k][self.predefined_obtacles[:,0], self.predefined_obtacles[:,1]] = 1 # predefined walls
-            self.gen_map[k][1,1] = 0 # Agent start location, obstacle free
+            # self.gen_map[k][self.predefined_obtacles[:,0], self.predefined_obtacles[:,1]] = 1 # predefined walls
+            # self.gen_map[k][1,1] = 0 # Agent start location, obstacle free
             # print (self.gen_map)
             obstacle_loc = []
             prize_loc = []
@@ -244,36 +345,36 @@ class AgentFormation(gym.Env):
 
         if discrete_action == 0:  # action=0, x += 1.0
             self.agents[self.map_index][agent_index].state[0] += self.grid_res
-            self.agents[self.map_index][agent_index].state[0] = np.clip(self.agents[self.map_index][agent_index].state[0], 0,  self.map_lim)
+            self.agents[self.map_index][agent_index].state[0] = np.clip(self.agents[self.map_index][agent_index].state[0], 0,  self.map_lim - 1)
         elif discrete_action == 1:  # action=1, x -= 1.0
             self.agents[self.map_index][agent_index].state[0] -= self.grid_res
-            self.agents[self.map_index][agent_index].state[0] = np.clip(self.agents[self.map_index][agent_index].state[0], 0,  self.map_lim)
+            self.agents[self.map_index][agent_index].state[0] = np.clip(self.agents[self.map_index][agent_index].state[0], 0,  self.map_lim - 1)
         elif discrete_action == 2:  # action=2, y += 1.0
             self.agents[self.map_index][agent_index].state[1] += self.grid_res
-            self.agents[self.map_index][agent_index].state[1] = np.clip(self.agents[self.map_index][agent_index].state[1], 0,  self.map_lim)
+            self.agents[self.map_index][agent_index].state[1] = np.clip(self.agents[self.map_index][agent_index].state[1], 0,  self.map_lim - 1)
         elif discrete_action == 3:  # action=3, y -= 1.0
             self.agents[self.map_index][agent_index].state[1] -= self.grid_res
-            self.agents[self.map_index][agent_index].state[1] = np.clip(self.agents[self.map_index][agent_index].state[1], 0,  self.map_lim)
+            self.agents[self.map_index][agent_index].state[1] = np.clip(self.agents[self.map_index][agent_index].state[1], 0,  self.map_lim - 1)
         elif discrete_action == 4:  # action=4, x += 1.0, y += 1.0
             self.agents[self.map_index][agent_index].state[0] += self.grid_res
             self.agents[self.map_index][agent_index].state[1] += self.grid_res
-            self.agents[self.map_index][agent_index].state[0] = np.clip(self.agents[self.map_index][agent_index].state[0], 0,  self.map_lim)
-            self.agents[self.map_index][agent_index].state[1] = np.clip(self.agents[self.map_index][agent_index].state[1], 0,  self.map_lim)
+            self.agents[self.map_index][agent_index].state[0] = np.clip(self.agents[self.map_index][agent_index].state[0], 0,  self.map_lim - 1)
+            self.agents[self.map_index][agent_index].state[1] = np.clip(self.agents[self.map_index][agent_index].state[1], 0,  self.map_lim - 1)
         elif discrete_action == 5:  # action=5, x += 1.0, y -= 1.0
             self.agents[self.map_index][agent_index].state[0] += self.grid_res
             self.agents[self.map_index][agent_index].state[1] -= self.grid_res
-            self.agents[self.map_index][agent_index].state[0] = np.clip(self.agents[self.map_index][agent_index].state[0], 0,  self.map_lim)
-            self.agents[self.map_index][agent_index].state[1] = np.clip(self.agents[self.map_index][agent_index].state[1], 0,  self.map_lim)
+            self.agents[self.map_index][agent_index].state[0] = np.clip(self.agents[self.map_index][agent_index].state[0], 0,  self.map_lim - 1)
+            self.agents[self.map_index][agent_index].state[1] = np.clip(self.agents[self.map_index][agent_index].state[1], 0,  self.map_lim - 1)
         elif discrete_action == 6:  # action=6, x -= 1.0, y += 1.0
             self.agents[self.map_index][agent_index].state[0] -= self.grid_res
             self.agents[self.map_index][agent_index].state[1] += self.grid_res
-            self.agents[self.map_index][agent_index].state[0] = np.clip(self.agents[self.map_index][agent_index].state[0], 0,  self.map_lim)
-            self.agents[self.map_index][agent_index].state[1] = np.clip(self.agents[self.map_index][agent_index].state[1], 0,  self.map_lim)
+            self.agents[self.map_index][agent_index].state[0] = np.clip(self.agents[self.map_index][agent_index].state[0], 0,  self.map_lim - 1)
+            self.agents[self.map_index][agent_index].state[1] = np.clip(self.agents[self.map_index][agent_index].state[1], 0,  self.map_lim - 1)
         elif discrete_action == 7:  # action=7, x -= 1.0, y -= 1.0
             self.agents[self.map_index][agent_index].state[0] -= self.grid_res
             self.agents[self.map_index][agent_index].state[1] -= self.grid_res
-            self.agents[self.map_index][agent_index].state[0] = np.clip(self.agents[self.map_index][agent_index].state[0], 0,  self.map_lim)
-            self.agents[self.map_index][agent_index].state[1] = np.clip(self.agents[self.map_index][agent_index].state[1], 0,  self.map_lim)
+            self.agents[self.map_index][agent_index].state[0] = np.clip(self.agents[self.map_index][agent_index].state[0], 0,  self.map_lim - 1)
+            self.agents[self.map_index][agent_index].state[1] = np.clip(self.agents[self.map_index][agent_index].state[1], 0,  self.map_lim - 1)
         elif discrete_action == -1:  # action=-1 stop
             print("No action executed!")
         else:
@@ -294,8 +395,9 @@ class AgentFormation(gym.Env):
         station_transform = []
         self.N_prize = len(self.prize_locations[self.map_index])
 
+        screen_width = 20 * self.map_lim
         if self.viewer is None:
-            self.viewer = rendering.Viewer(400, 400)
+            self.viewer = rendering.Viewer(screen_width, screen_width)
             self.viewer.set_bounds(0, self.map_lim - 1, 0, self.map_lim - 1)
             fname = path.join(path.dirname(__file__), "assets/drone.png")
             fname_prize = path.join(path.dirname(__file__), "assets/prize.jpg")
@@ -310,20 +412,20 @@ class AgentFormation(gym.Env):
             self.viewer.add_geom(background)
 
 
-            wall_list = np.array([[0, 0.5, 0, self.map_lim - 1], 
-                                  [self.map_lim - 1.5, self.map_lim - 1, 0, self.map_lim - 1], 
-                                  [0, self.map_lim - 1, self.map_lim - 1.5, self.map_lim - 1], 
-                                  [0, self.map_lim - 1, 0, 0.5]])
-            for i in range(wall_list.shape[0]):
-                obstacle = rendering.make_polygon([(wall_list[i][0], wall_list[i][2]),  # xmin, ymin
-                                                   (wall_list[i][0], wall_list[i][3]),  # xmin, ymax
-                                                   (wall_list[i][1], wall_list[i][3]),  # xmax, ymax
-                                                   (wall_list[i][1], wall_list[i][2])])  # xmax, ymin
+            # wall_list = np.array([[0, 0.5, 0, self.map_lim - 1], 
+            #                       [self.map_lim - 1.5, self.map_lim - 1, 0, self.map_lim - 1], 
+            #                       [0, self.map_lim - 1, self.map_lim - 1.5, self.map_lim - 1], 
+            #                       [0, self.map_lim - 1, 0, 0.5]])
+            # for i in range(wall_list.shape[0]):
+            #     obstacle = rendering.make_polygon([(wall_list[i][0], wall_list[i][2]),  # xmin, ymin
+            #                                        (wall_list[i][0], wall_list[i][3]),  # xmin, ymax
+            #                                        (wall_list[i][1], wall_list[i][3]),  # xmax, ymax
+            #                                        (wall_list[i][1], wall_list[i][2])])  # xmax, ymin
 
-                obstacle_transform = rendering.Transform()
-                obstacle.add_attr(obstacle_transform)
-                obstacle.set_color(.8, .3, .3)  # obstacle color
-                self.viewer.add_geom(obstacle)
+            #     obstacle_transform = rendering.Transform()
+            #     obstacle.add_attr(obstacle_transform)
+            #     obstacle.set_color(.8, .3, .3)  # obstacle color
+            #     self.viewer.add_geom(obstacle)
 
             
             for obs_loc in self.obstacle_locations[self.map_index]:

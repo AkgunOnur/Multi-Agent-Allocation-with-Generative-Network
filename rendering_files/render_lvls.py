@@ -17,52 +17,60 @@ def get_indices(numbers, map_lim):
         index.append([x,y])
     return np.array(index)
 
-def create_map_files(level = "target", map_lim = 10):
+def create_map_files(map_file, level_list, map_lim = 10):
     predefined_obtacles = get_indices([i  for i in range(map_lim**2) if i% map_lim == 0 or i % map_lim == map_lim - 1 \
                                                                     or i // map_lim == 0 or i // map_lim == map_lim - 1], map_lim)
-    map_list = []
-    with open('../saved_maps_' + str(map_lim) + '.pickle', 'rb') as handle:
-        easy_list, medium_list, gen_list = pickle.load(handle)
+    # level_list = ["easy", "medium", "target"]
+    with open('../' + map_file + '.pickle', 'rb') as handle:
+        generated_map_list = pickle.load(handle)
             
-    if level == "easy":
-        current_list = np.copy(easy_list)
-    elif level == "medium":
-        current_list = np.copy(medium_list)
-    elif level == "target":
-        current_list = np.copy(gen_list)
+    for level in level_list:
+        map_list = []
+        current_list = np.copy(generated_map_list[level])
+
+        # if level == "easy":
+        #     current_list = np.copy(easy_list)
+        # elif level == "medium":
+        #     current_list = np.copy(medium_list)
+        # elif level == "target":
+        #     current_list = np.copy(gen_list)
+                
+        for current_map in current_list:
+            current_map[0][predefined_obtacles[:,0], predefined_obtacles[:,1]] = 1 # predefined walls
+            current_map[0][1,1] = 0 # Agent start location, obstacle free
+            map_list.append(current_map[0])
+
+
+        directory = "../maps/" + map_file + "/" + level
+        if not os.path.exists(directory):
+            os.makedirs(directory)
             
-    for current_map in current_list:
-        current_map[0][predefined_obtacles[:,0], predefined_obtacles[:,1]] = 1 # predefined walls
-        current_map[0][1,1] = 0 # Agent start location, obstacle free
-        map_list.append(current_map[0])
+        for ind, current_map in enumerate(map_list):
+            matrix = np.asarray([['-' for i in range(map_lim)] for j in range(map_lim)])
+            matrix[current_map == 1] = 'W'
+            matrix[current_map == 2] = 'X'
 
-
-    directory = "maps/maps_" + str(map_lim) + "x" + str(map_lim) + "/" + level
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-        
-    for ind, current_map in enumerate(map_list):
-        matrix = np.asarray([['-' for i in range(map_lim)] for j in range(map_lim)])
-        matrix[current_map == 1] = 'W'
-        matrix[current_map == 2] = 'X'
-
-        with open(directory + "/map_" + str(ind) + ".txt", "w") as txt_file:
-            for line in matrix:
-                txt_file.write("".join(line) + "\n") # works with any number of elements in a line
+            with open(directory + "/map_" + str(ind) + ".txt", "w") as txt_file:
+                for line in matrix:
+                    txt_file.write("".join(line) + "\n") # works with any number of elements in a line
 
 
 
 if __name__ == '__main__':
     SPRITE_PATH = "./sprites"
-    map_lim = 10
-    output_folder = "rendered_" + str(map_lim) + "x" + str(map_lim)
-    level_list = ["easy", "medium", "target"]
-    # create_map_files(level = level, map_lim = map_lim)
+    map_lim = 30
+    map_file = "new_saved_maps_30"
+    output_folder = "rendered_" + map_file
+    # level_list = ["easy", "medium", "target"]
+    level_list = ["level1", "level2", "level3", "level4", "level5"]
+
+    
+    create_map_files(map_file = map_file, level_list=level_list, map_lim=map_lim)
     
     ImgGen = LevelImageGen(SPRITE_PATH)
     for level in level_list:
 
-        directory = '../maps/maps_' + str(map_lim) + "x" + str(map_lim) + "/" + level + "/"
+        directory = '../maps/' + map_file + "/" + level + "/"
 
         map_names = glob.glob(directory + "*.txt")
 

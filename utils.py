@@ -1,11 +1,30 @@
 import os
 import numpy as np
+import torch.nn as nn
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.results_plotter import load_results, ts2xy
 from stable_baselines3.common.noise import NormalActionNoise
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.utils import set_random_seed
 from point_mass_env import AgentFormation
+
+obs_space = ["1d OBS / MLP", "2D OBS / MLP", "1d OBS / CNN", "2D OBS / CNN"]
+activation_list = [nn.ReLU, nn.LeakyReLU, nn.Tanh]
+gamma_list = [0.9, 0.95, 0.97]
+bs_list = [16, 32, 64]
+lr_list = [6e-3, 9e-3, 3e-4]
+net_list = [[32, 32], [48,48], [64, 64]]
+ns_list = [2048, 2048, 2048]
+ne_list = [12, 15, 10]
+
+
+def print_coeffs(folder_name, obs_index, index):
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+
+    with open(folder_name + '/coeffs.txt','w') as out:
+        out.write(f" obs_space: {obs_space[obs_index]}\n activation: {str(activation_list[index])}\n gamma: {gamma_list[index]:.5}\n batch_size: {bs_list[index]}\n learning_rate: {lr_list[index]:.5}\n network: {net_list[index]}\n n_steps: {ns_list[index]}\n n_epochs: {ne_list[index]}\n")
+
 
 def make_env(gen_map: np.array, max_steps = 5000):
     """
