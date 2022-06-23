@@ -85,7 +85,7 @@ def show_new_curriculum(level_list, curriculum_folder = "output_cur_10", index=0
         plt.title('Curriculum Learning Curve for the Map ' + str(index) + ' in ' + type + " Mode")
         plt.xlabel('Episode')
         plt.ylabel('Reward')
-        plt.xlim([0, 10000])
+        # plt.xlim([0, 10000])
         
         
     plt.savefig(cur_directory + '/map_' +str(index) + '.png')

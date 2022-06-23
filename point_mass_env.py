@@ -3,7 +3,7 @@ import gym
 import pickle
 from gym import spaces, error, utils
 from gym.utils import seeding
-# from gym.envs.classic_control import rendering
+from gym.envs.classic_control import rendering
 from torch import nn
 import numpy as np
 import configparser
@@ -12,6 +12,7 @@ import itertools
 import random
 import pdb
 from numpy.random import uniform
+from numpy.random import default_rng
 from time import sleep
 from collections import deque
 import warnings
@@ -32,7 +33,7 @@ class Agent:
         self.state = np.array(state0)
 
 class AgentFormation(gym.Env):
-    def __init__(self, generated_map, map_lim, target_lim, max_reward, max_steps=200, obs_type = 0, visualization=False):
+    def __init__(self, generated_map, map_lim, max_steps=200, obs_type = 0, frame_file = "frames", visualization=False):
         super().__init__()
         # np.set_printoptions(precision=4)
         np.set_printoptions(threshold=sys.maxsize)
@@ -44,26 +45,25 @@ class AgentFormation(gym.Env):
         self.visualization = visualization
         self.gen_map = generated_map
         self.N_maps = len(generated_map)
-        self.num_envs = 1
         # self.spec.id = 1
 
         self.viewer = None
+        self.frames = []
+        self.frame_file = frame_file
 
         # intitialize grid information
         self.map_lim = map_lim
-        self.target_lim = target_lim
         self.grid_res = 1.0  # resolution for grids
         self.out_shape = self.map_lim  # width and height for uncertainty matrix
         self.N_prize = None
-        self.agent_locations = [1,1]
+        self.agent_locations = [0,0]
         self.agents = None
-        self.max_reward = max_reward
         self.min_reward = -0.1*max_steps
         
         self.obs_type = obs_type
         self.action_space = spaces.Discrete(self.n_action)
         self.observation_space = spaces.Box(low=0, high=1,
-                                            shape=(2, self.target_lim, self.target_lim), dtype=np.float32)
+                                            shape=(3, self.map_lim, self.map_lim), dtype=np.float32)
         # if self.obs_type % 2 == 0:
         #     self.observation_space = spaces.Box(low=0, high=1,
         #                                         shape=(1, self.out_shape, self.out_shape), dtype=np.uint8)
@@ -83,7 +83,13 @@ class AgentFormation(gym.Env):
         
         
 
-            
+    def get_free_indices(self, n_rc):
+        index = []
+        for i in range(n_rc):
+            for j in range(n_rc):
+                if self.gen_map[0][i,j] == 0:
+                    index.append([i,j])
+        return np.array(index) 
 
     def get_indices(self, numbers):
         index = []
@@ -97,12 +103,12 @@ class AgentFormation(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def normalize_reward(self, reward):
-        normalized_reward = (reward - self.min_reward) / (self.max_reward - self.min_reward)
-        normalized_reward = 2 * normalized_reward - 1.0
-        # print ("Prev: ", reward, " After: ", normalized_reward)
+    # def normalize_reward(self, reward):
+    #     normalized_reward = (reward - self.min_reward) / (self.max_reward - self.min_reward)
+    #     normalized_reward = 2 * normalized_reward - 1.0
+    #     # print ("Prev: ", reward, " After: ", normalized_reward)
 
-        return normalized_reward
+    #     return normalized_reward
 
     def step(self, action):
         done = False
@@ -114,7 +120,7 @@ class AgentFormation(gym.Env):
 
         if fail_check: # collision with the wall
             done = True
-            reward = -10.0
+            reward = -1.0
 
         for i, prize_loc in enumerate(self.prize_locations[self.map_index]):
             if np.array_equal(self.agents[self.map_index][0].state, prize_loc) and self.prize_exists[self.map_index][i] == True:
@@ -148,16 +154,18 @@ class AgentFormation(gym.Env):
         observation_map = self.get_observation()
 
         if self.visualization:
-            self.visualize()  
-            time.sleep(0.01)
+            self.frames.append(self.visualize())
+            time.sleep(0.25)
             if done:
                 self.close()
+                with open(self.frame_file + '.pickle', 'wb') as handle:
+                    pickle.dump(self.frames, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
         return observation_map, reward, done, info
 
     def get_observation(self):
-        self.observation_map = np.zeros((2,self.target_lim, self.target_lim))
+        self.observation_map = np.zeros((3,self.map_lim, self.map_lim))
         self.neighbor_grids = np.array([[-1,0],[1,0],[0,1],[0,-1],[-1,-1],[1,1],[-1,1],[1,-1]])
 
         for i in range(self.n_agents):
@@ -175,27 +183,27 @@ class AgentFormation(gym.Env):
             if self.prize_exists[self.map_index][i] == True:
                 for neighbor_grid in self.neighbor_grids:
                     current_grid = np.clip(prize_loc + neighbor_grid, 0, self.map_lim - 1)
-                    self.observation_map[0, current_grid[0], current_grid[1]] = 0.5
+                    self.observation_map[1, current_grid[0], current_grid[1]] = 0.5
 
 
         #prize locations will be 1.0
         for i, prize_loc in enumerate(self.prize_locations[self.map_index]):
             x,y = prize_loc[0], prize_loc[1]
             if self.prize_exists[self.map_index][i] == True:
-                self.observation_map[0,x,y] = 1.0
+                self.observation_map[1,x,y] = 1.0
             else:
-                self.observation_map[0,x,y] = 0
+                self.observation_map[1,x,y] = 0.1
 
         #neighbor grids of obstacle locations will be 0.5
         for obs_point in self.obstacle_locations[self.map_index]:
             for neighbor_grid in self.neighbor_grids:
                 current_grid = np.clip(obs_point + neighbor_grid, 0, self.map_lim - 1)
-                self.observation_map[1, current_grid[0], current_grid[1]] = 0.5
+                self.observation_map[2, current_grid[0], current_grid[1]] = 0.5
 
 
         #obstacle locations will be 1.0
         for obs_point in self.obstacle_locations[self.map_index]:
-            self.observation_map[1,obs_point[0],obs_point[1]] = 1.0
+            self.observation_map[2,obs_point[0],obs_point[1]] = 1.0
 
         # if self.obs_type % 2 == 0:
         #     self.observation_map = np.zeros((1, self.out_shape, self.out_shape))
@@ -259,21 +267,39 @@ class AgentFormation(gym.Env):
         self.map_index = 0
         self.grid_points = []
         self.obstacle_locations = []
-        
-        self.agents = [[Agent(self.agent_locations)] for i in range(self.N_maps)]
+        rng = default_rng()
 
         # Points of grids to be drawn
-        x_list = np.arange(0, self.map_lim, self.grid_res)
-        y_list = np.arange(0, self.map_lim, self.grid_res)
+        x_list = np.arange(-1, self.map_lim, self.grid_res)
+        y_list = np.arange(-1, self.map_lim, self.grid_res)
         eps = 0.15
         for x in x_list:
-            grid = [x+0.5, x+0.5+eps, 0, self.map_lim]
+            grid = [x+0.5, x+0.5+eps, -1, self.map_lim]
             self.grid_points.append(grid)
 
         for y in y_list:
-            grid = [0, self.map_lim, y+0.5, y+0.5+eps]
+            grid = [-1, self.map_lim, y+0.5, y+0.5+eps]
             self.grid_points.append(grid)
-        
+
+        # free_indices = self.get_free_indices(n_rc=5)
+        # start_point = rng.choice(free_indices, size=(1,), replace=False)
+        # 
+        start_point = [[0, 0]]
+        # print ("start_point: ", start_point[0])
+        self.agents = [[Agent(start_point[0])] for i in range(self.N_maps)]
+
+
+        self.borders_locations = []
+
+        for i in range(-1, self.map_lim + 1):
+            self.borders_locations.append([-1, i])
+            self.borders_locations.append([i, -1])
+            self.borders_locations.append([self.map_lim, i])
+            self.borders_locations.append([i, self.map_lim])
+
+
+
+                  
         # Initialization points of agents
         # x_list = np.arange(1, 3, self.grid_res)
         # y_list = np.arange(1, 3, self.grid_res)
@@ -300,7 +326,7 @@ class AgentFormation(gym.Env):
         #         self.prize_locations.append(loc)
         #         prize_ind += 1
 
-        self.obstacle_locations, self.prize_locations, self.prize_exists = self.get_obstacle_locations()
+        self.obstacle_locations, self.prize_locations, self.prize_exists = self.get_obstacle_locations() 
 
         return self.get_observation()
 
@@ -395,20 +421,23 @@ class AgentFormation(gym.Env):
         station_transform = []
         self.N_prize = len(self.prize_locations[self.map_index])
 
-        screen_width = 20 * self.map_lim
+        screen_width = 30 * self.map_lim
         if self.viewer is None:
             self.viewer = rendering.Viewer(screen_width, screen_width)
-            self.viewer.set_bounds(0, self.map_lim - 1, 0, self.map_lim - 1)
+            self.viewer.set_bounds(-1, self.map_lim, -1, self.map_lim)
             fname = path.join(path.dirname(__file__), "assets/drone.png")
-            fname_prize = path.join(path.dirname(__file__), "assets/prize.jpg")
+            fname_background = path.join(path.dirname(__file__), "assets/prize.png")
+            fname_prize = path.join(path.dirname(__file__), "assets/prize.png")
+            fname_obstacle = path.join(path.dirname(__file__), "assets/obstacle.png")
+            fname_wall = path.join(path.dirname(__file__), "assets/wall.png")
 
-            background = rendering.make_polygon([(0, 0), (0, self.map_lim - 1),
-                                                 (self.map_lim - 1, self.map_lim - 1), 
-                                                 (self.map_lim - 1, 0)])
+            background = rendering.make_polygon([(-1, -1), (-1, self.map_lim),
+                                                 (self.map_lim, self.map_lim), 
+                                                 (self.map_lim, -1)])
 
             background_transform = rendering.Transform()
             background.add_attr(background_transform)
-            background.set_color(0., 0.9, 0.5)  # background color
+            background.set_color(0., 0.7, 1.0)  # background color
             self.viewer.add_geom(background)
 
 
@@ -428,41 +457,55 @@ class AgentFormation(gym.Env):
             #     self.viewer.add_geom(obstacle)
 
             
-            for obs_loc in self.obstacle_locations[self.map_index]:
-                obs_0 = np.array(obs_loc) - 0.5
-                obs_1 = np.array(obs_loc) + 0.5
-                obstacle = rendering.make_polygon([(obs_0[1], self.map_lim - 1 - obs_0[0]), 
-                                                   (obs_0[1], self.map_lim - 1 - obs_1[0]), 
-                                                   (obs_1[1], self.map_lim - 1 - obs_1[0]), 
-                                                   (obs_1[1], self.map_lim - 1 - obs_0[0])])
+            # for obs_loc in self.obstacle_locations[self.map_index]:
+            #     obs_0 = np.array(obs_loc) - 0.5
+            #     obs_1 = np.array(obs_loc) + 0.5
+            #     obstacle = rendering.make_polygon([(obs_0[1], self.map_lim - 1 - obs_0[0]), 
+            #                                        (obs_0[1], self.map_lim - 1 - obs_1[0]), 
+            #                                        (obs_1[1], self.map_lim - 1 - obs_1[0]), 
+            #                                        (obs_1[1], self.map_lim - 1 - obs_0[0])])
 
-                # obstacle = rendering.make_polygon([(obs_list[i][0], self.map_lim - 1 - obs_list[i][3]), 
-                #                                     (obs_list[i][0], self.map_lim - 1 - obs_list[i][2]), 
-                #                                     (obs_list[i][1], self.map_lim - 1 - obs_list[i][2]), 
-                #                                     (obs_list[i][1], self.map_lim - 1 - obs_list[i][3])])
+            #     obstacle_transform = rendering.Transform()
+            #     obstacle.add_attr(obstacle_transform)
+            #     obstacle.set_color(.8, .3, .3) #obstacle color
+            #     self.viewer.add_geom(obstacle)
 
-                obstacle_transform = rendering.Transform()
-                obstacle.add_attr(obstacle_transform)
-                obstacle.set_color(.8, .3, .3) #obstacle color
-                self.viewer.add_geom(obstacle)
+
+            # for border_loc in self.borders:
+            #     obs_0 = np.array(border_loc) - 0.5
+            #     obs_1 = np.array(border_loc) + 0.5
+            #     border = rendering.make_polygon([(obs_0[1], obs_0[0]), 
+            #                                        (obs_0[1], obs_1[0]), 
+            #                                        (obs_1[1], obs_1[0]), 
+            #                                        (obs_1[1], obs_0[0])])
+
+            #     border_transform = rendering.Transform()
+            #     border.add_attr(border_transform)
+            #     border.set_color(.9, .1, .1) #border color
+            #     self.viewer.add_geom(border)
 
 
             # self.grid_points = np.array([[0, 0.1, 0, 20], [1, 1.1, 0, 20], [2, 2.1, 0, 20], [3, 3.1, 0, 20], [0, 20, 0, 0.1], [0, 20, 1, 1.1]])
-            for j in range(len(self.grid_points)):
-                grid = rendering.make_polygon([(self.grid_points[j][0], self.grid_points[j][2]),
-                                               (self.grid_points[j][0], self.grid_points[j][3]),
-                                               (self.grid_points[j][1], self.grid_points[j][3]),
-                                               (self.grid_points[j][1], self.grid_points[j][2])])
+            # for j in range(len(self.grid_points)):
+            #     grid = rendering.make_polygon([(self.grid_points[j][0], self.grid_points[j][2]),
+            #                                    (self.grid_points[j][0], self.grid_points[j][3]),
+            #                                    (self.grid_points[j][1], self.grid_points[j][3]),
+            #                                    (self.grid_points[j][1], self.grid_points[j][2])])
 
-                grid_transform = rendering.Transform()
-                grid.add_attr(grid_transform)
-                grid.set_color(0., 0.65, 1.0)  # grid color
-                self.viewer.add_geom(grid)
+            #     grid_transform = rendering.Transform()
+            #     grid.add_attr(grid_transform)
+            #     grid.set_color(0., 0.65, 1.0)  # grid color
+            #     self.viewer.add_geom(grid)
 
             self.agent_transforms = []
             self.agents_img = []
             self.prizes = []
+            self.obtacles = []
+            self.borders = []
             self.prize_transformations = []
+            self.obstacle_transformations = []
+            self.border_transformations = []
+
 
             for i in range(1):
                 self.agent_transforms.append(rendering.Transform())
@@ -472,9 +515,19 @@ class AgentFormation(gym.Env):
 
             for i in range(self.N_prize):
                 self.prize_transformations.append(rendering.Transform())
-                self.prizes.append(rendering.Image(
-                    fname_prize, 1., 1.))  # prize size
+                self.prizes.append(rendering.Image(fname_prize, 1., 1.))  # prize size
                 self.prizes[i].add_attr(self.prize_transformations[i])
+
+            
+            for i in range(len(self.obstacle_locations[self.map_index])):
+                self.obstacle_transformations.append(rendering.Transform())
+                self.obtacles.append(rendering.Image(fname_obstacle, 1., 1.))  # wall size
+                self.obtacles[i].add_attr(self.obstacle_transformations[i])
+
+            for i in range(len(self.borders_locations)):
+                self.border_transformations.append(rendering.Transform())
+                self.borders.append(rendering.Image(fname_wall, 1., 1.))  # wall size
+                self.borders[i].add_attr(self.border_transformations[i])
 
         for i in range(self.n_agents):
             self.viewer.add_onetime(self.agents_img[i])
@@ -487,7 +540,20 @@ class AgentFormation(gym.Env):
                 self.prize_transformations[i].set_translation(self.prize_locations[self.map_index][i][1], self.map_lim - 1 - self.prize_locations[self.map_index][i][0])
                 self.prize_transformations[i].set_rotation(0)
 
-        return self.viewer.render(return_rgb_array=mode == 'rgb_array')
+        for i in range(len(self.obstacle_locations[self.map_index])):
+            self.viewer.add_onetime(self.obtacles[i])
+            self.obstacle_transformations[i].set_translation(self.obstacle_locations[self.map_index][i][1], self.map_lim - 1 - self.obstacle_locations[self.map_index][i][0])
+            self.obstacle_transformations[i].set_rotation(0)
+
+        for i in range(len(self.borders_locations)):
+            self.viewer.add_onetime(self.borders[i])
+            self.border_transformations[i].set_translation(self.borders_locations[i][1], self.map_lim - 1 - self.borders_locations[i][0])
+            self.border_transformations[i].set_rotation(0)
+
+        return self.viewer.render(return_rgb_array=True)
+        # return np.transpose(
+        #         np.array(pygame.surfarray.pixels3d(self.viewer)), axes=(1, 0, 2)
+        #     )
 
     def close(self):
         if self.viewer:
