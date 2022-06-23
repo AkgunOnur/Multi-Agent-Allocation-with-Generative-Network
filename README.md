@@ -20,4 +20,6 @@ You can configure some settings in `train.py` and `curriculum_approaches.py` (nu
 
 ## Test
 You can configure some settings in `test.py`
+
+
 ![](https://github.com/AkgunOnur/Multi-Agent-Allocation-with-Generative-Network/blob/curriculum/gym_anim.gif)
