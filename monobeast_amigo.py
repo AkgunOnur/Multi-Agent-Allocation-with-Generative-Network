@@ -45,6 +45,9 @@ generator_batch_aux = dict()
 generator_current_target = 7.0
 generator_count = 0
 
+
+
+
 # yapf: disable
 parser = argparse.ArgumentParser(description='PyTorch Scalable Agent') #MiniGrid-Empty-8x8-v0, MiniGrid-CustomDoorKey-8x8-v0
 
@@ -169,7 +172,6 @@ parser.add_argument('--target_variance', default=15.0, type=float,
                     help='Variance for the Gaussian Reward')
 
 # yapf: enable
-
 logging.basicConfig(
     format=(
         "[%(levelname)s:%(process)d %(module)s:%(lineno)d %(asctime)s] " "%(message)s"
@@ -178,7 +180,6 @@ logging.basicConfig(
 )
 
 Buffers = typing.Dict[str, typing.List[torch.Tensor]]
-
 
 def compute_baseline_loss(advantages):
     # Take the mean over batch, sum over time.
@@ -1319,21 +1320,3 @@ def make_custom_env(env_id, target_map, visualization=False):
 def create_env(flags):
     return Minigrid2Image(wrappers.FullyObsWrapper(gym.make(flags.env)))
 
-def main(flags):
-
-    map_file = "doorkey_all_maps.pickle"
-    with open(map_file, 'rb') as handle:
-        new_target_maps = pickle.load(handle)
-
-    for j_map, target_map in enumerate(new_target_maps):
-        for i_iter in range(flags.N_train_iter):
-
-            flags.savedir = "Nov10_MiniGrid/DoorKey/map" + str(j_map)
-            flags.xpid = "iter_" + str(i_iter)
-
-            train(flags, target_map=target_map)
-
-
-if __name__ == "__main__":
-    flags = parser.parse_args()
-    main(flags)
